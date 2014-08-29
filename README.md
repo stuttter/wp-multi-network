@@ -69,12 +69,12 @@ You need to have multi-site functionality enabled before using this plugin. http
 
 The WordPress support forums: http://wordpress.org/tags/wp-multi-network/
 
-### Can I contribute?
-
-Please! The number of users needing multiple WordPress networks is growing fast. Having an easy-to-use interface and powerful set of functions is critical to managing complex WordPress installations. If this is your thing, please help us out!
-
 ### What's up with uploads?
 
 WP Multi-Network needs to be running to set the upload path for new sites. As such, all new networks created with this plugin will have it network activated. If you do disable it on one of your networks, any new site on that network will upload files to that network's root site, effectively causing them to be broken.
 
 (TL;DR - Leave this plugin activated and it will make sure uploads go where they're suppose do.)
+
+### Can I contribute?
+
+Please! The number of users needing multiple WordPress networks is growing fast. Having an easy-to-use interface and powerful set of functions is critical to managing complex WordPress installations. If this is your thing, please help us out!
