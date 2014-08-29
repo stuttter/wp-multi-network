@@ -63,14 +63,18 @@ Yes you can. That is what this plugin does best.
 
 ### Will this work on standard WordPress?
 
-Yes, but it won't do anything. You need to have the multi-site functionality turned on and working before using this plugin.
+You need to have multi-site functionality enabled before using this plugin. http://codex.wordpress.org/Create_A_Network
 
 ### Where can I get support?
 
 The WordPress support forums: http://wordpress.org/tags/wp-multi-network/
 
+### Can I contribute?
+
+Please! The number of users needing multiple WordPress networks is growing fast. Having an easy-to-use interface and powerful set of functions is critical to managing complex WordPress installations. If this is your thing, please help us out!
+
 ### What's up with uploads?
 
-WP Multi-Network needs to be running to help set the upload path for new sites, so all networks created with this plugin will have it network activated. If you disable it on one of your networks, any new site you create on that network will store its uploaded files under that network's main site's uploads folder. It's not pretty.
+WP Multi-Network needs to be running to set the upload path for new sites. As such, all new networks created with this plugin will have it network activated. If you do disable it on one of your networks, any new site on that network will upload files to that network's root site, effectively causing them to be broken.
 
-(TL;DR - Leave this plugin activated and it will take care of everything.)
+(TL;DR - Leave this plugin activated and it will make sure uploads go where they're suppose do.)
