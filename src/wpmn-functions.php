@@ -20,11 +20,11 @@ if ( !defined( 'ABSPATH' ) ) exit;
  * @return boolean true if found, false otherwise
  */
 function network_exists( $site_id ) {
-	global $sites, $wpdb;
+	global $wpdb;
 
 	// Cast
 	$site_id = (int) $site_id;
-	$sites   = (array) $sites;
+	$sites   = get_networks();
 
 	// Loop through sites global and look for a match
 	foreach ( $sites as $network ) {
@@ -48,6 +48,19 @@ function network_exists( $site_id ) {
 }
 
 /**
+ * Get all networks
+ *
+ * @return array Networks available on the installation
+ */
+function get_networks() {
+	global $sites, $wpdb;
+	if ( empty( $sites ) ) {
+		$sites = $wpdb->get_results( "SELECT * FROM $wpdb->site" );
+	}
+	return $sites;
+}
+
+/**
  * Problem: the various *_site_options() functions operate only on the current network
  * Workaround: change the current network
  *
@@ -55,7 +68,7 @@ function network_exists( $site_id ) {
  * @param integer $new_network ID of network to manipulate
  */
 function switch_to_network( $new_network = 0, $validate = false ) {
-	global $old_network_details, $wpdb, $site_id, $switched_network, $switched_network_stack, $current_site, $sites;
+	global $old_network_details, $wpdb, $site_id, $switched_network, $switched_network_stack, $current_site;
 
 	if ( empty( $new_network ) )
 		$new_network = $site_id;
@@ -87,6 +100,7 @@ function switch_to_network( $new_network = 0, $validate = false ) {
 	$old_network_details['site_name'] = $current_site->site_name;
 	$old_network_details['blog_id']   = $current_site->blog_id;
 
+	$sites = get_networks();
 	foreach ( $sites as $network ) {
 		if ( $network->id == $new_network ) {
 			$current_site = $network;
