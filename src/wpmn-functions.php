@@ -635,3 +635,34 @@ function user_has_networks( $user_id = 0 ) {
 
 	return apply_filters( 'networks_user_is_network_admin', $my_networks, $user_id );
 }
+
+/**
+ * Get the main network
+ *
+ * Uses the same logic as {@see is_main_network}, but returns the network object
+ * instead.
+ *
+ * @return stdClass|null
+ */
+function wp_get_main_network() {
+	global $wpdb;
+
+	if ( ! is_multisite() ) {
+		return null;
+	}
+
+	if ( defined( 'PRIMARY_NETWORK_ID' ) ) {
+		return wp_get_network( (int) PRIMARY_NETWORK_ID );
+	}
+
+	$primary_network_id = (int) wp_cache_get( 'primary_network_id', 'site-options' );
+
+	if ( $primary_network_id ) {
+		return wp_get_network( $primary_network_id );
+	}
+
+	$primary_network_id = (int) $wpdb->get_var( "SELECT id FROM $wpdb->site ORDER BY id LIMIT 1" );
+	wp_cache_add( 'primary_network_id', $primary_network_id, 'site-options' );
+
+	return wp_get_network( $primary_network_id );
+}
