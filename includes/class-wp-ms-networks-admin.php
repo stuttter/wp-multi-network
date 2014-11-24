@@ -237,9 +237,7 @@ class WPMN_Admin {
 
 		$this->feedback();
 
-		$action = isset( $_GET['action'] )
-			? $_GET['action']
-			: '';
+		$action = isset( $_GET['action'] ) ? $_GET['action'] : '';
 
 		switch ( $action ) {
 			case 'move':
@@ -258,11 +256,13 @@ class WPMN_Admin {
 				$this->update_network_page();
 				break;
 
-			case 'allnetworks':
+			case 'delete_multinetworks':
+				$this->delete_multiple_network_page();
+				break;
 
-				$doaction = isset( $_POST['action'] ) && ( $_POST['action'] != -1 )
-					? $_POST['action']
-					: $_POST['action2'];
+			default:
+				$this->all_networks();
+				break;
 
 				switch ( $doaction ) {
 					case 'delete':
@@ -447,7 +447,6 @@ class WPMN_Admin {
 				}
 
 				$sites = $_POST['to'];
-
 			} else {
 				if ( !isset( $_POST['from'] ) ) {
 					die( esc_html_e( 'No blogs selected.', 'wp-multi-network' ) );
@@ -588,7 +587,7 @@ class WPMN_Admin {
 			}
 
 			$result = add_network(
-				$_POST['domain'],
+				$_POST['domain'], 
 				$_POST['path'],
 				( isset( $_POST['newSite']      ) ? $_POST['newSite']      : esc_attr__( 'New Network Created', 'wp-multi-network' ) ),
 				( isset( $_POST['cloneNetwork'] ) ? $_POST['cloneNetwork'] : get_current_site()->id ),
