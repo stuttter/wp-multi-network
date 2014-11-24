@@ -201,45 +201,36 @@ class WPMN_Admin {
 			$this->reassign_site_page();
 		}
 
-		$this->feedback(); ?>
+		$this->feedback();
 
-		<div class="wrap" style="position: relative">
+		$action = isset( $_GET['action'] ) ? $_GET['action'] : '';
 
-		<?php
+		switch ( $action ) {
+			case 'move':
+				$this->move_site_page();
+				break;
 
-			$action = isset( $_GET['action'] ) ? $_GET['action'] : '';
+			case 'assignblogs':
+				$this->reassign_site_page();
+				break;
 
-			switch ( $action ) {
-				case 'move':
-					$this->move_site_page();
-					break;
+			case 'deletenetwork':
+				$this->delete_network_page();
+				break;
 
-				case 'assignblogs':
-					$this->reassign_site_page();
-					break;
+			case 'editnetwork':
+				$this->update_network_page();
+				break;
 
-				case 'deletenetwork':
-					$this->delete_network_page();
-					break;
+			case 'delete_multinetworks':
+				$this->delete_multiple_network_page();
+				break;
 
-				case 'editnetwork':
-					$this->update_network_page();
-					break;
+			default:
+				$this->all_networks();
+				break;
+		}
 
-				case 'delete_multinetworks':
-					$this->delete_multiple_network_page();
-					break;
-
-				default:
-					$this->all_networks();
-					break;
-			}
-
-		?>
-
-		</div>
-
-		<?php
 	}
 
 	/**
