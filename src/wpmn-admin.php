@@ -83,12 +83,6 @@ class WPMN_Admin {
 
 		</script>
 
-		<style type="text/css">
-			#adminmenu #toplevel_page_networks .wp-menu-image:before {
-				content: "\f325";
-				font-family: dashicons;
-			}
-		</style>
 	<?php
 	}
 
@@ -132,7 +126,7 @@ class WPMN_Admin {
 	 * Add Networks menu and entries to the Network-level dashboard
 	 */
 	function network_admin_menu() {
-		$page = add_menu_page( esc_html__( 'Networks' ), esc_html__( 'Networks' ), 'manage_options', 'networks', array( $this, 'networks_page' ), 'div', -1 );
+		$page = add_menu_page( esc_html__( 'Networks' ), esc_html__( 'Networks' ), 'manage_options', 'networks', array( &$this, 'networks_page' ), 'dashicons-networking', -1 );
 		add_submenu_page( 'networks', esc_html__( 'All Networks' ), esc_html__( 'All Networks' ), 'manage_options', 'networks',        array( $this, 'networks_page' ) );
 		add_submenu_page( 'networks', esc_html__( 'Add New'      ), esc_html__( 'Add New'      ), 'manage_options', 'add-new-network', array( $this, 'add_network_page' ) );
 
