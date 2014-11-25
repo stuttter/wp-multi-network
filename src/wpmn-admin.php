@@ -242,7 +242,6 @@ class WPMN_Admin {
 		$wp_list_table->prepare_items(); ?>
 
 		<div class="wrap">
-			<?php screen_icon( 'ms-admin' ); ?>
 			<h2><?php esc_html_e( 'Networks' ); ?>
 
 			<?php if ( current_user_can( 'manage_network_options' ) ) : ?>
@@ -280,17 +279,28 @@ class WPMN_Admin {
 		) ); ?>
 
 		<div class="wrap">
-			<?php screen_icon( 'ms-admin' ); ?>
 			<h2><?php esc_html_e( 'Networks' ); ?></h2>
 
 			<div id="col-container">
 				<p><?php esc_html_e( 'A site will be created at the root of the new network' ); ?>.</p>
 				<form method="POST" action="<?php echo $this->admin_url(); ?>">
 					<table class="form-table">
-						<tr><th scope="row"><label for="newName"><?php esc_html_e( 'Network Name' ); ?>:</label></th><td><input type="text" name="name" id="newName" title="<?php esc_html_e( 'A friendly name for your new network' ); ?>" /></td></tr>
-						<tr><th scope="row"><label for="newDom"><?php  esc_html_e( 'Domain'       ); ?>:</label></th><td> http://<input type="text" name="domain" id="newDom" title="<?php esc_html_e( 'The domain for your new network' ); ?>" /></td></tr>
-						<tr><th scope="row"><label for="newPath"><?php esc_html_e( 'Path'         ); ?>:</label></th><td><input type="text" name="path" id="newPath" value="/" title="<?php esc_html_e( 'If you are unsure, put in /' ); ?>" /></td></tr>
-						<tr><th scope="row"><label for="newSite"><?php esc_html_e( 'Site Name'    ); ?>:</label></th><td><input type="text" name="newSite" id="newSite" title="<?php esc_html_e( 'The name for the new network\'s site.' ); ?>" /></td></tr>
+						<tr class="form-field form-required">
+							<th scope="row"><label for="newName"><?php esc_html_e( 'Network Name' ); ?>:</label></th>
+							<td><input type="text" name="name" id="newName" class="regular-text" title="<?php esc_html_e( 'A friendly name for your new network' ); ?>" /></td>
+						</tr>
+						<tr class="form-field form-required">
+							<th scope="row"><label for="newDom"><?php  esc_html_e( 'Domain' ); ?>:</label></th>
+							<td> http://<input type="text" name="domain" id="newDom" class="regular-text" title="<?php esc_html_e( 'The domain for your new network' ); ?>" /></td>
+						</tr>
+						<tr class="form-field form-required">
+							<th scope="row"><label for="newPath"><?php esc_html_e( 'Path' ); ?>:</label></th>
+							<td><input type="text" name="path" id="newPath" value="/" class="regular-text" title="<?php esc_html_e( 'If you are unsure, put in /' ); ?>" /></td>
+						</tr>
+						<tr class="form-field form-required">
+							<th scope="row"><label for="newSite"><?php esc_html_e( 'Site Name' ); ?>:</label></th>
+							<td><input type="text" name="newSite" id="newSite" class="regular-text" title="<?php esc_html_e( 'The name for the new network\'s site.' ); ?>" /></td>
+						</tr>
 					</table>
 
 					<?php submit_button( esc_html__( 'Create Network' ), 'primary', 'add' ); ?>
@@ -341,7 +351,6 @@ class WPMN_Admin {
 			} ?>
 
 			<div class="wrap">
-				<?php screen_icon( 'ms-admin' ); ?>
 				<h2><?php esc_html_e( 'Networks' ); ?></h2>
 				<h3><?php printf( esc_html__( 'Moving %s' ), stripslashes( $details->option_value ) ); ?></h3>
 				<form method="post" action="<?php echo $_SERVER['REQUEST_URI']; ?>">
@@ -453,7 +462,6 @@ class WPMN_Admin {
 			?>
 			<div class="wrap">
 				<form method="post" id="site-assign-form" action="<?php echo $_SERVER['REQUEST_URI']; ?>">
-					<?php screen_icon( 'ms-admin' ); ?>
 					<h2><?php esc_html_e( 'Networks' ); ?></h2>
 					<h3><?php esc_html_e( 'Assign Sites to' ); ?>: http://<?php echo esc_html( $network->domain . $network->path ); ?></h3>
 					<noscript>
@@ -591,7 +599,6 @@ class WPMN_Admin {
 
 			?>
 			<div class="wrap">
-				<?php screen_icon( 'ms-admin' ); ?>
 				<h2><?php esc_html_e( 'Networks' ); ?></h2>
 				<h3><?php esc_html_e( 'Edit Network' ); ?>: http://<?php echo esc_html( $network->domain . $network->path ); ?></h3>
 				<form method="post" action="<?php echo remove_query_arg( 'action' ); ?>">
@@ -640,7 +647,6 @@ class WPMN_Admin {
 			$sites = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->blogs} WHERE site_id = %d", (int) $_GET['id'] ) ); ?>
 
 			<form method="POST" action="<?php echo remove_query_arg( 'action' ); ?>">
-				<?php screen_icon( 'ms-admin' ); ?>
 				<h2><?php esc_html_e( 'Networks' ); ?></h2>
 				<h3><?php esc_html_e( 'Delete Network' ); ?>: <?php echo esc_html( $network->domain . $network->path ); ?></h3>
 				<div>
@@ -716,7 +722,6 @@ class WPMN_Admin {
 			$sites = $wpdb->get_results( "SELECT * FROM {$wpdb->blogs} WHERE site_id IN (" . implode( ',', $allnetworks ) . ')' ); ?>
 
 			<div class="wrap">
-				<?php screen_icon( 'ms-admin' ); ?>
 				<h2><?php esc_html_e( 'Networks' ); ?></h2>
 				<h3><?php esc_html_e( 'Delete Multiple Networks' ); ?></h3>
 				<form method="POST" action="<?php echo $this->admin_url(); ?>"><div>
