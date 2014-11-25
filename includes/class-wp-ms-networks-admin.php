@@ -207,7 +207,7 @@ class WPMN_Admin {
 	 */
 	public function networks_page() {
 
-		if ( ! is_super_admin() ) {
+		if ( ! is_super_admin() ) {;
 			wp_die( esc_html__( 'You do not have permission to access this page.', 'wp-multi-network' ) );
 		}
 
@@ -293,8 +293,7 @@ class WPMN_Admin {
 		$wp_list_table->prepare_items(); ?>
 
 		<div class="wrap">
-			<h2><?php esc_html_e( 'Networks', 'wp-multi-network' ); ?>
-
+			<h2><?php esc_html_e( 'Networks' ); ?>
 			<?php if ( current_user_can( 'manage_network_options' ) ) : ?>
 
 				<a href="<?php echo esc_url( add_query_arg( array( 'page' => 'add-new-network' ), $this->admin_url() ) ); ?>" class="add-new-h2"><?php echo esc_html_x( 'Add New', 'network', 'wp-multi-network' ); ?></a>
@@ -331,10 +330,22 @@ class WPMN_Admin {
 				<p><?php esc_html_e( 'A site will be created at the root of the new network', 'wp-multi-network' ); ?>.</p>
 				<form method="POST" action="<?php echo esc_url( $this->admin_url() ); ?>">
 					<table class="form-table">
-						<tr><th scope="row"><label for="newName"><?php esc_html_e( 'Network Name', 'wp-multi-network' ); ?>:</label></th><td><input type="text" name="name" id="newName" title="<?php esc_html_e( 'A friendly name for your new network', 'wp-multi-network' ); ?>" /></td></tr>
-						<tr><th scope="row"><label for="newDom"><?php  esc_html_e( 'Domain',       'wp-multi-network' ); ?>:</label></th><td><?php $this->scheme(); ?><input type="text" name="domain" id="newDom" title="<?php esc_html_e( 'The domain for your new network', 'wp-multi-network' ); ?>" /></td></tr>
-						<tr><th scope="row"><label for="newPath"><?php esc_html_e( 'Path',         'wp-multi-network' ); ?>:</label></th><td><input type="text" name="path" id="newPath" value="/" title="<?php esc_html_e( 'If you are unsure, put in /', 'wp-multi-network' ); ?>" /></td></tr>
-						<tr><th scope="row"><label for="newSite"><?php esc_html_e( 'Site Name',    'wp-multi-network' ); ?>:</label></th><td><input type="text" name="newSite" id="newSite" title="<?php esc_html_e( 'The name for the new site for this network.', 'wp-multi-network' ); ?>" /></td></tr>
+						<tr class="form-field form-required">
+							<th scope="row"><label for="newName"><?php esc_html_e( 'Network Name', 'wp-multi-network' ); ?>:</label></th>
+							<td><input type="text" name="name" id="newName" class="regular-text" title="<?php esc_html_e( 'A friendly name for your new network', 'wp-multi-network' ); ?>" /></td>
+						</tr>
+						<tr class="form-field form-required">
+							<th scope="row"><label for="newDom"><?php esc_html_e( 'Domain', 'wp-multi-network' ); ?>:</label></th>
+							<td>http://<input type="text" name="domain" id="newDom" class="regular-text" title="<?php esc_html_e( 'The domain for your new network', 'wp-multi-network' ); ?>" /></td>
+						</tr>
+						<tr class="form-field form-required">
+							<th scope="row"><label for="newPath"><?php esc_html_e( 'Path', 'wp-multi-network' ); ?>:</label></th>
+							<td><input type="text" name="path" id="newPath" value="/" class="regular-text" title="<?php esc_html_e( 'If you are unsure, put in /', 'wp-multi-network' ); ?>" /></td>
+						</tr>
+						<tr class="form-field form-required">
+							<th scope="row"><label for="newSite"><?php esc_html_e( 'Site Name',    'wp-multi-network' ); ?>:</label></th>
+							<td><input type="text" name="newSite" id="newSite" class="regular-text" title="<?php esc_html_e( 'The name for the new site for this network.', 'wp-multi-network' ); ?>" /></td>
+						</tr>
 					</table>
 
 					<?php submit_button( esc_html__( 'Create Network', 'wp-multi-network' ), 'primary', 'add' ); ?>
@@ -719,7 +730,7 @@ class WPMN_Admin {
 						<?php
 						}
 					}
-					?>
+					?>>
 					<p><?php esc_html_e( 'Are you sure you want to delete this network?', 'wp-multi-network' ); ?></p>
 					<?php submit_button( esc_html__( 'Delete Network', 'wp-multi-network' ), 'primary', 'delete', false ); ?>
 					<a class="button" href="<?php echo esc_url( $this->admin_url() ); ?>"><?php esc_html_e( 'Cancel', 'wp-multi-network' ); ?></a>
@@ -844,7 +855,7 @@ class WPMN_Admin {
 
 		<div class="wrap">
 			<h2><?php esc_html_e( 'My Networks', 'wp-multi-network' ); ?></h2>
-
+		
 			<?php
 
 			$my_networks = user_has_networks();
