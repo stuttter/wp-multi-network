@@ -706,7 +706,6 @@ class WPMN_Admin {
 			}
 
 			$sites = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->blogs} WHERE site_id = %d", (int) $_GET['id'] ) ); ?>
-
 			<div class="wrap">
 				<h2><?php esc_html_e( 'Networks', 'wp-multi-network' ); ?></h2>
 				<h3><?php esc_html_e( 'Delete Network', 'wp-multi-network' ); ?>: <?php echo esc_html( $network->domain . $network->path ); ?></h3>
@@ -730,7 +729,7 @@ class WPMN_Admin {
 						<?php
 						}
 					}
-					?>>
+					?>
 					<p><?php esc_html_e( 'Are you sure you want to delete this network?', 'wp-multi-network' ); ?></p>
 					<?php submit_button( esc_html__( 'Delete Network', 'wp-multi-network' ), 'primary', 'delete', false ); ?>
 					<a class="button" href="<?php echo esc_url( $this->admin_url() ); ?>"><?php esc_html_e( 'Cancel', 'wp-multi-network' ); ?></a>
@@ -819,7 +818,7 @@ class WPMN_Admin {
 										<li><input type="hidden" name="deleted_networks[]" value="<?php echo esc_attr( $deleted_network->id ); ?>" /><?php echo esc_html( $deleted_network->domain . $deleted_network->path ); ?></li>
 									<?php endforeach; ?>
 								</ul>
-								<p><?php esc_html_e( 'There are blogs associated with one or more of these networks.  Deleting them will delete those blogs as well.', 'wp-multi-network' ); ?></p>
+								<p><?php esc_html_e( 'There are blogs associated with one or more of these networks. Deleting them will delete those blogs as well.', 'wp-multi-network' ); ?></p>
 								<p><label for="override"><?php esc_html_e( 'If you still want to delete these networks, check the following box', 'wp-multi-network' ); ?>:</label> <input type="checkbox" name="override" id="override" /></p>
 							</div>
 
