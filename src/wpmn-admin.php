@@ -18,9 +18,10 @@ if ( !defined( 'ABSPATH' ) ) exit;
 class WPMN_Admin {
 
 	function __construct() {
-		add_action( 'admin_head',         array( &$this, 'admin_head'         ) );
-		add_action( 'admin_menu',		  array( &$this, 'admin_menu'		  ) );
-		add_action( 'network_admin_menu', array( &$this, 'network_admin_menu' ) );
+		add_action( 'admin_head',         array( &$this, 'admin_head'                   ) );
+		add_action( 'admin_menu',         array( &$this, 'admin_menu'                   ) );
+		add_action( 'network_admin_menu', array( &$this, 'network_admin_menu'           ) );
+		add_action( 'network_admin_menu', array( &$this, 'network_admin_menu_seperator' ) );
 
 		add_filter( 'manage_sites_action_links', array( &$this, 'add_move_blog_link' ), 10, 3 );
 		if( ! has_action( 'manage_sites_action_links' ) ) {
@@ -139,6 +140,17 @@ class WPMN_Admin {
 		require( dirname(__FILE__) . '/includes/class-wp-ms-networks-list-table.php' );
 
 		add_filter( 'manage_' . $page . '-network' . '_columns', array( new WP_MS_Networks_List_Table(), 'get_columns' ), 0 );
+	}
+
+	/**
+	 * Add a seperator between the 'Networks' and 'Dashboard' menus to the Network-level dashboard
+	 */
+	function network_admin_menu_seperator() {
+		global $menu;
+
+		$menu['-2'] = array( '', 'read', 'separator0', '', 'wp-menu-separator' );
+
+		return $menu;
 	}
 
 	/* Config Page */
