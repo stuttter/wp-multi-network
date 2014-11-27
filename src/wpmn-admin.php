@@ -462,8 +462,8 @@ class WPMN_Admin {
 			?>
 			<div class="wrap">
 				<form method="post" id="site-assign-form" action="<?php echo $_SERVER['REQUEST_URI']; ?>">
-					<h2><?php esc_html_e( 'Networks' ); ?></h2>
-					<h3><?php esc_html_e( 'Assign Sites to' ); ?>: http://<?php echo esc_html( $network->domain . $network->path ); ?></h3>
+					<h2><?php esc_html_e( 'Assign Sites to' ); ?>: http://<?php echo esc_html( $network->domain . $network->path ); ?></h2>
+					<p><?php esc_html_e( 'Assign available sites to this network.' ); ?></p>
 					<noscript>
 						<div id="message" class="updated"><p><?php esc_html_e( 'Select the blogs you want to assign to this network from the column at left, and click "Update Assignments."' ); ?></p></div>
 					</noscript>
@@ -599,8 +599,7 @@ class WPMN_Admin {
 
 			?>
 			<div class="wrap">
-				<h2><?php esc_html_e( 'Networks' ); ?></h2>
-				<h3><?php esc_html_e( 'Edit Network' ); ?>: http://<?php echo esc_html( $network->domain . $network->path ); ?></h3>
+				<h2><?php esc_html_e( 'Edit Network' ); ?>: http://<?php echo esc_html( $network->domain . $network->path ); ?></h2>
 				<form method="post" action="<?php echo remove_query_arg( 'action' ); ?>">
 					<table class="form-table">
 						<tr class="form-field"><th scope="row"><label for="domain"><?php esc_html_e( 'Domain' ); ?></label></th><td> http://<input type="text" id="domain" name="domain" value="<?php echo esc_attr( $network->domain ); ?>"></td></tr>
