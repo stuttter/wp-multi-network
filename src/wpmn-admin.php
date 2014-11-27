@@ -18,8 +18,9 @@ if ( !defined( 'ABSPATH' ) ) exit;
 class WPMN_Admin {
 
 	function __construct() {
-		add_action( 'admin_menu',         array( $this, 'admin_menu'         ) );
-		add_action( 'network_admin_menu', array( $this, 'network_admin_menu' ) );
+		add_action( 'admin_menu',         array( $this, 'admin_menu'                   ) );
+		add_action( 'network_admin_menu', array( $this, 'network_admin_menu'           ) );
+		add_action( 'network_admin_menu', array( $this, 'network_admin_menu_separator' ) );
 
 		add_filter( 'manage_sites_action_links', array( $this, 'add_move_blog_link' ), 10, 3 );
 		if( ! has_action( 'manage_sites_action_links' ) ) {
@@ -133,6 +134,15 @@ class WPMN_Admin {
 
 		add_filter( "manage_{$page}-network_columns", array( new WP_MS_Networks_List_Table(), 'get_columns' ), 0 );
 		add_action( "load-{$page}",                   array( $this, 'enqueue_js' ) );
+	}
+
+	/**
+	 * Add a seperator between the 'Networks' and 'Dashboard' menus to the Network-level dashboard
+	 */
+	function network_admin_menu_separator() {
+		global $menu;
+
+		$menu['-2'] = array( '', 'read', 'separator', '', 'wp-menu-separator' );
 	}
 
 	/**
