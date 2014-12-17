@@ -706,6 +706,7 @@ class WPMN_Admin {
 			}
 
 			$sites = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->blogs} WHERE site_id = %d", (int) $_GET['id'] ) ); ?>
+
 			<div class="wrap">
 				<h2><?php esc_html_e( 'Networks', 'wp-multi-network' ); ?></h2>
 				<h3><?php esc_html_e( 'Delete Network', 'wp-multi-network' ); ?>: <?php echo esc_html( $network->domain . $network->path ); ?></h3>
