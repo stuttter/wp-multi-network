@@ -18,8 +18,7 @@ if ( !defined( 'ABSPATH' ) ) exit;
 class WPMN_Admin {
 
 	function __construct() {
-		add_action( 'admin_head',         array( $this, 'admin_head'         ) );
-		add_action( 'admin_menu',		  array( $this, 'admin_menu'		  ) );
+		add_action( 'admin_menu',         array( $this, 'admin_menu'         ) );
 		add_action( 'network_admin_menu', array( $this, 'network_admin_menu' ) );
 
 		add_filter( 'manage_sites_action_links', array( $this, 'add_move_blog_link' ), 10, 3 );
@@ -83,12 +82,6 @@ class WPMN_Admin {
 
 		</script>
 
-		<style type="text/css">
-			#adminmenu #toplevel_page_networks .wp-menu-image:before {
-				content: "\f325";
-				font-family: dashicons;
-			}
-		</style>
 	<?php
 	}
 
@@ -132,17 +125,26 @@ class WPMN_Admin {
 	 * Add Networks menu and entries to the Network-level dashboard
 	 */
 	function network_admin_menu() {
-		$page = add_menu_page( esc_html__( 'Networks' ), esc_html__( 'Networks' ), 'manage_options', 'networks', array( $this, 'networks_page' ), 'div', -1 );
+		$page = add_menu_page( esc_html__( 'Networks' ), esc_html__( 'Networks' ), 'manage_options', 'networks', array( &$this, 'networks_page' ), 'dashicons-networking', -1 );
 		add_submenu_page( 'networks', esc_html__( 'All Networks' ), esc_html__( 'All Networks' ), 'manage_options', 'networks',        array( $this, 'networks_page' ) );
 		add_submenu_page( 'networks', esc_html__( 'Add New'      ), esc_html__( 'Add New'      ), 'manage_options', 'add-new-network', array( $this, 'add_network_page' ) );
 
 		require( dirname(__FILE__) . '/includes/class-wp-ms-networks-list-table.php' );
 
-		add_filter( 'manage_' . $page . '-network' . '_columns', array( new WP_MS_Networks_List_Table(), 'get_columns' ), 0 );
+		add_filter( "manage_{$page}-network_columns", array( new WP_MS_Networks_List_Table(), 'get_columns' ), 0 );
+		add_action( "load-{$page}",                   array( $this, 'enqueue_js' ) );
+	}
+
+	/**
+	 * Add javascript on networks admin pages only
+	 *
+	 * @since 1.5.2
+	 */
+	function enqueue_js() {
+		add_action( 'admin_head', array( $this, 'admin_head' ) );
 	}
 
 	/* Config Page */
-
 	function feedback() {
 
 		if ( isset( $_GET['updated'] ) ) : ?>
