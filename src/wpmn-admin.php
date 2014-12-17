@@ -18,8 +18,7 @@ if ( !defined( 'ABSPATH' ) ) exit;
 class WPMN_Admin {
 
 	function __construct() {
-		add_action( 'admin_head',         array( $this, 'admin_head'         ) );
-		add_action( 'admin_menu',		  array( $this, 'admin_menu'		 ) );
+		add_action( 'admin_menu',         array( $this, 'admin_menu'         ) );
 		add_action( 'network_admin_menu', array( $this, 'network_admin_menu' ) );
 
 		add_filter( 'manage_sites_action_links', array( $this, 'add_move_blog_link' ), 10, 3 );
@@ -138,6 +137,8 @@ class WPMN_Admin {
 
 	/**
 	 * Add javascript on networks admin pages only
+	 *
+	 * @since 1.5.2
 	 */
 	function enqueue_js() {
 		add_action( 'admin_head', array( $this, 'admin_head' ) );
