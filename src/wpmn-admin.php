@@ -18,13 +18,13 @@ if ( !defined( 'ABSPATH' ) ) exit;
 class WPMN_Admin {
 
 	function __construct() {
-		add_action( 'admin_head',         array( &$this, 'admin_head'         ) );
-		add_action( 'admin_menu',		  array( &$this, 'admin_menu'		  ) );
-		add_action( 'network_admin_menu', array( &$this, 'network_admin_menu' ) );
+		add_action( 'admin_head',         array( $this, 'admin_head'         ) );
+		add_action( 'admin_menu',		  array( $this, 'admin_menu'		  ) );
+		add_action( 'network_admin_menu', array( $this, 'network_admin_menu' ) );
 
-		add_filter( 'manage_sites_action_links', array( &$this, 'add_move_blog_link' ), 10, 3 );
+		add_filter( 'manage_sites_action_links', array( $this, 'add_move_blog_link' ), 10, 3 );
 		if( ! has_action( 'manage_sites_action_links' ) ) {
-			add_action( 'wpmublogsaction',    array( &$this, 'assign_blogs_link'  ) );
+			add_action( 'wpmublogsaction',    array( $this, 'assign_blogs_link'  ) );
 		}
 	}
 
@@ -132,7 +132,7 @@ class WPMN_Admin {
 	 * Add Networks menu and entries to the Network-level dashboard
 	 */
 	function network_admin_menu() {
-		$page = add_menu_page( esc_html__( 'Networks' ), esc_html__( 'Networks' ), 'manage_options', 'networks', array( &$this, 'networks_page' ), 'div', -1 );
+		$page = add_menu_page( esc_html__( 'Networks' ), esc_html__( 'Networks' ), 'manage_options', 'networks', array( $this, 'networks_page' ), 'div', -1 );
 		add_submenu_page( 'networks', esc_html__( 'All Networks' ), esc_html__( 'All Networks' ), 'manage_options', 'networks',        array( $this, 'networks_page' ) );
 		add_submenu_page( 'networks', esc_html__( 'Add New'      ), esc_html__( 'Add New'      ), 'manage_options', 'add-new-network', array( $this, 'add_network_page' ) );
 
