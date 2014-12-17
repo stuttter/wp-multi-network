@@ -138,6 +138,8 @@ class WPMN_Admin {
 
 	/**
 	 * Add a seperator between the 'Networks' and 'Dashboard' menus to the Network-level dashboard
+	 *
+	 * @since 1.5.2
 	 */
 	function network_admin_menu_separator() {
 		global $menu;
