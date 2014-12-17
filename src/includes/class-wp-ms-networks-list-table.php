@@ -38,7 +38,7 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 			$search_conditions = trim( $search_conditions, '*' );
 		}
 
-		$like_s = esc_sql( like_escape( $search_conditions ) );
+		$like_s = esc_sql( $wpdb->esc_like( $search_conditions ) );
 
 		$total_query = 'SELECT COUNT( id ) FROM ' . $wpdb->site . ' WHERE 1=1 ';
 		
