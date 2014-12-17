@@ -8,7 +8,7 @@
  */
 
 // Exit if accessed directly
-if ( !defined( 'ABSPATH' ) ) exit;
+if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Check to see if a network exists. Will check the networks object before
@@ -136,11 +136,13 @@ function switch_to_network( $new_network = 0, $validate = false ) {
 function restore_current_network() {
 	global $old_network_details, $wpdb, $site_id, $switched_network, $switched_network_stack, $current_site;
 
-	if ( false == $switched_network )
+	if ( false == $switched_network ) {
 		return false;
+	}
 
-	if ( !is_array( $switched_network_stack ) )
+	if ( !is_array( $switched_network_stack ) ) {
 		return false;
+	}
 
 	$site_id = array_pop( $switched_network_stack );
 
@@ -185,18 +187,21 @@ function add_network( $domain, $path, $site_name = false, $clone_network = false
 	global $wpdb, $sites;
 
 	// Set a default site name if one isn't set
-	if ( false == $site_name )
+	if ( false == $site_name ) {
 		$site_name = __( 'New Network Root' );
+	}
 
 	// If no options, fallback on defaults
-	if ( empty( $options_to_clone ) )
+	if ( empty( $options_to_clone ) ) {
 		$options_to_clone = array_keys( network_options_to_copy() );
+	}
 
 	// Check for existing network
 	$network = $wpdb->get_row( $wpdb->prepare( 'SELECT * FROM ' . $wpdb->site . ' WHERE domain = %s AND path = %s LIMIT 1', $domain, $path ) );
 
-	if ( !empty( $network ) )
+	if ( !empty( $network ) ) {
 		return new WP_Error( 'network_exists', __( 'Network already exists.' ) );
+	}
 
 	// Insert new network
 	$wpdb->insert( $wpdb->site, array(
@@ -266,10 +271,11 @@ function add_network( $domain, $path, $site_name = false, $clone_network = false
 			}
 			$upload_dir .= '/uploads';
 			
-			if ( defined( 'MULTISITE' ) )
+			if ( defined( 'MULTISITE' ) ) {
 				$ms_dir = '/sites/' . $new_blog_id;
-			else
+			} else {
 				$ms_dir = '/' . $new_blog_id;
+			}
 			
 			$upload_dir .= $ms_dir;
 			$upload_url .= $ms_dir;
@@ -339,26 +345,30 @@ function update_network( $id, $domain, $path = '' ) {
 	$id = (int) $id;
 
 	// Bail if network does not exist
-	if ( !network_exists( $id ) )
+	if ( !network_exists( $id ) ) {
 		return new WP_Error( 'network_not_exist', __( 'Network does not exist.' ) );
+	}
 
 	// Bail if site for network is missing
 	$network = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->site} WHERE id = %d", $id ) );
-	if ( empty( $network ) )
+	if ( empty( $network ) ) {
 		return new WP_Error( 'network_not_exist', __( 'Network does not exist.' ) );
+	}
 
 	// Set the arrays for updating the db
 	$update = array( 'domain' => $domain );
-	if ( !empty( $path ) )
+	if ( !empty( $path ) ) {
 		$update['path'] = $path;
+	}
 
 	// Attempt to update the network
 	$where         = array( 'id' => $id );
 	$update_result = $wpdb->update( $wpdb->site, $update, $where );
 
 	// Bail if update failed
-	if ( empty( $update_result ) )
+	if ( empty( $update_result ) ) {
 		return new WP_Error( 'network_not_updated', __( 'Network could not be updated.' ) );
+	}
 
 	$path      = !empty( $path ) ? $path : $network->path;
 	$full_path = untrailingslashit( $domain . $path );
@@ -374,17 +384,18 @@ function update_network( $id, $domain, $path = '' ) {
 			
 			$update = array();
 			
-			if( $network->domain !== $domain ) {
+			if ( $network->domain !== $domain ) {
 				$update['domain'] = str_replace( $network->domain, $domain, $site->domain );
 			}
 
-			if( $network->path !== $path ) {
+			if ( $network->path !== $path ) {
 				$search = sprintf( '|^%s|', preg_quote( $network->path, '|' ) );
 				$update['path'] = preg_replace( $search, $path, $site->path, 1 );
 			}
 
-			if( empty( $update ) )
+			if ( empty( $update ) ) {
 				continue;
+			}
 			
 			$where = array( 'blog_id' => (int) $site->blog_id );
 			$wpdb->update( $wpdb->blogs, $update, $where );
@@ -425,15 +436,17 @@ function delete_network( $id, $delete_blogs = false ) {
 	$network = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->site} WHERE id = %d", $id ) );
 
 	// Bail if network does not exist
-	if ( empty( $network ) )
+	if ( empty( $network ) ) {
 		return new WP_Error( 'network_not_exist', __( 'Network does not exist.' ) );
+	}
 
 	// ensure there are no blogs attached to this network */
 	$sites = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->blogs} WHERE site_id = %d", $id ) );
 
 	// Bail if network has blogs and blog deletion is off
-	if ( ( false == $delete_blogs ) && !empty( $sites ) )
+	if ( ( false == $delete_blogs ) && !empty( $sites ) ) {
 		return new WP_Error( 'network_not_empty', __( 'Cannot delete network with sites.' ) );
+	}
 
 	// Are we rescuing orphans or deleting them?
 	if ( ( true == $delete_blogs )  && !empty( $sites ) ) {
@@ -472,12 +485,14 @@ function move_site( $site_id, $new_network_id ) {
 	$site  = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->blogs} WHERE blog_id = %d", $site_id ) );
 
 	// Bail if site does not exist
-	if ( empty( $site ) )
+	if ( empty( $site ) ) {
 		return new WP_Error( 'blog_not_exist', __( 'Site does not exist.' ) );
+	}
 
 	// Return early if site does not need to be moved
-	if ( (int) $new_network_id == $site->site_id )
+	if ( (int) $new_network_id == $site->site_id ) {
 		return true;
+	}
 
 	// Store the old network ID for using later
 	$old_network_id = $site->site_id;
@@ -530,8 +545,9 @@ function move_site( $site_id, $new_network_id ) {
 	$update_result = $wpdb->update( $wpdb->blogs, $update, $where );
 
 	// Bail if site could not be moved
-	if ( empty( $update_result ) )
+	if ( empty( $update_result ) ) {
 		return new WP_Error( 'blog_not_moved', __( 'Site could not be moved.' ) );
+	}
 
 	// Change relevant blog options
 	$options_table = $wpdb->get_blog_prefix( $site->blog_id ) . 'options';
@@ -630,8 +646,9 @@ function user_has_networks( $user_id = 0 ) {
 	}
 
 	// If there are no networks, return false
-	if ( empty( $my_networks ) )
+	if ( empty( $my_networks ) ) {
 		$my_networks = false;
+	}
 
 	return apply_filters( 'networks_user_is_network_admin', $my_networks, $user_id );
 }
