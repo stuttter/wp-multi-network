@@ -19,7 +19,7 @@ class WPMN_Admin {
 
 	function __construct() {
 		add_action( 'admin_head',         array( $this, 'admin_head'         ) );
-		add_action( 'admin_menu',		  array( $this, 'admin_menu'		  ) );
+		add_action( 'admin_menu',		  array( $this, 'admin_menu'		 ) );
 		add_action( 'network_admin_menu', array( $this, 'network_admin_menu' ) );
 
 		add_filter( 'manage_sites_action_links', array( $this, 'add_move_blog_link' ), 10, 3 );
@@ -132,11 +132,18 @@ class WPMN_Admin {
 
 		require( dirname(__FILE__) . '/includes/class-wp-ms-networks-list-table.php' );
 
-		add_filter( 'manage_' . $page . '-network' . '_columns', array( new WP_MS_Networks_List_Table(), 'get_columns' ), 0 );
+		add_filter( "manage_{$page}-network_columns", array( new WP_MS_Networks_List_Table(), 'get_columns' ), 0 );
+		add_action( "load-{$page}",                   array( $this, 'enqueue_js' ) );
+	}
+
+	/**
+	 * Add javascript on networks admin pages only
+	 */
+	function enqueue_js() {
+		add_action( 'admin_head', array( $this, 'admin_head' ) );
 	}
 
 	/* Config Page */
-
 	function feedback() {
 
 		if ( isset( $_GET['updated'] ) ) : ?>
