@@ -126,8 +126,8 @@ class WPMN_Admin {
 	 */
 	function network_admin_menu() {
 		$page = add_menu_page( esc_html__( 'Networks' ), esc_html__( 'Networks' ), 'manage_options', 'networks', array( &$this, 'networks_page' ), 'dashicons-networking', -1 );
-		add_submenu_page( 'networks', esc_html__( 'All Networks' ), esc_html__( 'All Networks' ), 'manage_options', 'networks',        array( $this, 'networks_page' ) );
-		add_submenu_page( 'networks', esc_html__( 'Add New'      ), esc_html__( 'Add New'      ), 'manage_options', 'add-new-network', array( $this, 'add_network_page' ) );
+		add_submenu_page( 'networks', esc_html__( 'All Networks' ),    esc_html__( 'All Networks' ), 'manage_options', 'networks',        array( $this, 'networks_page' ) );
+		add_submenu_page( 'networks', esc_html__( 'Add New Network' ), esc_html__( 'Add New'      ), 'manage_options', 'add-new-network', array( $this, 'add_network_page' ) );
 
 		require( dirname(__FILE__) . '/includes/class-wp-ms-networks-list-table.php' );
 
@@ -279,8 +279,7 @@ class WPMN_Admin {
 		) ); ?>
 
 		<div class="wrap">
-			<h2><?php esc_html_e( 'Networks' ); ?></h2>
-
+			<h2><?php esc_html_e( 'Add New Network' ); ?></h2>
 			<div id="col-container">
 				<p><?php esc_html_e( 'A site will be created at the root of the new network' ); ?>.</p>
 				<form method="POST" action="<?php echo $this->admin_url(); ?>">
@@ -351,8 +350,8 @@ class WPMN_Admin {
 			} ?>
 
 			<div class="wrap">
-				<h2><?php esc_html_e( 'Networks' ); ?></h2>
-				<h3><?php printf( esc_html__( 'Moving %s' ), stripslashes( $details->option_value ) ); ?></h3>
+				<h2><?php printf( __( 'Move Site: %s' ), stripslashes( $details->option_value ) ); ?></h2>
+				<p><?php _e( 'Select the network you want the site to be moved to.' ); ?></p>
 				<form method="post" action="<?php echo $_SERVER['REQUEST_URI']; ?>">
 					<table class="widefat">
 						<thead>
@@ -387,7 +386,7 @@ class WPMN_Admin {
 					<?php endif; ?>
 					<div>
 						<input type="hidden" name="from" value="<?php echo esc_attr( $site->site_id ); ?>" />
-						<input class="button" type="submit" name="move" value="<?php esc_html_e( 'Move Site' ); ?>" />
+						<?php submit_button( esc_html__( 'Move Site' ), 'primary', 'move', false ); ?>
 						<a class="button" href="./sites.php"><?php esc_html_e( 'Cancel' ); ?></a>
 					</div>
 				</form>
@@ -462,7 +461,7 @@ class WPMN_Admin {
 			?>
 			<div class="wrap">
 				<form method="post" id="site-assign-form" action="<?php echo $_SERVER['REQUEST_URI']; ?>">
-					<h2><?php esc_html_e( 'Assign Sites to' ); ?>: http://<?php echo esc_html( $network->domain . $network->path ); ?></h2>
+					<h2><?php printf( __( 'Assign Sites to: %s' ), 'http://' . esc_html( $network->domain . $network->path ) ); ?></h2>
 					<p><?php esc_html_e( 'Assign available sites to this network.' ); ?></p>
 					<noscript>
 						<div id="message" class="updated"><p><?php esc_html_e( 'Select the blogs you want to assign to this network from the column at left, and click "Update Assignments."' ); ?></p></div>
@@ -599,7 +598,7 @@ class WPMN_Admin {
 
 			?>
 			<div class="wrap">
-				<h2><?php esc_html_e( 'Edit Network' ); ?>: http://<?php echo esc_html( $network->domain . $network->path ); ?></h2>
+				<h2><?php printf( __( 'Edit Network: %s' ), 'http://' . esc_html( $network->domain . $network->path ) ); ?></h2>
 				<form method="post" action="<?php echo remove_query_arg( 'action' ); ?>">
 					<table class="form-table">
 						<tr class="form-field"><th scope="row"><label for="domain"><?php esc_html_e( 'Domain' ); ?></label></th><td> http://<input type="text" id="domain" name="domain" value="<?php echo esc_attr( $network->domain ); ?>"></td></tr>
@@ -646,8 +645,7 @@ class WPMN_Admin {
 			$sites = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->blogs} WHERE site_id = %d", (int) $_GET['id'] ) ); ?>
 
 			<form method="POST" action="<?php echo remove_query_arg( 'action' ); ?>">
-				<h2><?php esc_html_e( 'Networks' ); ?></h2>
-				<h3><?php esc_html_e( 'Delete Network' ); ?>: <?php echo esc_html( $network->domain . $network->path ); ?></h3>
+				<h2><?php printf( __( 'Delete Network: %s' ), esc_html( $network->domain . $network->path ) ); ?></h2>
 				<div>
 					<?php
 					if ( !empty( $sites ) ) {
@@ -721,8 +719,7 @@ class WPMN_Admin {
 			$sites = $wpdb->get_results( "SELECT * FROM {$wpdb->blogs} WHERE site_id IN (" . implode( ',', $allnetworks ) . ')' ); ?>
 
 			<div class="wrap">
-				<h2><?php esc_html_e( 'Networks' ); ?></h2>
-				<h3><?php esc_html_e( 'Delete Multiple Networks' ); ?></h3>
+				<h2><?php esc_html_e( 'Delete Multiple Networks' ); ?></h2>
 				<form method="POST" action="<?php echo $this->admin_url(); ?>"><div>
 					<?php if ( $sites ) {
 						if ( RESCUE_ORPHANED_BLOGS && ENABLE_NETWORK_ZERO ) { ?>
@@ -776,7 +773,6 @@ class WPMN_Admin {
 		global $wpdb; ?>
 
 		<div class="wrap">
-			<div class="icon32" id="icon-index"><br></div>
 			<h2><?php esc_html_e( 'My Networks' ); ?></h2>
 
 			<?php			
