@@ -38,7 +38,7 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 			$search_conditions = trim( $search_conditions, '*' );
 		}
 
-		$like_s = esc_sql( like_escape( $search_conditions ) );
+		$like_s = esc_sql( $this->esc_like( $search_conditions ) );
 
 		$total_query = 'SELECT COUNT( id ) FROM ' . $wpdb->site . ' WHERE 1=1 ';
 		
@@ -121,6 +121,29 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 			'total_items' => $total,
 			'per_page'    => $per_page,
 		) );
+	}
+
+	/**
+	 * SQL escape helper function
+	 *
+	 * Provide a fallback for the new SQL escape function
+	 * 
+	 * @since 1.5.2
+	 * 
+	 * @global object $wpdb
+	 * @param string $text
+	 * @return string Escaped input
+	 */
+	function esc_like( $text ) {
+		global $wpdb;
+
+		if ( method_exists( $wpdb, 'esc_like' ) ) {
+			$escaped_text = $wpdb->esc_like( $text );
+		} else {
+			$escaped_text = like_escape( $text );
+		}
+
+		return $escaped_text;
 	}
 
 	function no_items() {
