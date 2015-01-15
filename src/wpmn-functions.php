@@ -309,13 +309,6 @@ function add_network( $domain, $path, $site_name = false, $clone_network = false
 		}
 		unset($options_cache);
 
-		foreach ( $options_to_clone as $option ) {
-			if ( isset( $options_cache[$option] ) ) {
-				add_site_option( $option, $options_cache[$option] );
-			}
-		}
-		unset( $options_cache );
-
 		restore_current_network();
 	}
 
