@@ -29,6 +29,9 @@
 // Exit if accessed directly
 if ( !defined( 'ABSPATH' ) ) exit;
 
+require_once( dirname( __FILE__ ) . '/wpmn-functions.php' );
+require_once( dirname( __FILE__ ) . '/wpmn-actions.php'   );
+
 class WPMN_Loader {
 
 	/**
@@ -98,8 +101,6 @@ class WPMN_Loader {
 	 * @uses is_network_admin() To only include admin code when needed
 	 */
 	private function includes() {
-		require( $this->plugin_dir . 'wpmn-functions.php' );
-		require( $this->plugin_dir . 'wpmn-actions.php'   );
 
 		if ( is_network_admin() || is_admin() ) {
 			require( $this->plugin_dir . 'wpmn-admin.php' );
