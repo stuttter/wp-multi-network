@@ -32,6 +32,10 @@ if ( !defined( 'ABSPATH' ) ) exit;
 require_once( dirname( __FILE__ ) . '/wpmn-functions.php' );
 require_once( dirname( __FILE__ ) . '/wpmn-actions.php'   );
 
+if ( defined('WP_CLI') && WP_CLI ) {
+	require_once( dirname( __FILE__ ) . '/includes/class-wp-cli.php' );
+}
+
 class WPMN_Loader {
 
 	/**
