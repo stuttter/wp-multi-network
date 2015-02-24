@@ -186,7 +186,7 @@ function add_network( $domain, $path, $site_name = false, $clone_network = false
 
 	// Set a default site name if one isn't set
 	if ( false == $site_name )
-		$site_name = __( 'New Network Root' );
+		$site_name = __( 'New Network Root', 'wp-multi-network' );
 
 	// If no options, fallback on defaults
 	if ( empty( $options_to_clone ) )
@@ -196,7 +196,7 @@ function add_network( $domain, $path, $site_name = false, $clone_network = false
 	$network = $wpdb->get_row( $wpdb->prepare( 'SELECT * FROM ' . $wpdb->site . ' WHERE domain = %s AND path = %s LIMIT 1', $domain, $path ) );
 
 	if ( !empty( $network ) )
-		return new WP_Error( 'network_exists', __( 'Network already exists.' ) );
+		return new WP_Error( 'network_exists', __( 'Network already exists.', 'wp-multi-network' ) );
 
 	// Insert new network
 	$wpdb->insert( $wpdb->site, array(
@@ -333,12 +333,12 @@ function update_network( $id, $domain, $path = '' ) {
 
 	// Bail if network does not exist
 	if ( !network_exists( $id ) )
-		return new WP_Error( 'network_not_exist', __( 'Network does not exist.' ) );
+		return new WP_Error( 'network_not_exist', __( 'Network does not exist.', 'wp-multi-network' ) );
 
 	// Bail if site for network is missing
 	$network = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->site} WHERE id = %d", $id ) );
 	if ( empty( $network ) )
-		return new WP_Error( 'network_not_exist', __( 'Network does not exist.' ) );
+		return new WP_Error( 'network_not_exist', __( 'Network does not exist.', 'wp-multi-network' ) );
 
 	// Set the arrays for updating the db
 	$update = array( 'domain' => $domain );
@@ -351,7 +351,7 @@ function update_network( $id, $domain, $path = '' ) {
 
 	// Bail if update failed
 	if ( empty( $update_result ) )
-		return new WP_Error( 'network_not_updated', __( 'Network could not be updated.' ) );
+		return new WP_Error( 'network_not_updated', __( 'Network could not be updated.', 'wp-multi-network' ) );
 
 	$path      = !empty( $path ) ? $path : $network->path;
 	$full_path = untrailingslashit( $domain . $path );
@@ -419,14 +419,14 @@ function delete_network( $id, $delete_blogs = false ) {
 
 	// Bail if network does not exist
 	if ( empty( $network ) )
-		return new WP_Error( 'network_not_exist', __( 'Network does not exist.' ) );
+		return new WP_Error( 'network_not_exist', __( 'Network does not exist.', 'wp-multi-network' ) );
 
 	// ensure there are no blogs attached to this network */
 	$sites = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->blogs} WHERE site_id = %d", $id ) );
 
 	// Bail if network has blogs and blog deletion is off
 	if ( ( false == $delete_blogs ) && !empty( $sites ) )
-		return new WP_Error( 'network_not_empty', __( 'Cannot delete network with sites.' ) );
+		return new WP_Error( 'network_not_empty', __( 'Cannot delete network with sites.', 'wp-multi-network' ) );
 
 	// Are we rescuing orphans or deleting them?
 	if ( ( true == $delete_blogs )  && !empty( $sites ) ) {
@@ -466,7 +466,7 @@ function move_site( $site_id, $new_network_id ) {
 
 	// Bail if site does not exist
 	if ( empty( $site ) )
-		return new WP_Error( 'blog_not_exist', __( 'Site does not exist.' ) );
+		return new WP_Error( 'blog_not_exist', __( 'Site does not exist.', 'wp-multi-network' ) );
 
 	// Return early if site does not need to be moved
 	if ( (int) $new_network_id == $site->site_id )
@@ -485,7 +485,7 @@ function move_site( $site_id, $new_network_id ) {
 	} else {
 		$old_network = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->site} WHERE id = %d", $site->site_id ) );
 		if ( empty( $old_network ) ) {
-			return new WP_Error( 'network_not_exist', __( 'Network does not exist.' ) );
+			return new WP_Error( 'network_not_exist', __( 'Network does not exist.', 'wp-multi-network' ) );
 		}
 	}
 
@@ -499,7 +499,7 @@ function move_site( $site_id, $new_network_id ) {
 	} else {
 		$new_network = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->site} WHERE id = %d", $new_network_id ) );
 		if ( empty( $new_network ) ) {
-			return new WP_Error( 'network_not_exist', __( 'Network does not exist.' ) );
+			return new WP_Error( 'network_not_exist', __( 'Network does not exist.', 'wp-multi-network' ) );
 		}
 	}
 
@@ -524,7 +524,7 @@ function move_site( $site_id, $new_network_id ) {
 
 	// Bail if site could not be moved
 	if ( empty( $update_result ) )
-		return new WP_Error( 'blog_not_moved', __( 'Site could not be moved.' ) );
+		return new WP_Error( 'blog_not_moved', __( 'Site could not be moved.', 'wp-multi-network' ) );
 
 	// Change relevant blog options
 	$options_table = $wpdb->get_blog_prefix( $site->blog_id ) . 'options';
@@ -563,17 +563,17 @@ function network_options_list() {
  */
 function network_options_to_copy() {
 	return apply_filters( 'network_options_to_copy', array(
-		'admin_email'           => __( 'Network admin email'                     ),
-		'admin_user_id'         => __( 'Admin user ID - deprecated'              ),
-		'allowed_themes'        => __( 'OLD List of allowed themes - deprecated' ),
-		'allowedthemes'         => __( 'List of allowed themes'                  ),
-		'banned_email_domains'  => __( 'Banned email domains'                    ),
-		'first_post'            => __( 'Content of first post on a new blog'     ),
-		'limited_email_domains' => __( 'Permitted email domains'                 ),
-		'ms_files_rewriting'    => __( 'Uploaded file handling'                  ),
-		'site_admins'           => __( 'List of network admin usernames'         ),
-		'upload_filetypes'      => __( 'List of allowed file types for uploads'  ),
-		'welcome_email'         => __( 'Content of welcome email'                )
+		'admin_email'           => __( 'Network admin email'                    , 'wp-multi-network' ),
+		'admin_user_id'         => __( 'Admin user ID - deprecated'             , 'wp-multi-network' ),
+		'allowed_themes'        => __( 'OLD List of allowed themes - deprecated', 'wp-multi-network' ),
+		'allowedthemes'         => __( 'List of allowed themes'                 , 'wp-multi-network' ),
+		'banned_email_domains'  => __( 'Banned email domains'                   , 'wp-multi-network' ),
+		'first_post'            => __( 'Content of first post on a new blog'    , 'wp-multi-network' ),
+		'limited_email_domains' => __( 'Permitted email domains'                , 'wp-multi-network' ),
+		'ms_files_rewriting'    => __( 'Uploaded file handling'                 , 'wp-multi-network' ),
+		'site_admins'           => __( 'List of network admin usernames'        , 'wp-multi-network' ),
+		'upload_filetypes'      => __( 'List of allowed file types for uploads' , 'wp-multi-network' ),
+		'welcome_email'         => __( 'Content of welcome email'               , 'wp-multi-network' )
 	) );
 }
 

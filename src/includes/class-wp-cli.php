@@ -45,7 +45,7 @@ class WPMN_Command extends WP_CLI_Command {
 		$options_to_clone = false;
 
 		if ( ! empty( $clone_network ) && !network_exists( $clone_network ) ) {
-			WP_CLI::error( sprintf( __( "Clone network %s doesn't exist." ), $clone_network ) );
+			WP_CLI::error( sprintf( __( "Clone network %s doesn't exist.", 'wp-multi-network' ), $clone_network ) );
 
 			if ( ! empty( $assoc_args['options_to_clone'] ) ) {
 				$options_to_clone = explode( ",", $assoc_args['options_to_clone'] );
@@ -58,7 +58,7 @@ class WPMN_Command extends WP_CLI_Command {
 			WP_CLI::error( $network_id );
 		}
 
-		WP_CLI::success( sprintf( __( 'Created network %d.' ), $network_id ) );
+		WP_CLI::success( sprintf( __( 'Created network %d.', 'wp-multi-network' ), $network_id ) );
 
 	}
 
@@ -88,7 +88,7 @@ class WPMN_Command extends WP_CLI_Command {
 			WP_CLI::error( $network_id );
 		}
 
-		WP_CLI::success( sprintf( __( 'Updated network %d.' ), $id ) );
+		WP_CLI::success( sprintf( __( 'Updated network %d.', 'wp-multi-network' ), $id ) );
 
 	}
 
@@ -115,7 +115,7 @@ class WPMN_Command extends WP_CLI_Command {
 			WP_CLI::error( $network_id );
 		}
 
-		WP_CLI::success( sprintf( __( 'Deleted network %d.' ), $id ) );
+		WP_CLI::success( sprintf( __( 'Deleted network %d.', 'wp-multi-network' ), $id ) );
 
 	}
 
@@ -140,7 +140,7 @@ class WPMN_Command extends WP_CLI_Command {
 			WP_CLI::error( $network_id );
 		}
 
-		WP_CLI::success( sprintf( __( 'Blog %d has moved to network %d.' ), $site_id, $new_network_id ) );
+		WP_CLI::success( sprintf( __( 'Blog %d has moved to network %d.', 'wp-multi-network' ), $site_id, $new_network_id ) );
 
 	}
 
