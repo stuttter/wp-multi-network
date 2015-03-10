@@ -226,8 +226,17 @@ class WPMN_Admin {
 					$this->update_network_page();
 					break;
 
-				case 'delete_multinetworks':
-					$this->delete_multiple_network_page();
+				case 'allnetworks':
+
+					$doaction = isset( $_POST['action'] ) ? $_POST['action'] : '';
+
+					switch ( $doaction ) {
+						case 'delete':
+							$this->delete_multiple_network_page();
+							break;
+
+						// handle other bulk network actions here
+					}
 					break;
 
 				default:
@@ -270,7 +279,7 @@ class WPMN_Admin {
 				<input type="hidden" name="action" value="domains" />
 			</form>
 
-			<form id="form-domain-list" action="<?php echo add_query_arg( array( 'action' => 'domains' ), $this->admin_url() ); ?>" method="post">
+			<form id="form-domain-list" action="<?php echo add_query_arg( array( 'action' => 'allnetworks' ), $this->admin_url() ); ?>" method="post">
 				<?php $wp_list_table->display(); ?>
 			</form>
 		</div>
