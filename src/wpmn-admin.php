@@ -746,7 +746,7 @@ class WPMN_Admin {
 										<li><input type="hidden" name="deleted_networks[]" value="<?php echo esc_attr( $deleted_network->id ); ?>" /><?php echo esc_html( $deleted_network->domain . $deleted_network->path ); ?></li>
 									<?php } ?>
 								</ul>
-								<p><?php esc_html_e( 'There are blogs associated with one or more of these networks.  Deleting them will move these blgos to the holding network.', 'wp-multi-network' ); ?></p>
+								<p><?php esc_html_e( 'There are blogs associated with one or more of these networks.  Deleting them will move these blogs to the holding network.', 'wp-multi-network' ); ?></p>
 								<p><label for="override"><?php esc_html_e( 'If you still want to delete these networks, check the following box', 'wp-multi-network' ); ?>:</label> <input type="checkbox" name="override" id="override" /></p>
 							</div>
 						<?php } else { ?>
