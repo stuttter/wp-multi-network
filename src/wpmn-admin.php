@@ -734,10 +734,9 @@ class WPMN_Admin {
 			$sites = $wpdb->get_results( "SELECT * FROM {$wpdb->blogs} WHERE site_id IN (" . implode( ',', $allnetworks ) . ')' ); ?>
 
 			<div class="wrap">
-				<?php screen_icon( 'ms-admin' ); ?>
-				<h2><?php esc_html_e( 'Networks', 'wp-multi-network' ); ?></h2>
-				<h3><?php esc_html_e( 'Delete Multiple Networks', 'wp-multi-network' ); ?></h3>
-				<form method="POST" action="<?php echo $this->admin_url(); ?>"><div>
+				<form method="POST" action="<?php echo $this->admin_url(); ?>">
+					<h2><?php esc_html_e( 'Networks', 'wp-multi-network' ); ?></h2>
+					<h3><?php esc_html_e( 'Delete Multiple Networks', 'wp-multi-network' ); ?></h3>
 					<?php if ( $sites ) {
 						if ( RESCUE_ORPHANED_BLOGS && ENABLE_NETWORK_ZERO ) { ?>
 							<div id="message" class="error">
