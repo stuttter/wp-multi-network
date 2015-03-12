@@ -228,11 +228,15 @@ class WPMN_Admin {
 
 				case 'allnetworks':
 
-					$doaction = isset( $_POST['action'] ) ? $_POST['action'] : '';
+					$doaction = isset( $_POST['action'] ) && $_POST['action'] != -1 ? $_POST['action'] : $_POST['action2'];
 
 					switch ( $doaction ) {
 						case 'delete':
 							$this->delete_multiple_network_page();
+							break;
+
+						default:
+							$this->all_networks();
 							break;
 
 						// handle other bulk network actions here
