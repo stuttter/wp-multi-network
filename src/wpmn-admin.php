@@ -431,7 +431,7 @@ class WPMN_Admin {
 			}
 
 			$sites = $wpdb->get_results( "SELECT * FROM {$wpdb->blogs}" );
-			if ( empty( $sites ) ) {;
+			if ( empty( $sites ) ) {
 				die( esc_html__( 'Site table inaccessible.', 'wp-multi-network' ) );
 			}
 
@@ -779,10 +779,11 @@ class WPMN_Admin {
 			<?php
 			$num = count( $my_networks );
 			$cols = 1;
-			if ( $num >= 20 )
+			if ( $num >= 20 ) {
 				$cols = 4;
-			elseif ( $num >= 10 )
+			} else if ( $num >= 10 ) {
 				$cols = 2;
+			}
 			$num_rows = ceil( $num / $cols );
 			$split = 0;
 			for ( $i = 1; $i <= $num_rows; $i++ ) {
