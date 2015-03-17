@@ -24,6 +24,8 @@
  * Author URI:  http://jjj.me
  * Tags:        multi, networks, site, network, blog, domain, subdomain, path, multisite, MS
  * Network:     true
+ * Text Domain: wp-multi-network
+ * Domain Path: /languages
  */
 
 // Exit if accessed directly
