@@ -147,14 +147,14 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 	}
 
 	function no_items() {
-		_e( 'No networks found.' );
+		_e( 'No networks found.', 'wp-multi-network' );
 	}
 
 	function get_bulk_actions() {
 		$actions = array();
 
 		if ( current_user_can( 'delete_sites' ) ) {
-			$actions['delete'] = __( 'Delete' );
+			$actions['delete'] = __( 'Delete', 'wp-multi-network' );
 		}
 
 		return $actions;
@@ -167,11 +167,11 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 	function get_columns() {
 		return apply_filters( 'wpmn_networks_columns', array(
 			'cb'       => '<input type="checkbox" />',
-			'sitename' => __( 'Site Name' ),
-			'domain'   => __( 'Domain' ),
-			'path'     => __( 'Path' ),
-			'blogs'    => __( 'Sites' ),
-			'admins'   => __( 'Network Admins' )
+			'sitename' => __( 'Site Name', 'wp-multi-network' ),
+			'domain'   => __( 'Domain', 'wp-multi-network' ),
+			'path'     => __( 'Path', 'wp-multi-network' ),
+			'blogs'    => __( 'Sites', 'wp-multi-network' ),
+			'admins'   => __( 'Network Admins', 'wp-multi-network' )
 		) );
 	}
 
@@ -237,14 +237,14 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 						<?php						
 						
 						$actions = array(
-							'network_admin' => '<span class="edit"><a href="' . $siteurl . 'wp-admin/network/" title="' . __( 'Network Admin' ) . '">' . __( 'Network Admin' ) . '</a></span>',
-							'assign_sites'  => '<span class="edit"><a href="' . add_query_arg(array( 'action'	=> 'assignblogs' ), $myurl ) . '" title="' . __( 'Assign sites to this network' ) . '">' . __( 'Assign Sites' ) . '</a></span>',
-							'edit'          => '<span class="edit"><a class="edit_network_link" href="' . add_query_arg(array( 'action'	=> 'editnetwork' ), $myurl ) . '" title="' . __( 'Edit this network' ) . '">' . __( 'Edit' ) . '</a></span>',
+							'network_admin' => '<span class="edit"><a href="' . $siteurl . 'wp-admin/network/" title="' . esc_attr__( 'Network Admin', 'wp-multi-network' ) . '">' . esc_html__( 'Network Admin', 'wp-multi-network' ) . '</a></span>',
+							'assign_sites'  => '<span class="edit"><a href="' . add_query_arg(array( 'action'	=> 'assignblogs' ), $myurl ) . '" title="' . esc_attr__( 'Assign sites to this network', 'wp-multi-network' ) . '">' . esc_html__( 'Assign Sites', 'wp-multi-network' ) . '</a></span>',
+							'edit'          => '<span class="edit"><a class="edit_network_link" href="' . add_query_arg(array( 'action'	=> 'editnetwork' ), $myurl ) . '" title="' . esc_attr__( 'Edit this network', 'wp-multi-network' ) . '">' . esc_html__( 'Edit', 'wp-multi-network' ) . '</a></span>',
 						);
 						
 						if ( $current_site->id != $network['id'] && $network['id'] != 1 ) {
 							if ( current_user_can( 'manage_network_options', $network['id'] ) ) {
-								$actions['delete']	= '<span class="delete"><a href="' . esc_url( wp_nonce_url( add_query_arg(array( 'action'	=> 'deletenetwork' ), $myurl ) ) ) . '">' . __( 'Delete' ) . '</a></span>';
+								$actions['delete']	= '<span class="delete"><a href="' . esc_url( wp_nonce_url( add_query_arg(array( 'action'	=> 'deletenetwork' ), $myurl ) ) ) . '">' . esc_html__( 'Delete', 'wp-multi-network' ) . '</a></span>';
 							}
 						}
 
@@ -260,7 +260,7 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 					case 'blogs':
 						echo "<td valign='top' class='$column_name column-$column_name'$style>";
 							?>
-							<a href="http://<?php echo $network['domain'] . $network['blog_path']; ?>wp-admin/network/sites.php" title="<?php _e( 'Sites on this network' ); ?>"><?php echo $network['blogs'] ?></a>
+							<a href="http://<?php echo $network['domain'] . $network['blog_path']; ?>wp-admin/network/sites.php" title="<?php esc_attr_e( 'Sites on this network', 'wp-multi-network' ); ?>"><?php echo $network['blogs'] ?></a>
 						</td>
 					<?php
 					break;
