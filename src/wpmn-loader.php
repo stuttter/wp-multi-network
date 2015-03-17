@@ -110,6 +110,7 @@ class WPMN_Loader {
 
 		if ( is_network_admin() || is_admin() ) {
 			require( $this->plugin_dir . 'wpmn-admin.php' );
+			load_plugin_textdomain( 'wp-multi-network', false, dirname( $this->basename ) . '/languages/' );
 			new WPMN_Admin();
 		}
 	}
