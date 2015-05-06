@@ -2,7 +2,7 @@
 Contributors: johnjamesjacoby, ddean, BrianLayman
 Tags: network, networks, blog, blogs, site, sites, domain, domains, mapping, domain mapping, fun
 Requires at least: 3.6
-Tested up to: 4.1
+Tested up to: 4.2
 Stable tag: 1.5.1
 
 == Description ==
