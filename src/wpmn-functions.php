@@ -61,6 +61,47 @@ function get_networks() {
 }
 
 /**
+ * Get main site for a network
+ *
+ * @param int|stdClass $network Network ID or object, null for current network
+ * @return int Main site ("blog" in old terminology) ID
+ */
+function get_main_site_for_network( $network = null ) {
+	global $wpdb;
+
+	if ( empty( $network ) ) {
+		$network = $GLOBALS['current_site'];
+	}
+	elseif ( ! is_object( $network ) ) {
+		$network = wp_get_network( $network );
+	}
+
+	if ( ! $primary_id = wp_cache_get( 'network:' . $network->id . ':main_site', 'site-options' ) ) {
+		$primary_id = $wpdb->get_var( $wpdb->prepare( "SELECT blog_id FROM $wpdb->blogs WHERE domain = %s AND path = %s",
+			$network->domain, $network->path ) );
+		wp_cache_add( 'network:' . $network->id . ':main_site', $primary_id, 'site-options' );
+	}
+
+	return (int) $primary_id;
+}
+
+/**
+ * Get name of the current network
+ *
+ * @return string
+ */
+function get_network_name() {
+	global $current_site;
+
+	$site_name = get_site_option( 'site_name' );
+	if ( ! $site_name ) {
+		$site_name = ucfirst( $current_site->domain );
+	}
+
+	return $site_name;
+}
+
+/**
  * Problem: the various *_site_options() functions operate only on the current network
  * Workaround: change the current network
  *
@@ -68,10 +109,10 @@ function get_networks() {
  * @param integer $new_network ID of network to manipulate
  */
 function switch_to_network( $new_network = 0, $validate = false ) {
-	global $old_network_details, $wpdb, $site_id, $switched_network, $switched_network_stack, $current_site;
+	global $wpdb, $site_id, $switched_network, $switched_network_stack, $current_site;
 
 	if ( empty( $new_network ) )
-		$new_network = $site_id;
+		$new_network = $current_site->id;
 
 	if ( ( true == $validate ) && !network_exists( $new_network ) )
 		return false;
@@ -79,48 +120,34 @@ function switch_to_network( $new_network = 0, $validate = false ) {
 	if ( empty( $switched_network_stack ) )
 		$switched_network_stack = array();
 
-	$switched_network_stack[] = $site_id;
+	array_push( $switched_network_stack, $current_site );
 
 	/**
 	 * If we're switching to the same network id that we're on,
 	 * set the right vars, do the associated actions, but skip
 	 * the extra unnecessary work
 	 */
-	if ( $site_id == $new_network ) {
-		do_action( 'switch_network', $site_id, $site_id );
+	if ( $current_site->id === $new_network ) {
+		do_action( 'switch_network', $current_site->id, $current_site->id );
 		$switched_network = true;
 		return true;
 	}
 
-	// backup
-	$old_network_details['site_id']   = $site_id;
-	$old_network_details['id']        = $current_site->id;
-	$old_network_details['domain']    = $current_site->domain;
-	$old_network_details['path']      = $current_site->path;
-	$old_network_details['site_name'] = $current_site->site_name;
-	$old_network_details['blog_id']   = $current_site->blog_id;
+	// Switch the current site over
+	$current_site = wp_get_network( $new_network );
 
-	$sites = get_networks();
-	foreach ( $sites as $network ) {
-		if ( $network->id == $new_network ) {
-			$current_site = clone $network;
-			break;
-		}
+	// Figure out the current network's main site.
+	if ( ! isset( $current_site->blog_id ) ) {
+		$current_site->blog_id = get_main_site_for_network( $current_site );
 	}
 
-	$wpdb->siteid            = $new_network;
-	$current_site->site_name = get_site_option( 'site_name' );
-	$current_site->blog_id   = $wpdb->get_var( 
-		$wpdb->prepare( 
-			'SELECT blog_id FROM ' . $wpdb->blogs . ' WHERE site_id=%d AND domain=%s AND path=%s',
-			$new_network,
-			$current_site->domain,
-			$current_site->path
-		)
-	);
+	if ( ! isset( $current_site->site_name ) ) {
+		$current_site->site_name = get_network_name();
+	}
 
-	$prev_site_id            = $site_id;
-	$site_id                 = $new_network;
+	$wpdb->siteid = $new_network;
+	$prev_site_id = $site_id;
+	$site_id      = $current_site->id;
 
 	do_action( 'switch_network', $site_id, $prev_site_id );
 	$switched_network = true;
@@ -134,34 +161,31 @@ function switch_to_network( $new_network = 0, $validate = false ) {
  * @since 1.3
  */
 function restore_current_network() {
-	global $old_network_details, $wpdb, $site_id, $switched_network, $switched_network_stack, $current_site;
+	global $wpdb, $site_id, $switched_network, $switched_network_stack, $current_site;
 
 	if ( false == $switched_network )
 		return false;
 
-	if ( !is_array( $switched_network_stack ) )
+	if ( ! is_array( $switched_network_stack ) )
 		return false;
 
-	$site_id = array_pop( $switched_network_stack );
+	$new_network = array_pop( $switched_network_stack );
 
-	if ( $site_id == $current_site->id ) {
-		do_action( 'switch_site', $site_id, $site_id );
-		$switched_network = ( is_array( $switched_network_stack ) && count( $switched_network_stack ) > 0 );
+	if ( $new_network->id == $current_site->id ) {
+		do_action( 'switch_site', $current_site->id, $current_site->id );
+		$switched_network = ( ! empty( $switched_network_stack ) );
 		return true;
 	}
 
-	$prev_site_id            = $wpdb->siteid;
-	$wpdb->siteid            = $site_id;
-	$current_site->id        = $old_network_details['id'];
-	$current_site->domain    = $old_network_details['domain'];
-	$current_site->path      = $old_network_details['path'];
-	$current_site->site_name = $old_network_details['site_name'];
-	$current_site->blog_id   = $old_network_details['blog_id'];
-
-	unset( $old_network_details );
+	$current_site = $new_network;
+	$wpdb->siteid = $site_id;
+	$prev_site_id = $site_id;
+	$site_id      = $new_network->id;
 
 	do_action( 'switch_network', $site_id, $prev_site_id );
-	$switched_network = false;
+	$switched_network = ( ! empty( $switched_network_stack ) );
+
+	return true;
 }
 
 /**
