@@ -134,6 +134,7 @@ function switch_to_network( $new_network = 0, $validate = false ) {
 	}
 
 	// Switch the current site over
+	$prev_site_id = $current_site->id;
 	$current_site = wp_get_network( $new_network );
 
 	// Figure out the current network's main site.
@@ -145,11 +146,10 @@ function switch_to_network( $new_network = 0, $validate = false ) {
 		$current_site->site_name = get_network_name();
 	}
 
-	$wpdb->siteid       = $new_network;
-	$prev_site_id       = $GLOBALS['site_id'];
+	$wpdb->siteid       = $current_site->id;
 	$GLOBALS['site_id'] = $current_site->id;
 
-	do_action( 'switch_network', $GLOBALS['site_id'], $prev_site_id );
+	do_action( 'switch_network', $current_site->id, $prev_site_id );
 	$switched_network = true;
 
 	return true;
@@ -177,12 +177,13 @@ function restore_current_network() {
 		return true;
 	}
 
+	$prev_site_id       = $current_site->id;
+
 	$current_site       = $new_network;
-	$wpdb->siteid       = $GLOBALS['site_id'];
-	$prev_site_id       = $GLOBALS['site_id'];
+	$wpdb->siteid       = $new_network->id;
 	$GLOBALS['site_id'] = $new_network->id;
 
-	do_action( 'switch_network', $GLOBALS['site_id'], $prev_site_id );
+	do_action( 'switch_network', $new_network->id, $prev_site_id );
 	$switched_network = ( ! empty( $switched_network_stack ) );
 
 	return true;
