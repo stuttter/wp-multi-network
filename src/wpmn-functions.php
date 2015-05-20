@@ -109,7 +109,7 @@ function get_network_name() {
  * @param integer $new_network ID of network to manipulate
  */
 function switch_to_network( $new_network = 0, $validate = false ) {
-	global $wpdb, $site_id, $switched_network, $switched_network_stack, $current_site;
+	global $wpdb, $switched_network, $switched_network_stack, $current_site;
 
 	if ( empty( $new_network ) )
 		$new_network = $current_site->id;
@@ -145,11 +145,11 @@ function switch_to_network( $new_network = 0, $validate = false ) {
 		$current_site->site_name = get_network_name();
 	}
 
-	$wpdb->siteid = $new_network;
-	$prev_site_id = $site_id;
-	$site_id      = $current_site->id;
+	$wpdb->siteid       = $new_network;
+	$prev_site_id       = $GLOBALS['site_id'];
+	$GLOBALS['site_id'] = $current_site->id;
 
-	do_action( 'switch_network', $site_id, $prev_site_id );
+	do_action( 'switch_network', $GLOBALS['site_id'], $prev_site_id );
 	$switched_network = true;
 
 	return true;
@@ -161,7 +161,7 @@ function switch_to_network( $new_network = 0, $validate = false ) {
  * @since 1.3
  */
 function restore_current_network() {
-	global $wpdb, $site_id, $switched_network, $switched_network_stack, $current_site;
+	global $wpdb, $switched_network, $switched_network_stack, $current_site;
 
 	if ( false == $switched_network )
 		return false;
@@ -177,12 +177,12 @@ function restore_current_network() {
 		return true;
 	}
 
-	$current_site = $new_network;
-	$wpdb->siteid = $site_id;
-	$prev_site_id = $site_id;
-	$site_id      = $new_network->id;
+	$current_site       = $new_network;
+	$wpdb->siteid       = $GLOBALS['site_id'];
+	$prev_site_id       = $GLOBALS['site_id'];
+	$GLOBALS['site_id'] = $new_network->id;
 
-	do_action( 'switch_network', $site_id, $prev_site_id );
+	do_action( 'switch_network', $GLOBALS['site_id'], $prev_site_id );
 	$switched_network = ( ! empty( $switched_network_stack ) );
 
 	return true;
