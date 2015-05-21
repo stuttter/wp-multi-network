@@ -684,3 +684,87 @@ function wp_get_main_network() {
 
 	return wp_get_network( $primary_network_id );
 }
+
+/**
+ * Get an option from a given network
+ *
+ * Switches to the specified network internally to operate on it.
+ *
+ * @param int $network_id ID of network.
+ * @param string $key Option key
+ * @param mixed $default Default value if option doesn't exist
+ * @return mixed Value set for the option if it exists, `$default` if it doesn't. `WP_Error` instance if invalid network ID is passed.
+ */
+function get_network_option( $network_id, $key, $default = false ) {
+	if ( ! switch_to_network( $network_id, true ) ) {
+		return new WP_Error( 'wpmn.network_missing', __( 'Network does not exist', 'wpmn' ), array( 'status' => 400 ) );
+	}
+
+	$result = get_site_option( $key, $default );
+
+	restore_current_network();
+
+	return $result;
+}
+/**
+ * Add an option from a given network
+ *
+ * Switches to the specified network internally to operate on it.
+ *
+ * @param int $network_id ID of network.
+ * @param string $key Option key.
+ * @param mixed $value Option value, can be anything.
+ * @return boolean|WP_Error True if the option is added, false if not addedd. `WP_Error` instance if invalid network ID is passed.
+ */
+function add_network_option( $network_id, $key, $value ) {
+	if ( ! switch_to_network( $network_id, true ) ) {
+		return new WP_Error( 'wpmn.network_missing', __( 'Network does not exist', 'wpmn' ), array( 'status' => 400 ) );
+	}
+
+	$result = add_site_option( $key, $value );
+
+	restore_current_network();
+
+	return $result;
+}
+/**
+ * Update an option from a given network
+ *
+ * Switches to the specified network internally to operate on it.
+ *
+ * @param int $network_id ID of network.
+ * @param string $key Option key.
+ * @param mixed $value Option value, can be anything.
+ * @return boolean|WP_Error True if the option is updated, false if not updated. `WP_Error` instance if invalid network ID is passed.
+ */
+function update_network_option( $network_id, $key, $value ) {
+	if ( ! switch_to_network( $network_id, true ) ) {
+		return new WP_Error( 'wpmn.network_missing', __( 'Network does not exist', 'wpmn' ), array( 'status' => 400 ) );
+	}
+
+	$result = update_site_option( $key, $value );
+
+	restore_current_network();
+
+	return $result;
+}
+/**
+ * Delete an option from a given network
+ *
+ * Switches to the specified network internally to operate on it.
+ *
+ * @param int $network_id ID of network.
+ * @param string $key Option key.
+ * @return boolean|WP_Error True if the option is deleted, false if not deleted. `WP_Error` instance if invalid network ID is passed.
+ */
+function delete_network_option( $network_id, $key ) {
+	if ( ! switch_to_network( $network_id, true ) ) {
+		return new WP_Error( 'wpmn.network_missing', __( 'Network does not exist', 'wpmn' ), array( 'status' => 400 ) );
+	}
+
+	$result = delete_site_option( $key );
+
+	restore_current_network();
+
+	return $result;
+}
