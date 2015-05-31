@@ -563,6 +563,9 @@ function move_site( $site_id, $new_network_id ) {
 		update_blog_option( $site->blog_id, $option_name, $new_value );
 	}
 
+	// Delete rewrite rules for site at old URL
+	delete_blog_option( $site_id, 'rewrite_rules' );
+
 	do_action( 'move_site', $site_id, $old_network_id, $new_network_id );
 }
 
