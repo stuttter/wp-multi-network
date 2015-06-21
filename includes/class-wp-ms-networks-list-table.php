@@ -227,10 +227,9 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 					case 'sitename':
 						echo "<td class='column-$column_name $column_name'$style>";
 
-						$siteurl = ( is_ssl() ? 'https' : 'http' ) . '://' . $network['domain'] . $network['blog_path'];
-
 						switch_to_network( $network['id'] );
-						$network_admin = network_admin_url();
+						$network_admin_url = network_admin_url();
+						$network_home_url  = network_home_url();
 						restore_current_network();
 
 						$myurl = add_query_arg( array(
@@ -244,8 +243,8 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 
 						$actions = array(
 							'edit'          => '<span class="edit"><a href="' . add_query_arg( array( 'action' => 'editnetwork' ), $myurl ) . '">' . esc_html__( 'Edit',         'wp-multi-network' ) . '</a></span>',
-							'network_admin' => '<span class="edit"><a href="' . esc_url( $network_admin ) . '">' . esc_html__( 'Dashboard', 'wp-multi-network' ) . '</a></span>',
-							'visit'         => '<span class="edit"><a href="' . esc_url( $siteurl       ) . '">' . esc_html__( 'Visit',     'wp-multi-network' ) . '</a></span>',
+							'network_admin' => '<span class="edit"><a href="' . esc_url( $network_admin_url ) . '">' . esc_html__( 'Dashboard', 'wp-multi-network' ) . '</a></span>',
+							'visit'         => '<span class="edit"><a href="' . esc_url( $network_home_url  ) . '">' . esc_html__( 'Visit',     'wp-multi-network' ) . '</a></span>',
 							'assign_sites'  => '<span class="edit"><a href="' . add_query_arg( array( 'action' => 'assignblogs' ), $myurl ) . '">' . esc_html__( 'Assign Sites', 'wp-multi-network' ) . '</a></span>',
 						);
 
