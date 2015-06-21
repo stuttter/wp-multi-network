@@ -20,22 +20,15 @@
  * Plugin URI:  http://wordpress.org/extend/plugins/wp-multi-network/
  * Description: Adds a Network Management UI for super admins in a WordPress Multisite environment
  * Version:     1.5.1
- * Author:      johnjamesjacoby, ddean, BrianLayman
+ * Author:      johnjamesjacoby, ddean, BrianLayman, rmccue
  * Author URI:  http://jjj.me
- * Tags:        multi, networks, site, network, blog, domain, subdomain, path, multisite, MS
+ * Tags:        network, networks, network, blog, site, multisite, domain, subdomain, path
  * Network:     true
  * Text Domain: wp-multi-network
  */
 
 // Exit if accessed directly
-if ( !defined( 'ABSPATH' ) ) exit;
-
-require_once( dirname( __FILE__ ) . '/wpmn-functions.php' );
-require_once( dirname( __FILE__ ) . '/wpmn-actions.php'   );
-
-if ( defined('WP_CLI') && WP_CLI ) {
-	require_once( dirname( __FILE__ ) . '/includes/class-wp-cli.php' );
-}
+defined( 'ABSPATH' ) || exit;
 
 class WPMN_Loader {
 
@@ -107,6 +100,16 @@ class WPMN_Loader {
 	 */
 	private function includes() {
 
+		// Functions & actions
+		require_once( dirname( __FILE__ ) . '/wpmn-functions.php' );
+		require_once( dirname( __FILE__ ) . '/wpmn-actions.php'   );
+
+		// Command line
+		if ( defined( 'WP_CLI' ) && WP_CLI ) {
+			require_once( dirname( __FILE__ ) . '/includes/class-wp-cli.php' );
+		}
+
+		// WordPress Admin
 		if ( is_network_admin() || is_admin() ) {
 			require( $this->plugin_dir . 'wpmn-admin.php' );
 			new WPMN_Admin();
