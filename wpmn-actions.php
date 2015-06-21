@@ -1,12 +1,12 @@
 <?php
 
 // Exit if accessed directly
-if ( !defined( 'ABSPATH' ) ) exit;
+defined( 'ABSPATH' ) || exit;
 
 /**
  * Blank out the value of upload_path when creating a new subsite
  */
-if( ! function_exists( 'wpmn_fix_subsite_upload_path' ) ) {
+if ( ! function_exists( 'wpmn_fix_subsite_upload_path' ) ) {
 	/**
 	 * Keep uploads for a newly-created subsite from being stored under the
 	 * parent site when ms_files_rewriting is off.
