@@ -101,18 +101,18 @@ class WPMN_Loader {
 	private function includes() {
 
 		// Functions & actions
-		require_once( dirname( __FILE__ ) . '/wpmn-functions.php' );
-		require_once( dirname( __FILE__ ) . '/wpmn-actions.php'   );
-
-		// Command line
-		if ( defined( 'WP_CLI' ) && WP_CLI ) {
-			require_once( dirname( __FILE__ ) . '/includes/class-wp-cli.php' );
-		}
+		require_once( $this->plugin_dir . 'wpmn-functions.php' );
+		require_once( $this->plugin_dir . 'wpmn-actions.php'   );
 
 		// WordPress Admin
 		if ( is_network_admin() || is_admin() ) {
 			require( $this->plugin_dir . 'wpmn-admin.php' );
 			new WPMN_Admin();
+		}
+
+		// Command line
+		if ( defined( 'WP_CLI' ) && WP_CLI ) {
+			require_once( $this->plugin_dir . 'includes/class-wp-cli.php' );
 		}
 	}
 }
@@ -125,4 +125,4 @@ class WPMN_Loader {
 function setup_multi_network() {
 	new WPMN_Loader();
 }
-add_action( 'plugins_loaded', 'setup_multi_network' );
+add_action( 'muplugins_loaded', 'setup_multi_network' );
