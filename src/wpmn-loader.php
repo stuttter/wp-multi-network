@@ -57,7 +57,7 @@ class WPMN_Loader {
 	private function constants() {
 
 		// Enable the holding network. Must be true to save orphaned blogs.
-		if ( !defined( 'ENABLE_NETWORK_ZERO' ) ) {
+		if ( ! defined( 'ENABLE_NETWORK_ZERO' ) ) {
 			define( 'ENABLE_NETWORK_ZERO', false );
 		}
 
@@ -67,7 +67,7 @@ class WPMN_Loader {
 		 *
 		 * false = Allow blogs belonging to deleted networks to be deleted.
 		 */
-		if ( !defined( 'RESCUE_ORPHANED_BLOGS' ) ) {
+		if ( ! defined( 'RESCUE_ORPHANED_BLOGS' ) ) {
 			define( 'RESCUE_ORPHANED_BLOGS', false );
 		}
 
