@@ -788,7 +788,7 @@ class WPMN_Admin {
 			$my_networks = user_has_networks();
 			foreach( $my_networks as $key => $network_id ) {
 				$my_networks[$key] = $wpdb->get_row( $wpdb->prepare(
-					'SELECT s.*, sm.meta_value as site_name, b.blog_id FROM ' . $wpdb->site . ' s LEFT JOIN ' . $wpdb->sitemeta . ' as sm ON sm.site_id = s.id AND sm.meta_key = %s LEFT JOIN ' . $wpdb->blogs . ' b ON s.id = b.site_id WHERE s.id = %d',
+					'SELECT s.*, sm.meta_value as site_name, b.blog_id FROM ' . $wpdb->site . ' s LEFT JOIN ' . $wpdb->sitemeta . ' as sm ON sm.site_id = s.id AND sm.meta_key = %s LEFT JOIN ' . $wpdb->blogs . ' b ON s.id = b.site_id AND b.path = s.path WHERE s.id = %d',
 					'site_name',
 					$network_id
 				) );
