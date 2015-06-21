@@ -821,7 +821,6 @@ class WPMN_Admin {
 		global $wpdb; ?>
 
 		<div class="wrap">
-			<div class="icon32" id="icon-index"><br></div>
 			<h2><?php esc_html_e( 'My Networks', 'wp-multi-network' ); ?></h2>
 
 			<?php
@@ -859,12 +858,15 @@ class WPMN_Admin {
 				$i = 0;
 				foreach ( $row as $network ) {
 					$s = $i == 3 ? '' : 'border-right: 1px solid #ccc;';
-					?>
+					switch_to_network( $network->id ); ?>
+
 					<td valign='top' style= <?php echo $s ?>>
 						<h3><?php echo esc_html( $network->site_name ); ?></h3>
-						<p><?php echo apply_filters( 'mynetworks_network_actions', "<a href='" . esc_url( get_home_url( $network->blog_id ) ). "'>" . esc_html__( 'Visit', 'wp-multi-network' ) . "</a> | <a href='" . esc_url( get_admin_url( $network->blog_id, '/network/' ) ) . "'>" . esc_html__( 'Dashboard', 'wp-multi-network' ) . "</a>", $network ); ?></p>
+						<p><?php echo apply_filters( 'mynetworks_network_actions', "<a href='" . network_home_url(). "'>" . esc_html__( 'Visit', 'wp-multi-network' ) . "</a> | <a href='" . network_admin_url() . "'>" . esc_html__( 'Dashboard', 'wp-multi-network' ) . "</a>", $network ); ?></p>
 					</td>
+
 					<?php
+					restore_current_network();
 					$i++;
 				}
 				echo "</tr>";
