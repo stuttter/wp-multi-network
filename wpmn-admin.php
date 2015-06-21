@@ -83,6 +83,22 @@ class WPMN_Admin {
 
 		</script>
 
+		<style type="text/css">
+			th.column-sitename {
+				width: 35%;
+			}
+			th.column-path {
+				width: 15%;
+			}
+			th.column-blogs {
+				width: 10%;
+			}
+			td.column-domain {
+				white-space: nowrap;
+				overflow: hidden;
+			}
+		</style>
+
 	<?php
 	}
 
@@ -560,7 +576,7 @@ class WPMN_Admin {
 	}
 
 	/**
-	 * 
+	 *
 	 */
 	public function add_network_handler() {
 		global $current_site;
@@ -576,9 +592,9 @@ class WPMN_Admin {
 
 			$result = add_network(
 				$_POST['domain'],
-				$_POST['path'], 
-				( isset( $_POST['newSite']      ) ? $_POST['newSite']      : esc_attr__( 'New Network Created', 'wp-multi-network' ) ), 
-				( isset( $_POST['cloneNetwork'] ) ? $_POST['cloneNetwork'] : $current_site->id ), 
+				$_POST['path'],
+				( isset( $_POST['newSite']      ) ? $_POST['newSite']      : esc_attr__( 'New Network Created', 'wp-multi-network' ) ),
+				( isset( $_POST['cloneNetwork'] ) ? $_POST['cloneNetwork'] : $current_site->id ),
 				$options_to_clone
 			);
 
@@ -695,7 +711,7 @@ class WPMN_Admin {
 					}
 					?>
 					<p><?php esc_html_e( 'Are you sure you want to delete this network?', 'wp-multi-network' ); ?></p>
-					<?php submit_button( esc_html__( 'Delete Network', 'wp-multi-network' ), 'primary', 'delete', false ); ?> 
+					<?php submit_button( esc_html__( 'Delete Network', 'wp-multi-network' ), 'primary', 'delete', false ); ?>
 					<a class="button" href="<?php echo $this->admin_url(); ?>"><?php esc_html_e( 'Cancel', 'wp-multi-network' ); ?></a>
 				</div>
 			</form>
@@ -808,7 +824,7 @@ class WPMN_Admin {
 			<div class="icon32" id="icon-index"><br></div>
 			<h2><?php esc_html_e( 'My Networks', 'wp-multi-network' ); ?></h2>
 
-			<?php			
+			<?php
 			$my_networks = user_has_networks();
 			foreach( $my_networks as $key => $network_id ) {
 				$my_networks[$key] = $wpdb->get_row( $wpdb->prepare(
@@ -835,7 +851,7 @@ class WPMN_Admin {
 				$rows[] = array_slice( $my_networks, $split, $cols );
 				$split = $split + $cols;
 			}
-		
+
 			$c = '';
 			foreach ( $rows as $row ) {
 				$c = $c == 'alternate' ? '' : 'alternate';
