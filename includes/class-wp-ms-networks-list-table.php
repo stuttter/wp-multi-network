@@ -239,10 +239,10 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 						<?php						
 						
 						$actions = array(
-							'network_admin' => '<span class="edit"><a href="' . esc_url( $siteurl ) . 'wp-admin/network/" title="' . esc_attr__( 'Network Admin', 'wp-multi-network' ) . '">' . esc_html__( 'Network Admin', 'wp-multi-network' ) . '</a></span>',
-							'assign_sites'  => '<span class="edit"><a href="' . add_query_arg(array( 'action'	=> 'assignblogs' ), $myurl ) . '" title="' . esc_attr__( 'Assign sites to this network', 'wp-multi-network' ) . '">' . esc_html__( 'Assign Sites', 'wp-multi-network' ) . '</a></span>',
-							'edit'          => '<span class="edit"><a class="edit_network_link" href="' . add_query_arg(array( 'action'	=> 'editnetwork' ), $myurl ) . '" title="' . esc_attr__( 'Edit this network', 'wp-multi-network' ) . '">' . esc_html__( 'Edit', 'wp-multi-network' ) . '</a></span>',
+							'edit'          => '<span class="edit"><a class="edit_network_link" href="' . add_query_arg(array( 'action'	=> 'editnetwork' ), $myurl ) . '">' . esc_html__( 'Edit', 'wp-multi-network' ) . '</a></span>',
+							'network_admin' => '<span class="edit"><a href="' . esc_url( $siteurl ) . 'wp-admin/network/">' . esc_html__( 'Dashboard', 'wp-multi-network' ) . '</a></span>',
 							'visit'         => '<span class="edit"><a href="' . esc_url( $siteurl ) . '">' . esc_html__( 'Visit', 'wp-multi-network' ) . '</a></span>',
+							'assign_sites'  => '<span class="edit"><a href="' . add_query_arg(array( 'action'	=> 'assignblogs' ), $myurl ) . '">' . esc_html__( 'Assign Sites', 'wp-multi-network' ) . '</a></span>',
 						);
 						
 						if ( $current_site->id != $network['id'] && $network['id'] != 1 ) {
