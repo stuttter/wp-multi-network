@@ -226,8 +226,21 @@ class WPMN_Admin {
 					$this->update_network_page();
 					break;
 
-				case 'delete_multinetworks':
-					$this->delete_multiple_network_page();
+				case 'allnetworks':
+
+					$doaction = isset( $_POST['action'] ) && $_POST['action'] != -1 ? $_POST['action'] : $_POST['action2'];
+
+					switch ( $doaction ) {
+						case 'delete':
+							$this->delete_multiple_network_page();
+							break;
+
+						default:
+							$this->all_networks();
+							break;
+
+						// handle other bulk network actions here
+					}
 					break;
 
 				default:
@@ -270,7 +283,7 @@ class WPMN_Admin {
 				<input type="hidden" name="action" value="domains" />
 			</form>
 
-			<form id="form-domain-list" action="<?php echo add_query_arg( array( 'action' => 'domains' ), $this->admin_url() ); ?>" method="post">
+			<form id="form-domain-list" action="<?php echo add_query_arg( array( 'action' => 'allnetworks' ), $this->admin_url() ); ?>" method="post">
 				<?php $wp_list_table->display(); ?>
 			</form>
 		</div>
@@ -725,10 +738,9 @@ class WPMN_Admin {
 			$sites = $wpdb->get_results( "SELECT * FROM {$wpdb->blogs} WHERE site_id IN (" . implode( ',', $allnetworks ) . ')' ); ?>
 
 			<div class="wrap">
-				<?php screen_icon( 'ms-admin' ); ?>
-				<h2><?php esc_html_e( 'Networks', 'wp-multi-network' ); ?></h2>
-				<h3><?php esc_html_e( 'Delete Multiple Networks', 'wp-multi-network' ); ?></h3>
-				<form method="POST" action="<?php echo $this->admin_url(); ?>"><div>
+				<form method="POST" action="<?php echo $this->admin_url(); ?>">
+					<h2><?php esc_html_e( 'Networks', 'wp-multi-network' ); ?></h2>
+					<h3><?php esc_html_e( 'Delete Multiple Networks', 'wp-multi-network' ); ?></h3>
 					<?php if ( $sites ) {
 						if ( RESCUE_ORPHANED_BLOGS && ENABLE_NETWORK_ZERO ) { ?>
 							<div id="message" class="error">
@@ -738,7 +750,7 @@ class WPMN_Admin {
 										<li><input type="hidden" name="deleted_networks[]" value="<?php echo esc_attr( $deleted_network->id ); ?>" /><?php echo esc_html( $deleted_network->domain . $deleted_network->path ); ?></li>
 									<?php } ?>
 								</ul>
-								<p><?php esc_html_e( 'There are blogs associated with one or more of these networks.  Deleting them will move these blgos to the holding network.', 'wp-multi-network' ); ?></p>
+								<p><?php esc_html_e( 'There are blogs associated with one or more of these networks.  Deleting them will move these blogs to the holding network.', 'wp-multi-network' ); ?></p>
 								<p><label for="override"><?php esc_html_e( 'If you still want to delete these networks, check the following box', 'wp-multi-network' ); ?>:</label> <input type="checkbox" name="override" id="override" /></p>
 							</div>
 						<?php } else { ?>
