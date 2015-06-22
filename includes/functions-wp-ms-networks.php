@@ -696,18 +696,29 @@ function wp_get_main_network() {
 		return null;
 	}
 
-	if ( defined( 'PRIMARY_NETWORK_ID' ) ) {
-		return wp_get_network( (int) PRIMARY_NETWORK_ID );
+	// Added in 4.3.0
+	if ( function_exists( 'get_main_network_id' ) ) {
+		$primary_network_id = get_main_network_id();
+
+	// 4.2.0
+	} else {
+
+		// Override
+		if ( defined( 'PRIMARY_NETWORK_ID' ) ) {
+			return wp_get_network( (int) PRIMARY_NETWORK_ID );
+		}
+
+		// Check cache
+		$primary_network_id = (int) wp_cache_get( 'primary_network_id', 'site-options' );
+
+		if ( ! empty( $primary_network_id ) ) {
+			return wp_get_network( $primary_network_id );
+		}
+
+		$primary_network_id = (int) $wpdb->get_var( "SELECT id FROM {$wpdb->site} ORDER BY id LIMIT 1" );
+
+		wp_cache_add( 'primary_network_id', $primary_network_id, 'site-options' );
 	}
-
-	$primary_network_id = (int) wp_cache_get( 'primary_network_id', 'site-options' );
-
-	if ( $primary_network_id ) {
-		return wp_get_network( $primary_network_id );
-	}
-
-	$primary_network_id = (int) $wpdb->get_var( "SELECT id FROM {$wpdb->site} ORDER BY id LIMIT 1" );
-	wp_cache_add( 'primary_network_id', $primary_network_id, 'site-options' );
 
 	return wp_get_network( $primary_network_id );
 }

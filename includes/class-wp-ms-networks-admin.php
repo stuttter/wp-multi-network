@@ -23,7 +23,7 @@ class WPMN_Admin {
 		add_action( 'network_admin_menu', array( $this, 'network_admin_menu_separator' ) );
 
 		add_filter( 'manage_sites_action_links', array( $this, 'add_move_blog_link' ), 10, 3 );
-		if( ! has_action( 'manage_sites_action_links' ) ) {
+		if ( ! has_action( 'manage_sites_action_links' ) ) {
 			add_action( 'wpmublogsaction',    array( $this, 'assign_blogs_link'  ) );
 		}
 	}
@@ -142,11 +142,11 @@ class WPMN_Admin {
 	 * Add Networks menu and entries to the Network-level dashboard
 	 */
 	public function network_admin_menu() {
-		$page = add_menu_page( esc_html__( 'Networks', 'wp-multi-network' ), esc_html__( 'Networks', 'wp-multi-network' ), 'manage_options', 'networks', array( &$this, 'networks_page' ), 'dashicons-networking', -1 );
+		$page = add_menu_page( esc_html__( 'Networks', 'wp-multi-network' ), esc_html__( 'Networks', 'wp-multi-network' ), 'manage_options', 'networks', array( $this, 'networks_page' ), 'dashicons-networking', -1 );
 		add_submenu_page( 'networks', esc_html__( 'All Networks', 'wp-multi-network' ), esc_html__( 'All Networks', 'wp-multi-network' ), 'manage_options', 'networks',        array( $this, 'networks_page' ) );
 		add_submenu_page( 'networks', esc_html__( 'Add New', 'wp-multi-network'      ), esc_html__( 'Add New', 'wp-multi-network'      ), 'manage_options', 'add-new-network', array( $this, 'add_network_page' ) );
 
-		require( dirname( __FILE__ ) . '/includes/class-wp-ms-networks-list-table.php' );
+		require dirname( __FILE__ ) . '/class-wp-ms-networks-list-table.php' ;
 
 		add_filter( "manage_{$page}-network_columns", array( new WP_MS_Networks_List_Table(), 'get_columns' ), 0 );
 		add_action( "load-{$page}",                   array( $this, 'enqueue_js' ) );

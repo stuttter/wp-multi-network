@@ -19,7 +19,7 @@
  * Plugin Name: WP Multi-Network
  * Plugin URI:  http://wordpress.org/extend/plugins/wp-multi-network/
  * Description: Adds a Network Management UI for super admins in a WordPress Multisite environment
- * Version:     1.5.1
+ * Version:     1.6.0
  * Author:      johnjamesjacoby, ddean, BrianLayman, rmccue
  * Author URI:  http://jjj.me
  * Tags:        network, networks, network, blog, site, multisite, domain, subdomain, path
@@ -101,18 +101,22 @@ class WPMN_Loader {
 	private function includes() {
 
 		// Functions & actions
-		require_once( $this->plugin_dir . 'wpmn-functions.php' );
-		require_once( $this->plugin_dir . 'wpmn-actions.php'   );
+		require $this->plugin_dir . 'includes/functions-wp-ms-networks.php';
 
 		// WordPress Admin
 		if ( is_network_admin() || is_admin() ) {
-			require( $this->plugin_dir . 'wpmn-admin.php' );
+			require( $this->plugin_dir . 'includes/class-wp-ms-networks-admin.php' );
 			new WPMN_Admin();
+		}
+
+		// Deprecated functions & classes
+		if ( defined( 'WPMN_DEPRECATED' ) && WPMN_DEPRECATED ) {
+			require $this->plugin_dir . 'includes/deprecated.php';
 		}
 
 		// Command line
 		if ( defined( 'WP_CLI' ) && WP_CLI ) {
-			require_once( $this->plugin_dir . 'includes/class-wp-cli.php' );
+			require $this->plugin_dir . 'includes/class-wp-ms-networks-cli.php';
 		}
 	}
 }
