@@ -2,7 +2,6 @@
 
 /**
  * Network Management Command
- *
  */
 class WPMN_Command extends WP_CLI_Command {
 
@@ -59,7 +58,6 @@ class WPMN_Command extends WP_CLI_Command {
 		}
 
 		WP_CLI::success( sprintf( __( 'Created network %d.', 'wp-multi-network' ), $network_id ) );
-
 	}
 
 	/**
@@ -116,7 +114,6 @@ class WPMN_Command extends WP_CLI_Command {
 		}
 
 		WP_CLI::success( sprintf( __( 'Deleted network %d.', 'wp-multi-network' ), $id ) );
-
 	}
 
 	/**
@@ -166,11 +163,9 @@ class WPMN_Command extends WP_CLI_Command {
 	 * @subcommand list
 	 */
 	public function list_( $args, $assoc_args ) {
-
 		$items     = get_networks();
 		$formatter = $this->get_formatter( $assoc_args );
 		$formatter->display_items( $items );
-
 	}
 
 	/**

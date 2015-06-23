@@ -1,9 +1,9 @@
 === WP Multi Network ===
 Contributors: johnjamesjacoby, ddean, BrianLayman
 Tags: network, networks, blog, blogs, site, sites, domain, domains, mapping, domain mapping, fun
-Requires at least: 3.6
-Tested up to: 4.1
-Stable tag: 1.5.1
+Requires at least: 4.2
+Tested up to: 4.2
+Stable tag: 1.6.0
 
 == Description ==
 
@@ -17,7 +17,7 @@ Download and install using the built in WordPress plugin installer.
 
 Activate in the "Plugins" network admin panel using the "Network Activate" link.
 
-Comment out the `DOMAIN_CURRENT_SITE` line in your `wp-config.php` file. 
+Comment out the `DOMAIN_CURRENT_SITE` line in your `wp-config.php` file.
 If you don't have this line, you probably need to <a href="http://codex.wordpress.org/Create_A_Network">enable multisite</a>.
 
 Start planning and creating your networks.
@@ -38,7 +38,7 @@ The WordPress support forums: http://wordpress.org/tags/wp-multi-network/
 
 = What's up with uploads? =
 
-As of version 3.5, new WordPress multisite installs use a more efficient way to serve uploaded files. 
+As of version 3.5, new WordPress multisite installs use a more efficient way to serve uploaded files.
 Unfortunately, this doesn't play well with multiple networks (yet). Installs that upgraded from 3.4 or below are not affected.
 
 WP Multi-Network needs to be running to help set the upload path for new sites, so all networks created with this plugin will have it network activated.
@@ -54,9 +54,22 @@ Not much to talk about really. Check the code for details!
 
 == Changelog ==
 
+= 1.6.0 =
+* Move inclusion to muplugins_loaded
+* Introduce network switching API
+* Introduce network options API
+* Update action links to better match sites list
+* Better support for domain mapping
+* Refactor file names & locations
+* Deprecate wpmn_fix_subsite_upload_path()
+* Include basic WPCLI support
+* Escaped gettext output
+* Fix bulk network deletion
+* Scrutinized code formatting
+
 = 1.5.1 =
-* Fixes debug notices when creating networks
-* Fixes incorrect variable usage causing weird output
+* Fix debug notices when creating networks
+* Fix incorrect variable usage causing weird output
 * Adds default path when creating new networks
 
 = 1.5 =
@@ -85,9 +98,9 @@ Not much to talk about really. Check the code for details!
 
 = 1.2 =
 * Implemented 3.1 Network Admin Menu, backwards compatiblity maintained.
-* Fixed multiple minor issues;
-* Added Site Admin and Network Admin to Network lists
-* Added various security and bullet proofing
+* Fix multiple minor issues;
+* Add Site Admin and Network Admin to Network lists
+* Add various security and bullet proofing
 
 = 1.1 =
 * Better WordPress 3.0 compatibility
