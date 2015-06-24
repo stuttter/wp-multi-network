@@ -256,9 +256,22 @@ class WPMN_Admin {
 				$this->update_network_page();
 				break;
 
-			case 'delete_multinetworks':
-				$this->delete_multiple_network_page();
-				break;
+			case 'allnetworks':
+
+					$doaction = isset( $_POST['action'] ) && $_POST['action'] != -1 ? $_POST['action'] : $_POST['action2'];
+
+					switch ( $doaction ) {
+						case 'delete':
+							$this->delete_multiple_network_page();
+							break;
+
+						default:
+							$this->all_networks();
+							break;
+
+						// handle other bulk network actions here
+					}
+					break;
 
 			default:
 				$this->all_networks();
@@ -293,7 +306,7 @@ class WPMN_Admin {
 		$wp_list_table->prepare_items(); ?>
 
 		<div class="wrap">
-			<h2><?php esc_html_e( 'Networks' ); ?>
+
 			<?php if ( current_user_can( 'manage_network_options' ) ) : ?>
 
 				<a href="<?php echo esc_url( add_query_arg( array( 'page' => 'add-new-network' ), $this->admin_url() ) ); ?>" class="add-new-h2"><?php echo esc_html_x( 'Add New', 'network', 'wp-multi-network' ); ?></a>
@@ -706,7 +719,6 @@ class WPMN_Admin {
 			}
 
 			$sites = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->blogs} WHERE site_id = %d", (int) $_GET['id'] ) ); ?>
-
 			<div class="wrap">
 				<h2><?php esc_html_e( 'Networks', 'wp-multi-network' ); ?></h2>
 				<h3><?php esc_html_e( 'Delete Network', 'wp-multi-network' ); ?>: <?php echo esc_html( $network->domain . $network->path ); ?></h3>
@@ -806,7 +818,7 @@ class WPMN_Admin {
 										<li><input type="hidden" name="deleted_networks[]" value="<?php echo esc_attr( $deleted_network->id ); ?>" /><?php echo esc_html( $deleted_network->domain . $deleted_network->path ); ?></li>
 									<?php endforeach; ?>
 								</ul>
-								<p><?php esc_html_e( 'There are blogs associated with one or more of these networks.  Deleting them will move these blogs to the holding network.', 'wp-multi-network' ); ?></p>
+								<p><?php esc_html_e( 'There are blogs associated with one or more of these networks. Deleting them will move these blogs to the holding network.', 'wp-multi-network' ); ?></p>
 								<p><label for="override"><?php esc_html_e( 'If you still want to delete these networks, check the following box', 'wp-multi-network' ); ?>:</label> <input type="checkbox" name="override" id="override" /></p>
 							</div>
 
