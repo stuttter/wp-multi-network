@@ -185,6 +185,10 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 		);
 	}
 
+	protected function get_table_classes() {
+        return array( 'widefat', 'fixed', 'striped', $this->_args['plural'], 'plugins' );
+    }
+
 	public function display_rows() {
 		global $current_site;
 
@@ -192,7 +196,11 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 
 		foreach ( $this->items as $network ) {
 
-			$class = ( 'alternate' == $class ) ? '' : 'alternate';
+			if ( $network['id'] == $current_site->id ) {
+				$class = 'active';
+			} else {
+				$class = ( 'alternate' == $class ) ? '' : 'alternate';
+			}
 
 			echo "<tr class='$class'>";
 
