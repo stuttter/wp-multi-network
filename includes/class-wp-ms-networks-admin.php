@@ -92,7 +92,7 @@ class WPMN_Admin {
 				});
 			});
 
-			public function move( from, to ) {
+			function move( from, to ) {
 				jQuery( '#' + from ).children( 'option:selected' ).each( function() {
 					jQuery( '#' + to ).append( jQuery( this ).clone() );
 					jQuery( this ).remove();
