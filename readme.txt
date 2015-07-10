@@ -18,7 +18,7 @@ Download and install using the built in WordPress plugin installer.
 Activate in the "Plugins" network admin panel using the "Network Activate" link.
 
 Comment out the `DOMAIN_CURRENT_SITE` line in your `wp-config.php` file.
-If you don't have this line, you probably need to <a href="http://codex.wordpress.org/Create_A_Network">enable multisite</a>.
+If you don't have this line, you probably need to <a href="https://codex.wordpress.org/Create_A_Network">enable multisite</a>.
 
 Start planning and creating your networks.
 
@@ -34,7 +34,7 @@ Yes, but it won't do anything. You need to have the multi-site functionality tur
 
 = Where can I get support? =
 
-The WordPress support forums: http://wordpress.org/tags/wp-multi-network/
+The WordPress support forums: https://wordpress.org/tags/wp-multi-network/
 
 = What's up with uploads? =
 

@@ -63,11 +63,11 @@ Yes you can. That is what this plugin does best.
 
 ### Will this work on standard WordPress?
 
-You need to have multi-site functionality enabled before using this plugin. http://codex.wordpress.org/Create_A_Network
+You need to have multi-site functionality enabled before using this plugin. https://codex.wordpress.org/Create_A_Network
 
 ### Where can I get support?
 
-The WordPress support forums: http://wordpress.org/tags/wp-multi-network/
+The WordPress support forums: https://wordpress.org/tags/wp-multi-network/
 
 ### What's up with uploads?
 

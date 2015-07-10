@@ -251,7 +251,7 @@ function add_network( $domain, $path, $site_name = false, $clone_network = false
 		}
 
 		// there's an ongoing error with wpmu_create_blog that throws a warning if meta is not defined:
-		// http://core.trac.wordpress.org/ticket/20793
+		// https://core.trac.wordpress.org/ticket/20793
 		// temporary fix -- set from current blog's value
 		// Looks like a fix is in for 3.7
 
