@@ -186,20 +186,17 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 	}
 
 	protected function get_table_classes() {
-        return array( 'widefat', 'fixed', 'striped', $this->_args['plural'], 'plugins' );
-    }
+		return array( 'widefat', 'fixed', 'striped', $this->_args['plural'], 'plugins' );
+	}
 
 	public function display_rows() {
-		global $current_site;
-
-		$class = '';
 
 		foreach ( $this->items as $network ) {
 
-			if ( $network['id'] == $current_site->id ) {
+			if ( get_current_site()->id == $network['id'] ) {
 				$class = 'active';
 			} else {
-				$class = ( 'alternate' == $class ) ? '' : 'alternate';
+				$class = ( 'alternate' === $class ) ? '' : 'alternate';
 			}
 
 			echo "<tr class='$class'>";
@@ -256,7 +253,7 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 							'assign_sites'  => '<span class="edit"><a href="' . add_query_arg( array( 'action' => 'assignblogs' ), $myurl ) . '">' . esc_html__( 'Assign Sites', 'wp-multi-network' ) . '</a></span>',
 						);
 
-						if ( $current_site->id != $network['id'] && $network['id'] != 1 ) {
+						if ( get_current_site()->id != $network['id'] && $network['id'] != 1 ) {
 							if ( current_user_can( 'manage_network_options', $network['id'] ) ) {
 								$actions['delete']	= '<span class="delete"><a href="' . esc_url( wp_nonce_url( add_query_arg(array( 'action'	=> 'deletenetwork' ), $myurl ) ) ) . '">' . esc_html__( 'Delete', 'wp-multi-network' ) . '</a></span>';
 							}
@@ -307,7 +304,9 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 				}
 			}
 			?>
+
 			</tr>
+
 			<?php
 		}
 	}
