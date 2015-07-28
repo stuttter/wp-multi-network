@@ -27,11 +27,7 @@ class WPMN_Admin {
 		add_action( 'network_admin_menu', array( $this, 'network_admin_menu'           ) );
 		add_action( 'network_admin_menu', array( $this, 'network_admin_menu_separator' ) );
 
-		// Action Links
-		if ( ! has_action( 'manage_sites_action_links' ) ) {
-			add_action( 'wpmublogsaction', array( $this, 'assign_blogs_link' ) );
-		}
-
+		// Row links
 		add_filter( 'manage_sites_action_links', array( $this, 'add_move_blog_link' ), 10, 3 );
 	}
 
@@ -132,19 +128,6 @@ class WPMN_Admin {
 		$actions['move'] = '<a href="' . esc_url( $url ) . '" class="edit">' . esc_html__( 'Move', 'wp-multi-network' ) . '</a>';
 
 		return $actions;
-	}
-
-	/**
-	 * Legacy - add a Move link on Sites page on WP < 3.1
-	 */
-	public function assign_blogs_link( $cur_blog_id ) {
-		$url = add_query_arg( array(
-			'action'  => 'move',
-			'blog_id' => (int) $cur_blog_id ),
-			$this->admin_url()
-		);
-
-		echo '<a href="' . esc_url( $url ) . '" class="edit">' . esc_html__( 'Move', 'wp-multi-network' ) . '</a>';
 	}
 
 	/**
