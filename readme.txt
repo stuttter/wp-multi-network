@@ -3,7 +3,7 @@ Contributors: johnjamesjacoby, ddean, BrianLayman
 Tags: network, networks, blog, blogs, site, sites, domain, domains, mapping, domain mapping, fun
 Requires at least: 4.2
 Tested up to: 4.2
-Stable tag: 1.6.0
+Stable tag: 1.6.1
 
 == Description ==
 
@@ -53,6 +53,10 @@ Thanks to RavanH for the suggestion!
 Not much to talk about really. Check the code for details!
 
 == Changelog ==
+
+= 1.6.1 =
+* WordPress 4.3 UI compatibility updates
+* Remove site "Actions" column integration
 
 = 1.6.0 =
 * Move inclusion to muplugins_loaded
