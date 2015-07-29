@@ -581,7 +581,12 @@ function move_site( $site_id, $new_network_id ) {
 
 	// Update all site options
 	foreach ( network_options_list() as $option_name ) {
-		$option    = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$options_table} WHERE option_name = %s", $option_name ) );
+		$option = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$options_table} WHERE option_name = %s", $option_name ) );
+		if ( empty( $option ) ) {
+			// No value, so no need to update it
+			continue;
+		}
+
 		$new_value = str_replace( $old_domain, $new_domain, $option->option_value );
 		update_blog_option( $site->blog_id, $option_name, $new_value );
 	}
