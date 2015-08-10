@@ -25,6 +25,7 @@
  * Tags:        network, networks, network, blog, site, multisite, domain, subdomain, path
  * Network:     true
  * Text Domain: wp-multi-network
+ * Domain Path: /languages
  */
 
 // Exit if accessed directly
@@ -106,6 +107,7 @@ class WPMN_Loader {
 		// WordPress Admin
 		if ( is_network_admin() || is_admin() ) {
 			require( $this->plugin_dir . 'includes/class-wp-ms-networks-admin.php' );
+			load_plugin_textdomain( 'wp-multi-network', false, dirname( $this->basename ) . '/languages/' );
 			new WPMN_Admin();
 		}
 
