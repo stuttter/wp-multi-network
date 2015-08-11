@@ -443,7 +443,7 @@ class WPMN_Admin {
 					<?php endif; ?>
 					<div>
 						<input type="hidden" name="from" value="<?php echo esc_attr( $site->site_id ); ?>" />
-						<input class="button" type="submit" name="move" value="<?php esc_attr_e( 'Move Site', 'wp-multi-network' ); ?>" />
+						<input class="button button-primary" type="submit" name="move" value="<?php esc_attr_e( 'Move Site', 'wp-multi-network' ); ?>" />
 						<a class="button" href="./sites.php"><?php esc_html_e( 'Cancel', 'wp-multi-network' ); ?></a>
 					</div>
 				</form>
