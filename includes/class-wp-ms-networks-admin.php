@@ -207,7 +207,7 @@ class WPMN_Admin {
 	 */
 	public function networks_page() {
 
-		if ( ! is_super_admin() ) {;
+		if ( ! is_super_admin() ) {
 			wp_die( esc_html__( 'You do not have permission to access this page.', 'wp-multi-network' ) );
 		}
 
@@ -258,20 +258,20 @@ class WPMN_Admin {
 
 			case 'allnetworks':
 
-					$doaction = isset( $_POST['action'] ) && $_POST['action'] != -1 ? $_POST['action'] : $_POST['action2'];
+				$doaction = isset( $_POST['action'] ) && $_POST['action'] != -1 ? $_POST['action'] : $_POST['action2'];
 
-					switch ( $doaction ) {
-						case 'delete':
-							$this->delete_multiple_network_page();
-							break;
+				switch ( $doaction ) {
+					case 'delete':
+						$this->delete_multiple_network_page();
+						break;
 
-						default:
-							$this->all_networks();
-							break;
+					default:
+						$this->all_networks();
+						break;
 
-						// handle other bulk network actions here
-					}
-					break;
+					// handle other bulk network actions here
+				}
+				break;
 
 			default:
 				$this->all_networks();
@@ -306,6 +306,7 @@ class WPMN_Admin {
 		$wp_list_table->prepare_items(); ?>
 
 		<div class="wrap">
+			<h2><?php esc_html_e( 'Networks', 'wp-multi-network' ); ?>
 
 			<?php if ( current_user_can( 'manage_network_options' ) ) : ?>
 
@@ -333,14 +334,11 @@ class WPMN_Admin {
 	/**
 	 * New network creation dashboard page
 	 */
-	public function add_network_page() {
-	?>
-
+	public function add_network_page() { ?>
 		<div class="wrap">
 			<h2><?php esc_html_e( 'Networks', 'wp-multi-network' ); ?></h2>
-
 			<div id="col-container">
-				<p><?php esc_html_e( 'A site will be created at the root of the new network', 'wp-multi-network' ); ?>.</p>
+				<p><?php esc_html_e( 'A site will be created at the root of the new network.', 'wp-multi-network' ); ?></p>
 				<form method="POST" action="<?php echo esc_url( $this->admin_url() ); ?>">
 					<table class="form-table">
 						<tr class="form-field form-required">
@@ -611,7 +609,7 @@ class WPMN_Admin {
 			}
 
 			$result = add_network(
-				$_POST['domain'], 
+				$_POST['domain'],
 				$_POST['path'],
 				( isset( $_POST['newSite']      ) ? $_POST['newSite']      : esc_attr__( 'New Network Created', 'wp-multi-network' ) ),
 				( isset( $_POST['cloneNetwork'] ) ? $_POST['cloneNetwork'] : get_current_site()->id ),
@@ -867,7 +865,7 @@ class WPMN_Admin {
 
 		<div class="wrap">
 			<h2><?php esc_html_e( 'My Networks', 'wp-multi-network' ); ?></h2>
-		
+
 			<?php
 
 			$my_networks = user_has_networks();
