@@ -686,6 +686,7 @@ function user_has_networks( $user_id = 0 ) {
 	return apply_filters( 'networks_user_is_network_admin', $my_networks, $user_id );
 }
 
+if ( ! function_exists( 'wp_get_main_network' ) ) :
 /**
  * Get the main network
  *
@@ -727,6 +728,7 @@ function wp_get_main_network() {
 
 	return wp_get_network( $primary_network_id );
 }
+endif;
 
 if ( ! function_exists( 'get_network_option' ) ) :
 /**
