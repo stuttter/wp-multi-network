@@ -237,9 +237,7 @@ class WPMN_Admin {
 
 		$this->feedback();
 
-		$action = isset( $_GET['action'] )
-			? $_GET['action']
-			: '';
+		$action = isset( $_GET['action'] ) ? $_GET['action'] : '';
 
 		switch ( $action ) {
 			case 'move':
@@ -260,9 +258,24 @@ class WPMN_Admin {
 
 			case 'allnetworks':
 
-				$doaction = isset( $_POST['action'] ) && ( $_POST['action'] != -1 )
-					? $_POST['action']
-					: $_POST['action2'];
+				$doaction = isset( $_POST['action'] ) && $_POST['action'] != -1 ? $_POST['action'] : $_POST['action2'];
+
+				switch ( $doaction ) {
+					case 'delete':
+						$this->delete_multiple_network_page();
+						break;
+
+					default:
+						$this->all_networks();
+						break;
+
+					// handle other bulk network actions here
+				}
+				break;
+
+			default:
+				$this->all_networks();
+				break;
 
 				switch ( $doaction ) {
 					case 'delete':
@@ -321,20 +334,29 @@ class WPMN_Admin {
 	/**
 	 * New network creation dashboard page
 	 */
-	public function add_network_page() {
-	?>
-
+	public function add_network_page() { ?>
 		<div class="wrap">
 			<h2><?php esc_html_e( 'Networks', 'wp-multi-network' ); ?></h2>
-
 			<div id="col-container">
-				<p><?php esc_html_e( 'A site will be created at the root of the new network', 'wp-multi-network' ); ?>.</p>
+				<p><?php esc_html_e( 'A site will be created at the root of the new network.', 'wp-multi-network' ); ?></p>
 				<form method="POST" action="<?php echo esc_url( $this->admin_url() ); ?>">
 					<table class="form-table">
-						<tr><th scope="row"><label for="newName"><?php esc_html_e( 'Network Name', 'wp-multi-network' ); ?>:</label></th><td><input type="text" name="name" id="newName" title="<?php esc_html_e( 'A friendly name for your new network', 'wp-multi-network' ); ?>" /></td></tr>
-						<tr><th scope="row"><label for="newDom"><?php  esc_html_e( 'Domain',       'wp-multi-network' ); ?>:</label></th><td><?php $this->scheme(); ?><input type="text" name="domain" id="newDom" title="<?php esc_html_e( 'The domain for your new network', 'wp-multi-network' ); ?>" /></td></tr>
-						<tr><th scope="row"><label for="newPath"><?php esc_html_e( 'Path',         'wp-multi-network' ); ?>:</label></th><td><input type="text" name="path" id="newPath" value="/" title="<?php esc_html_e( 'If you are unsure, put in /', 'wp-multi-network' ); ?>" /></td></tr>
-						<tr><th scope="row"><label for="newSite"><?php esc_html_e( 'Site Name',    'wp-multi-network' ); ?>:</label></th><td><input type="text" name="newSite" id="newSite" title="<?php esc_html_e( 'The name for the new site for this network.', 'wp-multi-network' ); ?>" /></td></tr>
+						<tr class="form-field form-required">
+							<th scope="row"><label for="newName"><?php esc_html_e( 'Network Name', 'wp-multi-network' ); ?>:</label></th>
+							<td><input type="text" name="name" id="newName" class="regular-text" title="<?php esc_html_e( 'A friendly name for your new network', 'wp-multi-network' ); ?>" /></td>
+						</tr>
+						<tr class="form-field form-required">
+							<th scope="row"><label for="newDom"><?php esc_html_e( 'Domain', 'wp-multi-network' ); ?>:</label></th>
+							<td>http://<input type="text" name="domain" id="newDom" class="regular-text" title="<?php esc_html_e( 'The domain for your new network', 'wp-multi-network' ); ?>" /></td>
+						</tr>
+						<tr class="form-field form-required">
+							<th scope="row"><label for="newPath"><?php esc_html_e( 'Path', 'wp-multi-network' ); ?>:</label></th>
+							<td><input type="text" name="path" id="newPath" value="/" class="regular-text" title="<?php esc_html_e( 'If you are unsure, put in /', 'wp-multi-network' ); ?>" /></td>
+						</tr>
+						<tr class="form-field form-required">
+							<th scope="row"><label for="newSite"><?php esc_html_e( 'Site Name',    'wp-multi-network' ); ?>:</label></th>
+							<td><input type="text" name="newSite" id="newSite" class="regular-text" title="<?php esc_html_e( 'The name for the new site for this network.', 'wp-multi-network' ); ?>" /></td>
+						</tr>
 					</table>
 
 					<?php submit_button( esc_html__( 'Create Network', 'wp-multi-network' ), 'primary', 'add' ); ?>
@@ -421,7 +443,7 @@ class WPMN_Admin {
 					<?php endif; ?>
 					<div>
 						<input type="hidden" name="from" value="<?php echo esc_attr( $site->site_id ); ?>" />
-						<input class="button" type="submit" name="move" value="<?php esc_attr_e( 'Move Site', 'wp-multi-network' ); ?>" />
+						<input class="button button-primary" type="submit" name="move" value="<?php esc_attr_e( 'Move Site', 'wp-multi-network' ); ?>" />
 						<a class="button" href="./sites.php"><?php esc_html_e( 'Cancel', 'wp-multi-network' ); ?></a>
 					</div>
 				</form>
@@ -447,7 +469,6 @@ class WPMN_Admin {
 				}
 
 				$sites = $_POST['to'];
-
 			} else {
 				if ( !isset( $_POST['from'] ) ) {
 					die( esc_html_e( 'No blogs selected.', 'wp-multi-network' ) );
@@ -696,7 +717,6 @@ class WPMN_Admin {
 			}
 
 			$sites = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->blogs} WHERE site_id = %d", (int) $_GET['id'] ) ); ?>
-
 			<div class="wrap">
 				<h2><?php esc_html_e( 'Networks', 'wp-multi-network' ); ?></h2>
 				<h3><?php esc_html_e( 'Delete Network', 'wp-multi-network' ); ?>: <?php echo esc_html( $network->domain . $network->path ); ?></h3>
@@ -796,7 +816,7 @@ class WPMN_Admin {
 										<li><input type="hidden" name="deleted_networks[]" value="<?php echo esc_attr( $deleted_network->id ); ?>" /><?php echo esc_html( $deleted_network->domain . $deleted_network->path ); ?></li>
 									<?php endforeach; ?>
 								</ul>
-								<p><?php esc_html_e( 'There are blogs associated with one or more of these networks.  Deleting them will move these blogs to the holding network.', 'wp-multi-network' ); ?></p>
+								<p><?php esc_html_e( 'There are blogs associated with one or more of these networks. Deleting them will move these blogs to the holding network.', 'wp-multi-network' ); ?></p>
 								<p><label for="override"><?php esc_html_e( 'If you still want to delete these networks, check the following box', 'wp-multi-network' ); ?>:</label> <input type="checkbox" name="override" id="override" /></p>
 							</div>
 
@@ -809,7 +829,7 @@ class WPMN_Admin {
 										<li><input type="hidden" name="deleted_networks[]" value="<?php echo esc_attr( $deleted_network->id ); ?>" /><?php echo esc_html( $deleted_network->domain . $deleted_network->path ); ?></li>
 									<?php endforeach; ?>
 								</ul>
-								<p><?php esc_html_e( 'There are blogs associated with one or more of these networks.  Deleting them will delete those blogs as well.', 'wp-multi-network' ); ?></p>
+								<p><?php esc_html_e( 'There are blogs associated with one or more of these networks. Deleting them will delete those blogs as well.', 'wp-multi-network' ); ?></p>
 								<p><label for="override"><?php esc_html_e( 'If you still want to delete these networks, check the following box', 'wp-multi-network' ); ?>:</label> <input type="checkbox" name="override" id="override" /></p>
 							</div>
 
