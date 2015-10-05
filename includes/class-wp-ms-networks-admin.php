@@ -276,23 +276,6 @@ class WPMN_Admin {
 			default:
 				$this->all_networks();
 				break;
-
-				switch ( $doaction ) {
-					case 'delete':
-						$this->delete_multiple_network_page();
-						break;
-
-					default:
-						$this->all_networks();
-						break;
-
-					// handle other bulk network actions here
-				}
-				break;
-
-			default:
-				$this->all_networks();
-				break;
 		}
 	}
 
@@ -334,7 +317,9 @@ class WPMN_Admin {
 	/**
 	 * New network creation dashboard page
 	 */
-	public function add_network_page() { ?>
+	public function add_network_page() {
+		?>
+
 		<div class="wrap">
 			<h2><?php esc_html_e( 'Networks', 'wp-multi-network' ); ?></h2>
 			<div id="col-container">
