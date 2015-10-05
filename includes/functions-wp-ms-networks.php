@@ -728,6 +728,7 @@ function wp_get_main_network() {
 	return wp_get_network( $primary_network_id );
 }
 
+if ( ! function_exists( 'get_network_option' ) ) :
 /**
  * Get an option from a given network
  *
@@ -749,6 +750,9 @@ function get_network_option( $network_id, $key, $default = false ) {
 
 	return $result;
 }
+endif;
+
+if ( ! function_exists( 'add_network_option' ) ) :
 /**
  * Add an option from a given network
  *
@@ -770,6 +774,9 @@ function add_network_option( $network_id, $key, $value ) {
 
 	return $result;
 }
+endif;
+
+if ( ! function_exists( 'update_network_option' ) ) :
 /**
  * Update an option from a given network
  *
@@ -791,6 +798,9 @@ function update_network_option( $network_id, $key, $value ) {
 
 	return $result;
 }
+endif;
+
+if ( ! function_exists( 'delete_network_option' ) ) :
 /**
  * Delete an option from a given network
  *
@@ -811,3 +821,4 @@ function delete_network_option( $network_id, $key ) {
 
 	return $result;
 }
+endif;
