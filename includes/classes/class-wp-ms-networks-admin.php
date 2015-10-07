@@ -454,7 +454,7 @@ class WPMN_Admin {
 				if ( ! empty( $sites ) ) :
 
 					// Orphaned sites are rescued
-					if ( RESCUE_ORPHANED_BLOGS && ENABLE_NETWORK_ZERO ) : ?>
+					if ( RESCUE_ORPHANED_BLOGS ) : ?>
 
 						<div id="message" class="network-delete">
 							<p><?php esc_html_e( 'The following sites are associated with this network:', 'wp-multi-network' ); ?></p>
@@ -552,7 +552,7 @@ class WPMN_Admin {
 			<form method="post" action="<?php echo esc_url( $this->admin_url() ); ?>">
 				<?php if ( ! empty( $sites ) ) {
 
-					if ( RESCUE_ORPHANED_BLOGS && ENABLE_NETWORK_ZERO ) { ?>
+					if ( RESCUE_ORPHANED_BLOGS ) { ?>
 
 						<div class="error">
 							<h3><?php esc_html_e( 'You have selected the following networks for deletion', 'wp-multi-network' ); ?>:</h3>

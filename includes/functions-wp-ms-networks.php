@@ -540,7 +540,7 @@ function delete_network( $id, $delete_blogs = false ) {
 	// Are we rescuing orphans or deleting them?
 	if ( ( true == $delete_blogs )  && ! empty( $sites ) ) {
 		foreach ( $sites as $site ) {
-			if ( RESCUE_ORPHANED_BLOGS && ENABLE_NETWORK_ZERO ) {
+			if ( RESCUE_ORPHANED_BLOGS ) {
 				move_site( $site->blog_id, 0 );
 			} else {
 				wpmu_delete_blog( $site->blog_id, true );

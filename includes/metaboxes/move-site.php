@@ -30,13 +30,9 @@ function wpmn_move_site_list_metabox( $site = null ) {
 			<td>
 				<select name="to" id="to">
 
-					<?php if ( ENABLE_NETWORK_ZERO || empty( $site->site_id ) ) : ?>
-
-						<option value="0">
-							<?php esc_html_e( '&mdash; No Network &mdash;', 'wp-multi-network' ); ?>
-						</option>
-
-					<?php endif; ?>
+					<option value="0">
+						<?php esc_html_e( '&mdash; No Network &mdash;', 'wp-multi-network' ); ?>
+					</option>
 
 					<?php foreach ( $networks as $new_network ) : ?>
 

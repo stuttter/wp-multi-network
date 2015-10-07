@@ -1,9 +1,9 @@
 === WP Multi Network ===
 Contributors: johnjamesjacoby, ddean, BrianLayman
 Tags: network, networks, blog, blogs, site, sites, domain, domains, mapping, domain mapping, fun
-Requires at least: 4.2
-Tested up to: 4.2
-Stable tag: 1.6.1
+Requires at least: 4.4
+Tested up to: 4.4
+Stable tag: 1.7.0
 
 == Description ==
 
@@ -53,6 +53,13 @@ Thanks to RavanH for the suggestion!
 Not much to talk about really. Check the code for details!
 
 == Changelog ==
+
+= 1.7.0 =
+* WordPress 4.4 compatibility updates
+* Metabox overhaul
+* network.zero improvements
+* Fix site assignments
+* Various UI improvements
 
 = 1.6.1 =
 * WordPress 4.3 UI compatibility updates
