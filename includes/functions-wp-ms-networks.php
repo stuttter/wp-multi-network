@@ -650,6 +650,20 @@ function move_site( $site_id, $new_network_id ) {
 		return new WP_Error( 'blog_not_moved', __( 'Site could not be moved.', 'wp-multi-network' ) );
 	}
 
+	// Update old network count
+	if ( 0 !== $old_network_id ) {
+		switch_to_network( $old_network_id );
+		wp_update_network_site_counts();
+		restore_current_network();
+	}
+
+	// Update new network count
+	if ( 0 !== $new_network_id ) {
+		switch_to_network( $new_network_id );
+		wp_update_network_site_counts();
+		restore_current_network();
+	}
+
 	// Change relevant blog options
 	$options_table = $wpdb->get_blog_prefix( $site->blog_id ) . 'options';
 	$old_domain    = $old_network->domain . $old_network->path;
