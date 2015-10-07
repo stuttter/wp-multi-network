@@ -12,15 +12,18 @@ td.column-domain {
 	overflow: hidden;
 }
 
+#poststuff #wpmn-move-site-list .inside,
 #poststuff #wpmn-assign-sites-list .inside {
 	margin: 0;
 	padding: 0;
 }
 
+#wpmn-move-site-publish .submitbox,
 #wpmn-assign-sites-publish .submitbox {
 	margin: 10px -12px -12px;
 }
 
+#wpmn-move-site-publish #major-publishing-actions,
 #wpmn-assign-sites-publish #major-publishing-actions {
 	margin-top: 10px;
 }
@@ -48,11 +51,13 @@ td.column-domain {
 	content: '\f325';
 }
 
+table.widefat.move-site,
 table.widefat.assign-sites {
 	border: none;
 	box-shadow: none;
 }
 
+table.move-site thead th,
 table.assign-sites thead th {
 	text-align: center;
 	font-size: 13px;

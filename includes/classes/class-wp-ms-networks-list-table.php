@@ -8,10 +8,12 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package WPMN
  * @since 1.3
- * @access private
  */
 class WP_MS_Networks_List_Table extends WP_List_Table {
 
+	/**
+	 * Main constructor
+	 */
 	public function __construct() {
 		parent::__construct( array(
 			'plural'   => 'networks',
@@ -21,10 +23,25 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 		) );
 	}
 
+	/**
+	 * Return capability used to determine if user can manage networks during
+	 * an ajax request
+	 *
+	 * @return bool
+	 */
 	public function ajax_user_can() {
 		return current_user_can( 'manage_network_options' );
 	}
 
+	/**
+	 * Prepare items for querying
+	 *
+	 * @todo WP_Network_Query
+	 *
+	 * @global type $mode
+	 * @global object $wpdb
+	 * @global type $current_site
+	 */
 	public function prepare_items() {
 		global $mode, $wpdb, $current_site;
 
@@ -46,19 +63,19 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 
 		$total_query = 'SELECT COUNT( id ) FROM ' . $wpdb->site . ' WHERE 1=1 ';
 
-		$query =	"SELECT {$wpdb->site}.*, meta1.meta_value as sitename, meta2.meta_value as network_admins, COUNT({$wpdb->blogs}.blog_id) as blogs, {$wpdb->blogs}.path as blog_path, {$wpdb->blogs}.site_id as site_id
-						FROM {$wpdb->site}
-					LEFT JOIN {$wpdb->blogs}
-						ON {$wpdb->blogs}.site_id = {$wpdb->site}.id {$search_conditions}
-					LEFT JOIN {$wpdb->sitemeta} meta1
-						ON
-							meta1.meta_key = 'site_name' AND
-							meta1.site_id = {$wpdb->site}.id
-					LEFT JOIN {$wpdb->sitemeta} meta2
-						ON
-							meta2.meta_key = 'site_admins' AND
-							meta2.site_id = {$wpdb->site}.id
-					WHERE 1=1 ";
+		$query = "SELECT {$wpdb->site}.*, meta1.meta_value as sitename, meta2.meta_value as network_admins, COUNT({$wpdb->blogs}.blog_id) as blogs, {$wpdb->blogs}.path as blog_path, {$wpdb->blogs}.site_id as site_id
+					FROM {$wpdb->site}
+				LEFT JOIN {$wpdb->blogs}
+					ON {$wpdb->blogs}.site_id = {$wpdb->site}.id {$search_conditions}
+				LEFT JOIN {$wpdb->sitemeta} meta1
+					ON
+						meta1.meta_key = 'site_name' AND
+						meta1.site_id = {$wpdb->site}.id
+				LEFT JOIN {$wpdb->sitemeta} meta2
+					ON
+						meta2.meta_key = 'site_admins' AND
+						meta2.site_id = {$wpdb->site}.id
+				WHERE 1=1 ";
 
 
 		if ( ! empty( $search_conditions ) ) {
@@ -148,10 +165,18 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 		return $escaped_text;
 	}
 
+	/**
+	 * Output message when no networks are found
+	 */
 	public function no_items() {
 		esc_html_e( 'No networks found.', 'wp-multi-network' );
 	}
 
+	/**
+	 * Return array of bulk actions
+	 *
+	 * @return array
+	 */
 	public function get_bulk_actions() {
 		$actions = array();
 
@@ -162,14 +187,24 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 		return $actions;
 	}
 
+	/**
+	 * Output pagination
+	 *
+	 * @param type $which
+	 */
 	public function pagination( $which ) {
 		parent::pagination( $which );
 	}
 
+	/**
+	 * Return array of columns
+	 *
+	 * @return array
+	 */
 	public function get_columns() {
 		return apply_filters( 'wpmn_networks_columns', array(
 			'cb'       => '<input type="checkbox" />',
-			'title'    => __( 'Site Name',      'wp-multi-network' ),
+			'title'    => __( 'Network Title',  'wp-multi-network' ),
 			'domain'   => __( 'Domain',         'wp-multi-network' ),
 			'path'     => __( 'Path',           'wp-multi-network' ),
 			'blogs'    => __( 'Sites',          'wp-multi-network' ),
@@ -177,6 +212,11 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 		) );
 	}
 
+	/**
+	 * Return array of columns that are sortable
+	 *
+	 * @return array
+	 */
 	public function get_sortable_columns() {
 		return array(
 			'title'  => 'title',
@@ -185,21 +225,46 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 		);
 	}
 
+	/**
+	 * Return all classes for list-table
+	 *
+	 * @return type
+	 */
 	protected function get_table_classes() {
 		return array( 'widefat', 'fixed', 'striped', $this->_args['plural'], 'plugins' );
 	}
 
+	/**
+	 * Output all list-table rows
+	 */
 	public function display_rows() {
-
 		foreach ( $this->items as $network ) {
+			$this->display_row( $network );
+		}
+	}
 
-			if ( get_current_site()->id == $network['id'] ) {
-				$class = 'active';
-			} else {
-				$class = ( 'alternate' === $class ) ? '' : 'alternate';
-			}
+	/**
+	 * Output a list-table row
+	 *
+	 * @since 1.7.0
+	 *
+	 * @param object $network
+	 */
+	public function display_row( $network ) {
 
-			echo "<tr class='$class'>";
+		// Row class
+		if ( get_current_site()->id == $network['id'] ) {
+			$class = 'active';
+		} else {
+			$class = ( 'alternate' === $class ) ? '' : 'alternate';
+		}
+
+		// Start an output buffer
+		ob_start(); ?>
+
+		<tr class="<?php echo esc_attr( $class ); ?>">
+
+			<?php
 
 			list( $columns, $hidden ) = $this->get_column_info();
 
@@ -210,7 +275,13 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 				switch ( $column_name ) {
 					case 'cb': ?>
 						<th scope="row" class="check-column">
-							<input type="checkbox" id="network_<?php echo $network['site_id'] ?>" name="allnetworks[]" value="<?php echo esc_attr( $network['site_id'] ) ?>" />
+							
+							<?php if ( get_current_site()->id != $network['id'] && $network['id'] != 1 ) : ?>
+
+								<input type="checkbox" id="network_<?php echo $network['site_id'] ?>" name="allnetworks[]" value="<?php echo esc_attr( $network['site_id'] ) ?>" />
+
+							<?php endif; ?>
+
 						</th>
 					<?php
 					break;
@@ -307,9 +378,11 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 			}
 			?>
 
-			</tr>
+		</tr>
 
-			<?php
-		}
+		<?php
+
+		// Return the outpub buffer
+		echo ob_get_clean();
 	}
 }
