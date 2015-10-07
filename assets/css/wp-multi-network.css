@@ -12,19 +12,28 @@ td.column-domain {
 	overflow: hidden;
 }
 
+.edit-network label span.scheme {
+	display: inline-block;
+}
+
+.edit-network .form-field label input[type="text"] {
+	width: 50%;
+	display: inline-block;
+}
+
 #poststuff #wpmn-move-site-list .inside,
-#poststuff #wpmn-assign-sites-list .inside {
+#poststuff #wpmn-edit-network-assign-sites .inside {
 	margin: 0;
 	padding: 0;
 }
 
-#wpmn-move-site-publish .submitbox,
-#wpmn-assign-sites-publish .submitbox {
+#wpmn-edit-network-publish .submitbox,
+#wpmn-move-site-publish .submitbox {
 	margin: 10px -12px -12px;
 }
 
-#wpmn-move-site-publish #major-publishing-actions,
-#wpmn-assign-sites-publish #major-publishing-actions {
+#wpmn-edit-network-publish #major-publishing-actions,
+#wpmn-move-site-publish #major-publishing-actions {
 	margin-top: 10px;
 }
 

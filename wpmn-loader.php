@@ -132,8 +132,8 @@ class WPMN_Loader {
 		if ( is_network_admin() || is_admin() ) {
 
 			// Metaboxes
-			require $this->plugin_dir . 'includes/metaboxes/assign-sites.php';
 			require $this->plugin_dir . 'includes/metaboxes/move-site.php';
+			require $this->plugin_dir . 'includes/metaboxes/edit-network.php';
 
 			// Admin class
 			require $this->plugin_dir . 'includes/classes/class-wp-ms-networks-admin.php';

@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Metaboxes related to moving a site to a different network
+ *
+ * @package Networks/Metaboxes/Site/Move
+ */
+
 // Exit if accessed directly
 defined( 'ABSPATH' ) || exit;
 
@@ -79,8 +85,8 @@ function wpmn_move_site_assign_metabox( $site = null ) {
 			<a class="button" href="./sites.php"><?php esc_html_e( 'Cancel', 'wp-multi-network' ); ?></a>
 			<div id="publishing-action">
 				<?php submit_button( esc_attr__( 'Move', 'wp-multi-network' ), 'primary', 'move', false ); ?>
-				<input type="hidden" name="action" value="update" />
-				<input type="hidden" name="from" value="<?php echo esc_attr( $site->site_id ); ?>" />
+				<input type="hidden" name="action" value="update">
+				<input type="hidden" name="from" value="<?php echo esc_attr( $site->site_id ); ?>">
 			</div>
 			<div class="clear"></div>
 		</div>
