@@ -94,11 +94,15 @@ function wpmn_edit_network_new_site_metabox() {
 function wpmn_edit_network_assign_sites_metabox( $network = null ) {
 	global $wpdb;
 
-	$sites = $wpdb->get_results( "SELECT * FROM {$wpdb->blogs}" );
+	// Get sites
+	$sql   = "SELECT * FROM {$wpdb->blogs}";
+	$sites = $wpdb->get_results( $sql );
 
 	foreach ( $sites as $key => $site ) {
 		$table_name = $wpdb->get_blog_prefix( $site->blog_id ) . "options";
-		$site_name  = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$table_name} WHERE option_name = %s", 'blogname' ) );
+		$sql        = "SELECT * FROM {$table_name} WHERE option_name = %s";
+		$prep       = $wpdb->prepare( $sql, 'blogname' );
+		$site_name  = $wpdb->get_row( $prep );
 
 		$sites[ $key ]->name = stripslashes( $site_name->option_value );
 	} ?>
@@ -113,12 +117,12 @@ function wpmn_edit_network_assign_sites_metabox( $network = null ) {
 		</thead>
 		<tr>
 			<td class="column-available">
-				<p class="description"><?php esc_html_e( 'Only subsites of other networks are shown.', 'wp-multi-network' ); ?></p>
+				<p class="description"><?php esc_html_e( 'Subsites of other networks, and orphaned sites with no networks.', 'wp-multi-network' ); ?></p>
 				<select name="from[]" id="from" multiple>
 
 					<?php foreach ( $sites as $site ) : ?>
 
-						<?php if ( ( $site->site_id !== $network->id ) && ( $site->blog_id === get_main_site_for_network( $site->site_id ) ) ) : ?>
+						<?php if ( ( $site->site_id !== $network->id ) && ! is_main_site_for_network( $site->blog_id ) ) : ?>
 
 							<option value="<?php echo esc_attr( $site->blog_id ); ?>">
 								<?php echo esc_html( sprintf( '%1$s (%2$s%3$s)', $site->name, $site->domain, $site->path ) ); ?>
@@ -142,7 +146,9 @@ function wpmn_edit_network_assign_sites_metabox( $network = null ) {
 
 						<?php if ( $site->site_id === $network->id ) : ?>
 
-							<option value="<?php echo esc_attr( $site->blog_id ); ?>" <?php disabled( $site->blog_id, get_main_site_for_network( $site->site_id ) ); ?>><?php echo esc_html( sprintf( '%1$s (%2$s%3$s)', $site->name, $site->domain, $site->path ) ); ?></option>
+							<option value="<?php echo esc_attr( $site->blog_id ); ?>" <?php disabled( is_main_site_for_network( $site->blog_id ) ); ?>>
+								<?php echo esc_html( sprintf( '%1$s (%2$s%3$s)', $site->name, $site->domain, $site->path ) ); ?>
+							</option>
 
 						<?php endif; ?>
 

@@ -12,13 +12,6 @@ jQuery( document ).ready( function ( $ ) {
 		}
 	} );
 
-	/* Add field to signal javascript is enabled */
-	$( document.createElement( 'input' ) )
-		.attr( 'type', 'hidden' )
-		.attr( 'name', 'jsEnabled' )
-		.attr( 'value', 'true' )
-		.appendTo( '#site-assign-form' );
-
 	/* Handle clicks to add/remove sites to/from selected list */
 	$( 'input[name=assign]' ).click( function () {
 		move( 'from', 'to' );
@@ -29,15 +22,15 @@ jQuery( document ).ready( function ( $ ) {
 	} );
 
 	/* Select all sites in "selected" box when submitting */
-	$( '#site-assign-form' ).submit( function () {
-		$( '#to' ).children( 'option' ).attr( 'selected', true );
+	$( '#edit-network-form' ).submit( function () {
+		$( '#to'   ).children( 'option:enabled' ).attr( 'selected', true );
+		$( '#from' ).children( 'option:enabled' ).attr( 'selected', true );
 	} );
-	
+
 	function move( from, to ) {
 		jQuery( '#' + from ).children( 'option:selected' ).each( function () {
 			jQuery( '#' + to ).append( jQuery( this ).clone() );
 			jQuery( this ).remove();
 		} );
 	}
-
 } );

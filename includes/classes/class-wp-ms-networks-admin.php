@@ -187,12 +187,8 @@ class WPMN_Admin {
 
 		// Update network
 		if ( isset( $_POST['action'] ) && isset( $_POST['network_id'] ) && ( 'update' === $_POST['action'] ) ) {
+			$this->reassign_sites_handler();
 			$this->update_network_handler();
-		}
-
-		// Assign sites
-		if ( isset( $_POST['reassign'] ) && isset( $_GET['id'] ) ) {
-			$this->reassign_site_handler();
 		}
 
 		// Delete network
@@ -301,12 +297,12 @@ class WPMN_Admin {
 					printf( '<span class="subtitle">' . __( 'Search results for &#8220;%s&#8221;', 'wp-multi-network' ) . '</span>', esc_html( $_REQUEST['s'] ) );
 				endif; ?></h1>
 
-			<form action="<?php echo esc_url( add_query_arg( array( 'action' => 'domains' ), $this->admin_url() ) ); ?>" method="post" id="domain-search">
+			<form method="post" action="<?php echo esc_url( add_query_arg( array( 'action' => 'domains' ), $this->admin_url() ) ); ?>" id="domain-search">
 				<?php $wp_list_table->search_box( esc_html__( 'Search Networks', 'wp-multi-network' ), 'networks' ); ?>
 				<input type="hidden" name="action" value="domains">
 			</form>
 
-			<form id="form-domain-list" action="<?php echo esc_url( add_query_arg( array( 'action' => 'all_networks' ), $this->admin_url() ) ); ?>" method="post">
+			<form method="post" id="form-domain-list" action="<?php echo esc_url( add_query_arg( array( 'action' => 'all_networks' ), $this->admin_url() ) ); ?>">
 				<?php $wp_list_table->display(); ?>
 			</form>
 		</div>
@@ -345,7 +341,7 @@ class WPMN_Admin {
 
 			restore_current_network();
 
-			add_meta_box( 'wpmn-edit-network-assign-sites', esc_html__( 'Site Assignment', 'wp-multi-network' ), 'wpmn_edit_network_assign_sites_metabox', get_current_screen()->id, 'normal', 'high', array( $network ) );
+			add_meta_box( 'wpmn-edit-network-assign-sites', esc_html__( 'Site Assignment', 'wp-multi-network' ), 'wpmn_edit_network_assign_sites_metabox', get_current_screen()->id, 'advanced', 'high', array( $network ) );
 		} ?>
 
 		<div class="wrap">
@@ -357,7 +353,7 @@ class WPMN_Admin {
 
 				<?php endif; ?></h1>
 
-			<form method="post" action="">
+			<form method="post" id="edit-network-form" action="">
 				<div id="poststuff">
 					<div id="post-body" class="metabox-holder columns-2">
 						<div id="post-body-content" style="position: relative;">
@@ -829,42 +825,49 @@ class WPMN_Admin {
 	 *
 	 * @global object $wpdb
 	 */
-	private function reassign_site_handler() {
+	private function reassign_sites_handler() {
 		global $wpdb;
 
-		if ( isset( $_POST['jsEnabled'] ) ) {
-			if ( ! isset( $_POST['to'] ) ) {
-				wp_die( esc_html__( 'No blogs selected.', 'wp-multi-network' ) );
-			}
+		// Coming in
+		$to = isset( $_POST['to'] )
+			? $_POST['to']
+			: array();
 
-			$sites = $_POST['to'];
-		} else {
-			if ( ! isset( $_POST['from'] ) ) {
-				wp_die( esc_html_e( 'No blogs selected.', 'wp-multi-network' ) );
-			}
+		// Orphaning out
+		$from = isset( $_POST['from'] )
+			? $_POST['from']
+			: array();
 
-			$sites = $_POST['from'];
+		// Bail early if no movement
+		if ( empty( $to ) && empty( $from ) ) {
+			return;
 		}
 
-		$current_blogs = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->blogs} WHERE site_id = %d", (int) $_GET['id'] ) );
+		// Cast the network ID
+		$network_id = (int) $_GET['id'];
 
+		// Query for sites
+		$sql   = "SELECT * FROM {$wpdb->blogs}";
+		$prep  = $wpdb->prepare( $sql, (int) $_GET['id'] );
+		$sites = $wpdb->get_results( $prep );
+
+		// Loop through and move sites
 		foreach ( $sites as $site ) {
-			move_site( $site, (int) $_GET['id'] );
-		}
 
-		// Move any unlisted blogs to 'zero' network
-		if ( ENABLE_NETWORK_ZERO ) {
-			foreach ( $current_blogs as $current_blog ) {
-				if ( ! in_array( $current_blog->blog_id, $sites ) ) {
-					move_site( $current_blog->blog_id, 0 );
-				}
+			// Skip the main site of this network
+			if ( is_main_site_for_network( $site->blog_id, $site->site_id ) ) {
+				continue;
+			}
+
+			// Coming in
+			if ( in_array( $site->blog_id, $to ) ) {
+				move_site( $site->blog_id, $network_id );
+
+			// Orphaning out
+			} elseif ( in_array( $site->blog_id, $from ) ) {
+				move_site( $site->blog_id, 0 );
 			}
 		}
-
-		// Handle redirect
-		$this->handler_redirect( array(
-			'sites_moved' => '1',
-		) );
 	}
 
 	/**
