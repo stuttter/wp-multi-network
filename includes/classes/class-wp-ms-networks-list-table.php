@@ -375,9 +375,11 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 
 							<?php
 
-							$network_admins = array_filter( maybe_unserialize( $network['network_admins'] ) );
-							if ( ! empty( $network_admins ) ) {
-								echo join( ', ', $network_admins );
+							if ( ! empty( $network['network_admins'] ) ) {
+								$network_admins = array_filter( maybe_unserialize( $network['network_admins'] ) );
+								if ( ! empty( $network_admins ) ) {
+									echo join( ', ', $network_admins );
+								}
 							} ?>
 
 						</td>

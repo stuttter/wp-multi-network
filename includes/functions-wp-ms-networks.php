@@ -231,23 +231,57 @@ function restore_current_network() {
  *                                 when cloning - default NULL
  * @return integer ID of newly created network
  */
-function add_network( $domain, $path, $site_name = false, $clone_network = false, $options_to_clone = false ) {
+function add_network( $args = array() ) {
 	global $wpdb, $sites;
 
-	// Set a default site name if one isn't set
-	if ( false == $site_name ) {
-		$site_name = __( 'New Network Root', 'wp-multi-network' );
+	// Backward compatibility with old method of passing arguments
+	if ( ! is_array( $args ) || func_num_args() > 1 ) {
+		_deprecated_argument( __METHOD__, '1.7.0', sprintf( __( 'Arguments passed to %1$s should be in an associative array. See the inline documentation at %2$s for more details.', 'wp-multi-network' ), __METHOD__, __FILE__ ) );
+
+		// Juggle function parameters
+		$func_args     = func_get_args();
+		$old_args_keys = array(
+			0 => 'domain',
+			1 => 'path',
+			2 => 'site_name',
+			3 => 'user_id',
+			4 => 'clone_network',
+			5 => 'options_to_clone'
+		);
+
+		// Reset array
+		$args = array();
+
+		// Rejig args
+		foreach ( $old_args_keys as $arg_num => $arg_key ) {
+			if ( isset( $func_args[ $arg_num ] ) ) {
+				$args[ $arg_key ] = $func_args[ $arg_num ];
+			}
+		}
 	}
 
+	// Parse args
+	$r = wp_parse_args( $args, array(
+		'domain'           => '',
+		'path'             => '/',
+		'site_name'        => __( 'New Network', 'wp-multi-network' ),
+		'user_id'          => get_current_user_id(),
+		'meta'             => array( 'public' => get_option( 'blog_public', false ) ),
+		'clone_network'    => false,
+		'options_to_clone' => false
+	) );
+
+	// Permissive sanitization for super admin usage
+	$r['domain'] = str_replace( ' ', '', strtolower( $r['domain'] ) );
+	$r['path']   = str_replace( ' ', '', strtolower( $r['path']   ) );
+
 	// If no options, fallback on defaults
-	if ( empty( $options_to_clone ) ) {
+	if ( empty( $r['options_to_clone'] ) ) {
 		$options_to_clone = array_keys( network_options_to_copy() );
 	}
 
 	// Check for existing network
-	$sql     = "SELECT * FROM {$wpdb->site} WHERE domain = %s AND path = %s LIMIT 1";
-	$query   = $wpdb->prepare( $sql, $domain, $path );
-	$network = $wpdb->get_row( $query );
+	$network = get_network_by_path( $r['domain'], $r['path'] );
 
 	if ( ! empty( $network ) ) {
 		return new WP_Error( 'network_exists', __( 'Network already exists.', 'wp-multi-network' ) );
@@ -255,8 +289,8 @@ function add_network( $domain, $path, $site_name = false, $clone_network = false
 
 	// Insert new network
 	$wpdb->insert( $wpdb->site, array(
-		'domain' => $domain,
-		'path'   => $path
+		'domain' => $r['domain'],
+		'path'   => $r['path']
 	) );
 	$new_network_id = $wpdb->insert_id;
 
@@ -276,12 +310,12 @@ function add_network( $domain, $path, $site_name = false, $clone_network = false
 		// Looks like a fix is in for 3.7
 
 		$new_blog_id = wpmu_create_blog(
-			$domain,
-			$path,
-			$site_name,
-			get_current_user_id(),
-			array( 'public' => get_option( 'blog_public', false ) ),
-			(int) $new_network_id
+			$r['domain'],
+			$r['path'],
+			$r['site_name'],
+			$r['user_id'],
+			$r['meta'],
+			$new_network_id
 		);
 
 		// Bail if blog could not be created
@@ -336,7 +370,7 @@ function add_network( $domain, $path, $site_name = false, $clone_network = false
 	}
 
 	// Clone the network meta from an existing network
-	if ( ! empty( $clone_network ) && wp_get_network( $clone_network ) ) {
+	if ( ! empty( $r['clone_network'] ) && wp_get_network( $r['clone_network'] ) ) {
 
 		$options_cache = array();
 		$clone_network = (int) $clone_network;
@@ -353,7 +387,8 @@ function add_network( $domain, $path, $site_name = false, $clone_network = false
 		foreach( $options_to_clone as $option ) {
 			if ( isset( $options_cache[$option] ) ) {
 
-				// Fix for strange bug that prevents writing the ms_files_rewriting value for new networks
+				// Fix for bug that prevents writing the ms_files_rewriting
+				// value for new networks.
 				if ( $option === 'ms_files_rewriting' ) {
 					$wpdb->insert( $wpdb->sitemeta, array(
 						'site_id'    => $wpdb->siteid,
