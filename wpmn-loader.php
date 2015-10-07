@@ -12,14 +12,13 @@
  * Refreshed by John James Jacoby for WordPress 3.8
  *
  * @package WPMN
- * @subpackage Loader
  */
 
 /**
  * Plugin Name: WP Multi-Network
  * Plugin URI:  https://wordpress.org/plugins/wp-multi-network/
  * Description: Adds a Network Management UI for super admins in a WordPress Multisite environment
- * Version:     1.6.1
+ * Version:     1.7.0
  * Author:      johnjamesjacoby, ddean, BrianLayman, rmccue
  * Author URI:  http://jjj.me
  * Tags:        network, networks, network, blog, site, multisite, domain, subdomain, path
@@ -32,6 +31,31 @@
 defined( 'ABSPATH' ) || exit;
 
 class WPMN_Loader {
+
+	/**
+	 * @var string Base file
+	 */
+	public $file = '';
+
+	/**
+	 * @var string Plugin base file
+	 */
+	public $basename = '';
+
+	/**
+	 * @var string Plugin URL
+	 */
+	public $plugin_url = '';
+
+	/**
+	 * @var string Plugin directory
+	 */
+	public $plugin_dir = '';
+
+	/**
+	 * @var string Asset version
+	 */
+	public $asset_version = 201510070001;
 
 	/**
 	 * Load WP Multi Network
@@ -106,7 +130,8 @@ class WPMN_Loader {
 
 		// WordPress Admin
 		if ( is_network_admin() || is_admin() ) {
-			require( $this->plugin_dir . 'includes/class-wp-ms-networks-admin.php' );
+			require $this->plugin_dir . 'includes/metaboxes/assign-sites.php';
+			require $this->plugin_dir . 'includes/classes/class-wp-ms-networks-admin.php';
 			load_plugin_textdomain( 'wp-multi-network', false, dirname( $this->basename ) . '/languages/' );
 			new WPMN_Admin();
 		}
@@ -118,7 +143,7 @@ class WPMN_Loader {
 
 		// Command line
 		if ( defined( 'WP_CLI' ) && WP_CLI ) {
-			require $this->plugin_dir . 'includes/class-wp-ms-networks-cli.php';
+			require $this->plugin_dir . 'includes/classes/class-wp-ms-networks-cli.php';
 		}
 	}
 }
@@ -129,6 +154,24 @@ class WPMN_Loader {
  * @since 1.3
  */
 function setup_multi_network() {
-	new WPMN_Loader();
+	wpmn();
 }
 add_action( 'muplugins_loaded', 'setup_multi_network' );
+
+/**
+ * Return the main WP Multi Network object
+ *
+ * @since 1.7.0
+ *
+ * @staticvar boolean $wpmn
+ * @return WPMN_Loader
+ */
+function wpmn() {
+	static $wpmn = false;
+
+	if ( false === $wpmn ) {
+		$wpmn = new WPMN_Loader();
+	}
+
+	return $wpmn;
+}

@@ -1,0 +1,76 @@
+th.column-title {
+	width: 35%;
+}
+th.column-path {
+	width: 15%;
+}
+th.column-blogs {
+	width: 10%;
+}
+td.column-domain {
+	white-space: nowrap;
+	overflow: hidden;
+}
+
+#poststuff #wpmn-assign-sites-list .inside {
+	margin: 0;
+	padding: 0;
+}
+
+#wpmn-assign-sites-publish .submitbox {
+	margin: 10px -12px -12px;
+}
+
+#wpmn-assign-sites-publish #major-publishing-actions {
+	margin-top: 10px;
+}
+
+#misc-publishing-actions #network:before,
+#misc-publishing-actions #sites:before {
+	font: normal 20px/1 dashicons;
+	speak: none;
+	display: inline-block;
+	padding: 0 2px 0 0;
+	top: 0;
+	left: -1px;
+	position: relative;
+	vertical-align: top;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	text-decoration: none !important;	
+}
+
+#misc-publishing-actions #network:before {
+	content: '\f319';
+}
+
+#misc-publishing-actions #sites:before {
+	content: '\f325';
+}
+
+table.widefat.assign-sites {
+	border: none;
+	box-shadow: none;
+}
+
+table.assign-sites thead th {
+	text-align: center;
+	font-size: 13px;
+	font-weight: 600;
+	background: #f4f4f4;
+}
+
+table.assign-sites select {
+	width: 100%;
+}
+
+table.assign-sites td.column-available,
+table.assign-sites td.column-assigned {
+	width: 44%;
+}
+
+table.assign-sites td.column-actions {
+	width: 12%;
+	text-align: center;
+	vertical-align: middle;
+}

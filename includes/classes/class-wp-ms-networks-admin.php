@@ -45,78 +45,6 @@ class WPMN_Admin {
 	}
 
 	/**
-	 * Output the scheme
-	 */
-	private function scheme() {
-		echo is_ssl()
-			? 'https://'
-			: 'http://';
-	}
-
-	/**
-	 * Add JS code for Assign Sites public function to admin head
-	 */
-	public function admin_head() {
-	?>
-
-		<script type="text/javascript">
-			jQuery(document).ready( function() {
-
-				jQuery( '.if-js-closed' ).removeClass( 'if-js-closed' ).addClass( 'closed' );
-				jQuery( '.postbox' ).children( 'h3' ).click( function() {
-					if (jQuery( this.parentNode ).hasClass( 'closed' ) ) {
-						jQuery( this.parentNode ).removeClass( 'closed' );
-					} else {
-						jQuery( this.parentNode ).addClass( 'closed' );
-					}
-				} );
-
-				/** add field to signal javascript is enabled */
-				jQuery(document.createElement('input'))
-					.attr( 'type', 'hidden' )
-					.attr( 'name', 'jsEnabled' )
-					.attr( 'value', 'true' )
-					.appendTo( '#site-assign-form' );
-
-				/** Handle clicks to add/remove sites to/from selected list */
-				jQuery( 'input[name=assign]' ).click( function() {		move( 'from', 'to' );	});
-				jQuery( 'input[name=unassign]' ).click( function() {	move( 'to', 'from' );	});
-
-				/** Select all sites in "selected" box when submitting */
-				jQuery( '#site-assign-form' ).submit( function() {
-					jQuery( '#to' ).children( 'option' ).attr( 'selected', true );
-				});
-			});
-
-			function move( from, to ) {
-				jQuery( '#' + from ).children( 'option:selected' ).each( function() {
-					jQuery( '#' + to ).append( jQuery( this ).clone() );
-					jQuery( this ).remove();
-				});
-			}
-
-		</script>
-
-		<style type="text/css">
-			th.column-sitename {
-				width: 35%;
-			}
-			th.column-path {
-				width: 15%;
-			}
-			th.column-blogs {
-				width: 10%;
-			}
-			td.column-domain {
-				white-space: nowrap;
-				overflow: hidden;
-			}
-		</style>
-
-	<?php
-	}
-
-	/**
 	 * Add the Move action to Sites page on WP >= 3.1
 	 */
 	public function add_move_blog_link( $actions, $cur_blog_id, $blog_name ) {
@@ -147,13 +75,14 @@ class WPMN_Admin {
 	 */
 	public function network_admin_menu() {
 		$page = add_menu_page( esc_html__( 'Networks', 'wp-multi-network' ), esc_html__( 'Networks', 'wp-multi-network' ), 'manage_options', 'networks', array( $this, 'networks_page' ), 'dashicons-networking', -1 );
-		add_submenu_page( 'networks', esc_html__( 'All Networks', 'wp-multi-network' ), esc_html__( 'All Networks', 'wp-multi-network' ), 'manage_options', 'networks',        array( $this, 'networks_page' ) );
-		add_submenu_page( 'networks', esc_html__( 'Add New', 'wp-multi-network'      ), esc_html__( 'Add New', 'wp-multi-network'      ), 'manage_options', 'add-new-network', array( $this, 'add_network_page' ) );
 
-		require dirname( __FILE__ ) . '/class-wp-ms-networks-list-table.php' ;
+		add_submenu_page( 'networks', esc_html__( 'All Networks', 'wp-multi-network' ), esc_html__( 'All Networks', 'wp-multi-network' ), 'manage_options', 'networks',        array( $this, 'networks_page'    ) );
+		add_submenu_page( 'networks', esc_html__( 'Add New',      'wp-multi-network' ), esc_html__( 'Add New',      'wp-multi-network' ), 'manage_options', 'add-new-network', array( $this, 'add_network_page' ) );
+
+		require_once wpmn()->plugin_dir . '/includes/classes/class-wp-ms-networks-list-table.php' ;
 
 		add_filter( "manage_{$page}-network_columns", array( new WP_MS_Networks_List_Table(), 'get_columns' ), 0 );
-		add_action( "load-{$page}",                   array( $this, 'enqueue_js' ) );
+		add_action( "load-{$page}",                   array( $this, 'enqueue_scripts' ) );
 	}
 
 	/**
@@ -172,8 +101,9 @@ class WPMN_Admin {
 	 *
 	 * @since 1.5.2
 	 */
-	public function enqueue_js() {
-		add_action( 'admin_head', array( $this, 'admin_head' ) );
+	public function enqueue_scripts() {
+		wp_enqueue_style( 'wp-multi-network',  wpmn()->plugin_url . 'assets/css/wp-multi-network.css', array(),           wpmn()->asset_version, false );
+		wp_enqueue_script( 'wp-multi-network', wpmn()->plugin_url . 'assets/js/wp-multi-network.js',   array( 'jquery' ), wpmn()->asset_version, true  );
 	}
 
 	/**
@@ -354,7 +284,7 @@ class WPMN_Admin {
 	}
 
 	/**
-	 * Dashbaord screen for moving sites -- accessed from the "Sites" screen
+	 * Dashboard screen for moving sites -- accessed from the "Sites" screen
 	 */
 	public function move_site_page() {
 		global $wpdb;
@@ -485,98 +415,35 @@ class WPMN_Admin {
 			$_GET['action'] = 'saved';
 		} else {
 
-			// get network by id
+			// Get network by id
 			$network = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->site} WHERE id = %d", (int) $_GET['id'] ) );
-
-			if ( empty( $network ) ) {
-				die( esc_html__( 'Invalid network id.', 'wp-multi-network' ) );
-			}
-
-			$sites = $wpdb->get_results( "SELECT * FROM {$wpdb->blogs}" );
-			if ( empty( $sites ) ) {
-				die( esc_html__( 'Site table inaccessible.', 'wp-multi-network' ) );
-			}
-
-			foreach ( $sites as $key => $site ) {
-				$table_name = $wpdb->get_blog_prefix( $site->blog_id ) . "options";
-				$site_name  = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$table_name} WHERE option_name = %s", 'blogname' ) );
-
-				if ( empty( $site_name ) ) {
-					die( esc_html__( 'Invalid blog.', 'wp-multi-network' ) );
-				}
-
-				$sites[ $key ]->name = stripslashes( $site_name->option_value );
-			}
-
+			
+			add_meta_box( 'wpmn-assign-sites-list',    esc_html__( 'Site Assignment', 'wp-multi-network' ), 'wpmn_assign_sites_list_metabox',    get_current_screen()->id, 'normal', 'high', array( $network ) );
+			add_meta_box( 'wpmn-assign-sites-publish', esc_html__( 'Publish',         'wp-multi-network' ), 'wpmn_assign_sites_publish_metabox', get_current_screen()->id, 'side',   'high', array( $network ) );
 			?>
 
 			<div class="wrap">
+				<h1><?php esc_html_e( 'Networks', 'wp-multi-network' );
+
+					if ( current_user_can( 'manage_network_options' ) ) : ?>
+
+						<a href="<?php echo esc_url( add_query_arg( array( 'page' => 'add-new-network' ), $this->admin_url() ) ); ?>" class="add-new-h2"><?php echo esc_html_x( 'Add New', 'network', 'wp-multi-network' ); ?></a>
+
+					<?php endif; ?></h1>
+
 				<form method="post" id="site-assign-form" action="<?php echo $_SERVER['REQUEST_URI']; ?>">
-					<h1><?php esc_html_e( 'Networks',         'wp-multi-network' ); ?></h1>
-					<h3><?php esc_html_e( 'Assign Sites to:', 'wp-multi-network' ); ?> <?php $this->scheme(); echo esc_html( $network->domain . $network->path ); ?></h3>
-					<noscript>
-						<div id="message" class="updated"><p><?php esc_html_e( 'Select the blogs you want to assign to this network from the column at left, and click "Update Assignments."', 'wp-multi-network' ); ?></p></div>
-					</noscript>
-					<table class="widefat">
-						<thead>
-							<tr>
-								<th><?php esc_html_e( 'Available', 'wp-multi-network' ); ?></th>
-								<th style="width: 2em;"></th>
-								<th><?php esc_html_e( 'Assigned', 'wp-multi-network' ); ?></th>
-							</tr>
-						</thead>
-						<tr>
-							<td>
-								<select name="from[]" id="from" multiple style="height: auto; width: 98%;">
-								<?php
-								foreach ( $sites as $site ) :
-									if ( $site->site_id != $network->id ) :
-										echo '<option value="' . esc_attr( $site->blog_id ) . '">' . esc_html( sprintf( '%1$s (%2$s%3$s)', $site->name, $site->domain, $site->path ) ) . '</option>';
-									endif;
-								endforeach;
-								?>
-								</select>
-							</td>
-							<td>
-								<input type="button" name="unassign" id="unassign" value="<<" /><br />
-								<input type="button" name="assign" id="assign" value=">>" />
-							</td>
-							<td valign="top">
-								<?php if ( ! ENABLE_NETWORK_ZERO ) : ?>
-									<ul style="margin: 0; padding: 0; list-style-type: none;">
-										<?php foreach ( $sites as $site ) : ?>
-											<?php if ( $site->site_id === $network->id ) : ?>
-												<li><?php echo esc_html( sprintf( '%1$s (%2$s%3$s)', $site->name, $site->domain, $site->path ) ); ?></li>
-											<?php endif; ?>
-										<?php endforeach; ?>
-									</ul>
-								<?php endif; ?>
-								<select name="to[]" id="to" multiple style="height: auto; width: 98%">
-									<?php
-									if ( ENABLE_NETWORK_ZERO ) :
-										foreach ( $sites as $site ) :
-											if ( $site->site_id === $network->id ) :
-												echo '<option value="' . esc_attr( $site->blog_id ) . '">' . esc_html( sprintf( '%1$s (%2$s%3$s)', $site->name, $site->domain, $site->path ) ) . '</option>';
-											endif;
-										endforeach;
-									endif;
-									?>
-								</select>
-							</td>
-						</tr>
-					</table>
-					<br class="clear" />
-					<?php if ( has_action( 'add_move_blog_option' ) ) : ?>
-						<table class="widefat">
-							<thead>
-								<tr scope="col"><th colspan="2"><?php esc_html_e( 'Options', 'wp-multi-network' ); ?>:</th></tr>
-							</thead>
-							<?php do_action( 'add_move_blog_option', $site->blog_id ); ?>
-						</table>
-						<br />
-					<?php endif; ?>
-					<?php submit_button( esc_attr__( 'Update Assignments', 'wp-multi-network' ), 'primary', 'reassign', false ); ?>
-					<a class="button" href="<?php echo esc_url( $this->admin_url() ); ?>"><?php esc_html_e( 'Cancel', 'wp-multi-network' ); ?></a>
+					<div id="poststuff">
+						<div id="post-body" class="metabox-holder columns-2">
+							<div id="postbox-container-1" class="postbox-container">
+								<?php do_meta_boxes( get_current_screen()->id, 'side', $network ); ?>
+							</div>
+
+							<div id="postbox-container-2" class="postbox-container">
+								<?php do_meta_boxes( get_current_screen()->id, 'normal',   $network ); ?>
+								<?php do_meta_boxes( get_current_screen()->id, 'advanced', $network ); ?>
+							</div>
+						</div>
+					</div>
 				</form>
 			</div>
 
@@ -655,10 +522,10 @@ class WPMN_Admin {
 
 			<div class="wrap">
 				<h1><?php esc_html_e( 'Networks',      'wp-multi-network' ); ?></h1>
-				<h3><?php esc_html_e( 'Edit Network:', 'wp-multi-network' ); ?> <?php $this->scheme(); echo esc_html( $network->domain . $network->path ); ?></h3>
+				<h3><?php esc_html_e( 'Edit Network:', 'wp-multi-network' ); ?> <?php echo wp_get_scheme(); echo esc_html( $network->domain . $network->path ); ?></h3>
 				<form method="post" action="<?php echo remove_query_arg( 'action' ); ?>">
 					<table class="form-table">
-						<tr class="form-field"><th scope="row"><label for="domain"><?php esc_html_e( 'Domain', 'wp-multi-network' ); ?></label></th><td> <?php $this->scheme(); ?><input type="text" id="domain" name="domain" value="<?php echo esc_attr( $network->domain ); ?>"></td></tr>
+						<tr class="form-field"><th scope="row"><label for="domain"><?php esc_html_e( 'Domain', 'wp-multi-network' ); ?></label></th><td> <?php echo wp_get_scheme(); ?><input type="text" id="domain" name="domain" value="<?php echo esc_attr( $network->domain ); ?>"></td></tr>
 						<tr class="form-field"><th scope="row"><label for="path"><?php esc_html_e( 'Path', 'wp-multi-network' ); ?></label></th><td><input type="text" id="path" name="path" value="<?php echo esc_attr( $network->path ); ?>" /></td></tr>
 					</table>
 					<?php if ( has_action( 'add_edit_network_option' ) ) : ?>

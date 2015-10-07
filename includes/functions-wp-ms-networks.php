@@ -10,6 +10,21 @@
 // Exit if accessed directly
 defined( 'ABSPATH' ) || exit;
 
+if ( ! function_exists( 'wp_get_scheme' ) ) :
+/**
+ * Return the scheme in use based on is_ssl()
+ *
+ * @since 1.7.0
+ *
+ * @return string
+ */
+function wp_get_scheme() {
+	return is_ssl()
+		? 'https://'
+		: 'http://';	
+}
+endif;
+
 /**
  * Check to see if a network exists. Will check the networks object before
  * checking the database.

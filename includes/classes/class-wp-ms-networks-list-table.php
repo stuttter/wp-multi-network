@@ -100,7 +100,7 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 			case 'domain':
 				$query .= ' ORDER BY ' . $wpdb->site . '.domain ';
 				break;
-			case 'sitename':
+			case 'title':
 				$query .= ' ORDER BY sitename ';
 				break;
 			case 'sites':
@@ -169,7 +169,7 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 	public function get_columns() {
 		return apply_filters( 'wpmn_networks_columns', array(
 			'cb'       => '<input type="checkbox" />',
-			'sitename' => __( 'Site Name',      'wp-multi-network' ),
+			'title'    => __( 'Site Name',      'wp-multi-network' ),
 			'domain'   => __( 'Domain',         'wp-multi-network' ),
 			'path'     => __( 'Path',           'wp-multi-network' ),
 			'blogs'    => __( 'Sites',          'wp-multi-network' ),
@@ -179,9 +179,9 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 
 	public function get_sortable_columns() {
 		return array(
-			'sitename' => 'sitename',
-			'domain'   => 'domain',
-			'blogs'    => 'sites'
+			'title'  => 'title',
+			'domain' => 'domain',
+			'blogs'  => 'sites'
 		);
 	}
 
@@ -229,7 +229,7 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 					<?php
 					break;
 
-					case 'sitename':
+					case 'title':
 						echo "<td class='column-$column_name $column_name'$style>";
 
 						switch_to_network( $network['id'] );
@@ -242,7 +242,9 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 							'id'   => $network['id']
 						) ); ?>
 
-						<a href="<?php echo add_query_arg( array( 'action' => 'editnetwork' ), $myurl ); ?>" class="edit"><?php echo $network['sitename']; ?></a>
+						<strong>
+							<a href="<?php echo add_query_arg( array( 'action' => 'editnetwork' ), $myurl ); ?>"><?php echo $network['sitename']; ?></a>
+						</strong>
 
 						<?php
 
