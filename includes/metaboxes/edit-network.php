@@ -100,30 +100,29 @@ function wpmn_edit_network_assign_sites_metabox( $network = null ) {
 		$table_name = $wpdb->get_blog_prefix( $site->blog_id ) . "options";
 		$site_name  = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$table_name} WHERE option_name = %s", 'blogname' ) );
 
-		if ( empty( $site_name ) ) {
-			esc_html__( 'Invalid blog.', 'wp-multi-network' );
-		}
-
 		$sites[ $key ]->name = stripslashes( $site_name->option_value );
 	} ?>
 
 	<table class="assign-sites widefat">
 		<thead>
 			<tr>
-				<th><?php esc_html_e( 'Available', 'wp-multi-network' ); ?></th>
+				<th><?php esc_html_e( 'Available Sites', 'wp-multi-network' ); ?></th>
 				<th>&nbsp;</th>
-				<th><?php esc_html_e( 'Assigned', 'wp-multi-network' ); ?></th>
+				<th><?php esc_html_e( 'Network Sites', 'wp-multi-network' ); ?></th>
 			</tr>
 		</thead>
 		<tr>
 			<td class="column-available">
+				<p class="description"><?php esc_html_e( 'Only subsites of other networks are shown.', 'wp-multi-network' ); ?></p>
 				<select name="from[]" id="from" multiple>
 
 					<?php foreach ( $sites as $site ) : ?>
 
-						<?php if ( $site->site_id != $network->id ) : ?>
+						<?php if ( ( $site->site_id !== $network->id ) && ( $site->blog_id === get_main_site_for_network( $site->site_id ) ) ) : ?>
 
-							<option value="<?php echo esc_attr( $site->blog_id ); ?>"><?php echo esc_html( sprintf( '%1$s (%2$s%3$s)', $site->name, $site->domain, $site->path ) ); ?></option>
+							<option value="<?php echo esc_attr( $site->blog_id ); ?>">
+								<?php echo esc_html( sprintf( '%1$s (%2$s%3$s)', $site->name, $site->domain, $site->path ) ); ?>
+							</option>
 
 						<?php endif; ?>
 
@@ -136,11 +135,16 @@ function wpmn_edit_network_assign_sites_metabox( $network = null ) {
 				<input type="button" name="assign" id="assign" class="button" value="&rarr;">
 			</td>
 			<td class="column-assigned">
+				<p class="description"><?php esc_html_e( 'Only subsites of this network can be reassigned.', 'wp-multi-network' ); ?></p>
 				<select name="to[]" id="to" multiple>
 
 					<?php foreach ( $sites as $site ) : ?>
 
-						<option value="<?php echo esc_attr( $site->blog_id ); ?>" <?php disabled( $site->site_id, $network->id ); ?>><?php echo esc_html( sprintf( '%1$s (%2$s%3$s)', $site->name, $site->domain, $site->path ) ); ?></option>
+						<?php if ( $site->site_id === $network->id ) : ?>
+
+							<option value="<?php echo esc_attr( $site->blog_id ); ?>" <?php disabled( $site->blog_id, get_main_site_for_network( $site->site_id ) ); ?>><?php echo esc_html( sprintf( '%1$s (%2$s%3$s)', $site->name, $site->domain, $site->path ) ); ?></option>
+
+						<?php endif; ?>
 
 					<?php endforeach; ?>
 
@@ -179,7 +183,7 @@ function wpmn_edit_network_publish_metabox( $network = null ) {
 	<div class="submitbox">
 		<div id="minor-publishing">
 			<div id="misc-publishing-actions">
-				
+
 				<?php if ( ! empty( $network ) ) :
 
 					// Switch
