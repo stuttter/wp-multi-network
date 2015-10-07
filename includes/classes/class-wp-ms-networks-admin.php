@@ -30,6 +30,9 @@ class WPMN_Admin {
 		// Page save handers
 		add_action( 'admin_init',         array( $this, 'page_save_handlers' ) );
 
+		// Add feedback to notices
+		add_action( 'network_admin_notices', array( $this, 'network_admin_notices' ) );
+
 		// Row links
 		add_filter( 'manage_sites_action_links', array( $this, 'add_move_blog_link' ), 10, 2 );
 
@@ -125,7 +128,7 @@ class WPMN_Admin {
 	/**
 	 * Action feedback
 	 */
-	private function feedback() {
+	public function network_admin_notices() {
 
 		// Possible feedbacks
 		$feedbacks = array(
@@ -133,7 +136,7 @@ class WPMN_Admin {
 				'1' => esc_html__( 'Network updated.',     'wp-multi-network' ),
 				'0' => esc_html__( 'Network not updated.', 'wp-multi-network' )
 			),
-			'network_added' => array(
+			'network_created' => array(
 				'1' => esc_html__( 'Network created.',     'wp-multi-network' ),
 				'0' => esc_html__( 'Network not created.', 'wp-multi-network' )
 			),
@@ -148,7 +151,7 @@ class WPMN_Admin {
 		);
 
 		// Look for possible notice
-		foreach( $feedbacks as $type => $success ) {
+		foreach ( $feedbacks as $type => $success ) {
 			if ( isset( $_GET[ $type ] ) && in_array( $_GET[ $type ], array_keys( $success ) ) ) :
 				$updated = ( '1' === $_GET[ $type ] )
 					? 'updated'
@@ -157,7 +160,7 @@ class WPMN_Admin {
 				<div id="message" class="<?php echo esc_attr( $updated ); ?> notice is-dismissible">
 					<p>
 						<?php echo esc_html( $feedbacks[ $type ][ $_GET[ $type ] ] ); ?>
-						<a href="<?php echo esc_url( add_query_arg( array( 'page' => 'networks' ), network_admin_url( 'admin.php' ) ) ); ?>"><?php esc_html_e( 'Go Back.', 'wp-multi-network' ); ?></a>
+						<a href="<?php echo esc_url( add_query_arg( array( 'page' => 'networks' ), network_admin_url( 'admin.php' ) ) ); ?>"><?php esc_html_e( 'Back to Networks.', 'wp-multi-network' ); ?></a>
 					</p>
 					<button type="button" class="notice-dismiss">
 						<span class="screen-reader-text"><?php esc_html_e( 'Dismiss this notice', 'wp-multi-network' ); ?></span>
@@ -222,9 +225,6 @@ class WPMN_Admin {
 
 		// Handle form saving
 		$this->page_save_handlers();
-
-		// Messages
-		$this->feedback();
 
 		// What action is taking place?
 		$action = isset( $_GET['action'] )
@@ -686,21 +686,44 @@ class WPMN_Admin {
 			$options_to_clone = array_keys( network_options_to_copy() );
 		}
 
-		// Title
-		$title = ( isset( $_POST['new_site'] )
-			? $_POST['new_site']
-			: esc_attr__( 'New Network', 'wp-multi-network' ) );
-
 		// Clone from
 		$clone = isset( $_POST['clone_network'] )
 			? (int) $_POST['clone_network']
 			: get_current_site()->id;
 
+		// Title
+		$network_title = isset( $_POST['title'] )
+			? $_POST['title']
+			: '';
+
+		// Domain
+		$network_domain = isset( $_POST['domain'] )
+			? $_POST['domain']
+			: '';
+
+		// Path
+		$network_path = isset( $_POST['path'] )
+			? $_POST['path']
+			: '';
+
+		// Path
+		$site_name = ! empty( $_POST['new_site'] )
+			? $_POST['new_site']
+			: $network_title;
+
+		// Bail if missing fields
+		if ( empty( $network_title ) || empty( $network_domain ) || empty( $network_path ) ) {
+			$this->handler_redirect( array(
+				'page'            => 'add-new-network',
+				'network_created' => '0'
+			) );
+		}
+
 		// Add the network
 		$result = add_network(
-			$_POST['domain'],
-			$_POST['path'],
-			$title,
+			$network_domain,
+			$network_path,
+			$site_name,
 			$clone,
 			$options_to_clone
 		);
@@ -742,6 +765,31 @@ class WPMN_Admin {
 		// Bail if invalid network
 		if ( ! wp_get_network( $network_id ) ) {
 			wp_die( esc_html__( 'Invalid network id.', 'wp-multi-network' ) );
+		}
+
+		// Title
+		$network_title = isset( $_POST['title'] )
+			? $_POST['title']
+			: '';
+
+		// Domain
+		$network_domain = isset( $_POST['domain'] )
+			? $_POST['domain']
+			: '';
+
+		// Path
+		$network_path = isset( $_POST['path'] )
+			? $_POST['path']
+			: '';
+
+		// Bail if missing fields
+		if ( empty( $network_title ) || empty( $network_domain ) || empty( $network_path ) ) {
+			$this->handler_redirect( array(
+				'page'            => 'networks',
+				'id'              => $network_id,
+				'action'          => 'edit_network',
+				'network_updated' => '0'
+			) );
 		}
 
 		// Update domain & path
