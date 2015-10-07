@@ -289,7 +289,7 @@ class WPMN_Admin {
 		$wp_list_table->prepare_items(); ?>
 
 		<div class="wrap">
-			<h2><?php esc_html_e( 'Networks', 'wp-multi-network' ); ?>
+			<h1><?php esc_html_e( 'Networks', 'wp-multi-network' ); ?>
 
 			<?php if ( current_user_can( 'manage_network_options' ) ) : ?>
 
@@ -299,7 +299,7 @@ class WPMN_Admin {
 
 			if ( isset( $_REQUEST['s'] ) && $_REQUEST['s'] ) :
 				printf( '<span class="subtitle">' . __( 'Search results for &#8220;%s&#8221;', 'wp-multi-network' ) . '</span>', esc_html( $_REQUEST['s'] ) );
-			endif; ?></h2>
+			endif; ?></h1>
 
 			<form action="<?php echo esc_url( add_query_arg( array( 'action' => 'domains' ), $this->admin_url() ) ); ?>" method="post" id="domain-search">
 				<?php $wp_list_table->search_box( esc_html__( 'Search Networks', 'wp-multi-network' ), 'networks' ); ?>
@@ -321,7 +321,7 @@ class WPMN_Admin {
 		?>
 
 		<div class="wrap">
-			<h2><?php esc_html_e( 'Networks', 'wp-multi-network' ); ?></h2>
+			<h1><?php esc_html_e( 'Networks', 'wp-multi-network' ); ?></h1>
 			<div id="col-container">
 				<p><?php esc_html_e( 'A site will be created at the root of the new network.', 'wp-multi-network' ); ?></p>
 				<form method="POST" action="<?php echo esc_url( $this->admin_url() ); ?>">
@@ -392,7 +392,7 @@ class WPMN_Admin {
 			} ?>
 
 			<div class="wrap">
-				<h2><?php esc_html_e( 'Networks', 'wp-multi-network' ); ?></h2>
+				<h1><?php esc_html_e( 'Networks', 'wp-multi-network' ); ?></h1>
 				<h3><?php printf( esc_html__( 'Moving %s', 'wp-multi-network' ), stripslashes( $details->option_value ) ); ?></h3>
 				<form method="post" action="<?php echo $_SERVER['REQUEST_URI']; ?>">
 					<table class="widefat">
@@ -512,7 +512,7 @@ class WPMN_Admin {
 
 			<div class="wrap">
 				<form method="post" id="site-assign-form" action="<?php echo $_SERVER['REQUEST_URI']; ?>">
-					<h2><?php esc_html_e( 'Networks',         'wp-multi-network' ); ?></h2>
+					<h1><?php esc_html_e( 'Networks',         'wp-multi-network' ); ?></h1>
 					<h3><?php esc_html_e( 'Assign Sites to:', 'wp-multi-network' ); ?> <?php $this->scheme(); echo esc_html( $network->domain . $network->path ); ?></h3>
 					<noscript>
 						<div id="message" class="updated"><p><?php esc_html_e( 'Select the blogs you want to assign to this network from the column at left, and click "Update Assignments."', 'wp-multi-network' ); ?></p></div>
@@ -617,7 +617,7 @@ class WPMN_Admin {
 				$_GET['action'] = 'saved';
 			} else {
 				foreach ( $result->errors as $i => $error ) {
-					echo( "<h2>Error: " . $error[0] . "</h2>" );
+					echo( "<h1>Error: " . $error[0] . "</h1>" );
 				}
 			}
 		}
@@ -654,7 +654,7 @@ class WPMN_Admin {
 			?>
 
 			<div class="wrap">
-				<h2><?php esc_html_e( 'Networks',      'wp-multi-network' ); ?></h2>
+				<h1><?php esc_html_e( 'Networks',      'wp-multi-network' ); ?></h1>
 				<h3><?php esc_html_e( 'Edit Network:', 'wp-multi-network' ); ?> <?php $this->scheme(); echo esc_html( $network->domain . $network->path ); ?></h3>
 				<form method="post" action="<?php echo remove_query_arg( 'action' ); ?>">
 					<table class="form-table">
@@ -707,7 +707,7 @@ class WPMN_Admin {
 
 			$sites = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->blogs} WHERE site_id = %d", (int) $_GET['id'] ) ); ?>
 			<div class="wrap">
-				<h2><?php esc_html_e( 'Networks', 'wp-multi-network' ); ?></h2>
+				<h1><?php esc_html_e( 'Networks', 'wp-multi-network' ); ?></h1>
 				<h3><?php esc_html_e( 'Delete Network', 'wp-multi-network' ); ?>: <?php echo esc_html( $network->domain . $network->path ); ?></h3>
 				<form method="POST" action="<?php echo remove_query_arg( 'action' ); ?>">
 					<?php
@@ -791,7 +791,7 @@ class WPMN_Admin {
 			$sites = $wpdb->get_results( "SELECT * FROM {$wpdb->blogs} WHERE site_id IN (" . implode( ',', $allnetworks ) . ')' ); ?>
 
 			<div class="wrap">
-				<h2><?php esc_html_e( 'Networks', 'wp-multi-network' ); ?></h2>
+				<h1><?php esc_html_e( 'Networks', 'wp-multi-network' ); ?></h1>
 				<h3><?php esc_html_e( 'Delete Multiple Networks', 'wp-multi-network' ); ?></h3>
 				<form method="POST" action="<?php echo esc_url( $this->admin_url() ); ?>">
 					<?php if ( ! empty( $sites ) ) {
@@ -853,7 +853,7 @@ class WPMN_Admin {
 		global $wpdb; ?>
 
 		<div class="wrap">
-			<h2><?php esc_html_e( 'My Networks', 'wp-multi-network' ); ?></h2>
+			<h1><?php esc_html_e( 'My Networks', 'wp-multi-network' ); ?></h1>
 
 			<?php
 
