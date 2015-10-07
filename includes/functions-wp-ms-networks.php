@@ -244,9 +244,8 @@ function add_network( $args = array() ) {
 			0 => 'domain',
 			1 => 'path',
 			2 => 'site_name',
-			3 => 'user_id',
-			4 => 'clone_network',
-			5 => 'options_to_clone'
+			3 => 'clone_network',
+			4 => 'options_to_clone'
 		);
 
 		// Reset array
