@@ -88,3 +88,26 @@ table.assign-sites td.column-actions {
 	text-align: center;
 	vertical-align: middle;
 }
+
+div.network-delete {
+	background: #fff;
+	border-left: 4px solid #dc3232;
+	-webkit-box-shadow: 0 1px 1px 0 rgba( 0, 0, 0, 0.1 );
+	box-shadow: 0 1px 1px 0 rgba( 0, 0, 0, 0.1 );
+	margin: 5px 0 2px;
+	padding: 1px 12px;
+}
+
+div.network-delete p {
+	margin: 0.5em 0;
+	padding: 2px;
+}
+
+ul.delete-sites {
+	list-style: square;
+	margin: 10px 20px;
+}
+
+ul.delete-sites li {
+	margin: 0;
+}

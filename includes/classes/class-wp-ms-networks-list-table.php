@@ -252,6 +252,9 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 	 */
 	public function display_row( $network ) {
 
+		// Default class
+		$class = '';
+
 		// Row class
 		if ( get_current_site()->id == $network['id'] ) {
 			$class = 'active';
