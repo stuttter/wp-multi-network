@@ -276,7 +276,7 @@ function add_network( $args = array() ) {
 
 	// If no options, fallback on defaults
 	if ( empty( $r['options_to_clone'] ) ) {
-		$options_to_clone = array_keys( network_options_to_copy() );
+		$r['options_to_clone'] = array_keys( network_options_to_copy() );
 	}
 
 	// Check for existing network
@@ -372,18 +372,18 @@ function add_network( $args = array() ) {
 	if ( ! empty( $r['clone_network'] ) && wp_get_network( $r['clone_network'] ) ) {
 
 		$options_cache = array();
-		$clone_network = (int) $clone_network;
+		$clone_network = (int) $r['clone_network'];
 
 		switch_to_network( $clone_network );
 
-		foreach ( $options_to_clone as $option ) {
+		foreach ( $r['options_to_clone'] as $option ) {
 			$options_cache[$option] = get_site_option( $option );
 		}
 
 		restore_current_network();
 		switch_to_network( $new_network_id );
 
-		foreach( $options_to_clone as $option ) {
+		foreach( $r['options_to_clone'] as $option ) {
 			if ( isset( $options_cache[$option] ) ) {
 
 				// Fix for bug that prevents writing the ms_files_rewriting
