@@ -51,7 +51,13 @@ class WPMN_Command extends WP_CLI_Command {
 			}
 		}
 
-		$network_id = add_network( $domain, $path, $assoc_args['site_name'], $clone_network, $options_to_clone );
+		$network_id = add_network( array(
+			'domain' => $domain,
+			'path' => $path,
+			'site_name' => $assoc_args['site_name'],
+			'clone_network' => $clone_network,
+			'options_to_clone' => $options_to_clone
+		) );
 
 		if ( is_wp_error( $network_id ) ) {
 			WP_CLI::error( $network_id );
