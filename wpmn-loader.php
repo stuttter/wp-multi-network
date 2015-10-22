@@ -90,8 +90,6 @@ class WPMN_Loader {
 		if ( ! defined( 'RESCUE_ORPHANED_BLOGS' ) ) {
 			define( 'RESCUE_ORPHANED_BLOGS', false );
 		}
-
-		define( 'NETWORKS_PER_PAGE', 10 );
 	}
 
 	/**
