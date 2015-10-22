@@ -37,10 +37,13 @@ class WPMN_Command extends WP_CLI_Command {
 
 		list( $domain, $path ) = $args;
 
-		$defaults   = array( 'site_name' => false, 'clone_network' => false, 'options_to_clone' => false );
-		$assoc_args = wp_parse_args( $assoc_args, $defaults );
+		$assoc_args = wp_parse_args( $assoc_args, array(
+			'site_name'        => false,
+			'clone_network'    => false,
+			'options_to_clone' => false
+		) );
 
-		$clone_network = $assoc_args['clone_network'];
+		$clone_network    = $assoc_args['clone_network'];
 		$options_to_clone = false;
 
 		if ( ! empty( $clone_network ) && ! wp_get_network( $clone_network ) ) {
@@ -51,7 +54,15 @@ class WPMN_Command extends WP_CLI_Command {
 			}
 		}
 
-		$network_id = add_network( $domain, $path, $assoc_args['site_name'], $clone_network, $options_to_clone );
+		// Add the network
+		$network_id = add_network( array(
+			'domain'           => $domain,
+			'path'             => $path,
+			'site_name'        => $assoc_args['site_name'],
+			'user_id'          => get_current_user_id(),
+			'clone_network'    => $clone_network,
+			'options_to_clone' => $options_to_clone
+		) );
 
 		if ( is_wp_error( $network_id ) ) {
 			WP_CLI::error( $network_id );

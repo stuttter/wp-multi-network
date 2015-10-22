@@ -279,6 +279,11 @@ function add_network( $args = array() ) {
 		'options_to_clone' => false
 	) );
 
+	// Bail if no user with this ID
+	if ( empty( $r['user_id'] ) || ! get_userdata( $r['user_id'] ) ) {
+		return new WP_Error( 'network_user', __( 'User does not exist.', 'wp-multi-network' ) );
+	}
+
 	// Permissive sanitization for super admin usage
 	$r['domain'] = str_replace( ' ', '', strtolower( $r['domain'] ) );
 	$r['path']   = str_replace( ' ', '', strtolower( $r['path']   ) );

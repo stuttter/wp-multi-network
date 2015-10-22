@@ -716,13 +716,14 @@ class WPMN_Admin {
 		}
 
 		// Add the network
-		$result = add_network(
-			$network_domain,
-			$network_path,
-			$site_name,
-			$clone,
-			$options_to_clone
-		);
+		$result = add_network( array(
+			'domain'           => $network_domain,
+			'path'             => $network_path,
+			'site_name'        => $site_name,
+			'user_id'          => get_current_user_id(),
+			'clone_network'    => $clone,
+			'options_to_clone' => $options_to_clone
+		) );
 
 		// Update title
 		if ( ! empty( $result ) && ! is_wp_error( $result ) ) {
