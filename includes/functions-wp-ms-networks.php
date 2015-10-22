@@ -40,14 +40,14 @@ function network_exists( $network_id ) {
 /**
  * Get all networks
  *
+ * @since 1.0.0
+ *
  * @return array Networks available on the installation
  */
 function get_networks() {
-	global $sites, $wpdb;
-	if ( empty( $sites ) ) {
-		$sites = $wpdb->get_results( "SELECT * FROM {$wpdb->site}" );
-	}
-	return $sites;
+	global $wpdb;
+
+	return $wpdb->get_results( "SELECT * FROM {$wpdb->site}" );
 }
 
 /**
@@ -219,20 +219,29 @@ function restore_current_network() {
  *
  * @since 1.3
  *
- * @param string $domain Domain name for new network - for VHOST=no, this
- *                        should be FQDN, otherwise domain only
- * @param string $path Path to root of network hierarchy - should be '/' unless
- *                      WP is cohabiting with another product on a domain
- * @param string $site_name Name of the root blog to be created on the new
- *                           network
- * @param integer $clone_network ID of network whose networkmeta values are
- *                                to be copied - default NULL
- * @param array $options_to_clone Override default network meta options to copy
- *                                 when cloning - default NULL
+ * @param array $args  {
+ *     Array of arguments.
+ *     @type string  $domain           Domain name for new network - for VHOST=no,
+ *                                     this should be FQDN, otherwise domain only.
+ *     @type string  $path             Path to root of network hierarchy - should
+ *                                     be '/' unless WP is cohabiting with another
+ *                                     product on a domain.
+ *     @type string  $site_name        Name of the root blog to be created on
+ *                                     the new network.
+ *     @type integer $user_id          ID of the user to add as the site owner.
+ *                                     Defaults to current user ID.
+ *     @type array   $meta             Array of metadata to save to this network.
+ *                                     Defaults to array( 'public' => false ).
+ *     @type integer $clone_network    ID of network whose networkmeta values are
+ *                                     to be copied - default NULL.
+ *     @type array   $options_to_clone Override default network meta options to copy
+ *                                     when cloning - default NULL.
+ * }
+ *
  * @return integer ID of newly created network
  */
 function add_network( $args = array() ) {
-	global $wpdb, $sites;
+	global $wpdb;
 
 	// Backward compatibility with old method of passing arguments
 	if ( ! is_array( $args ) || func_num_args() > 1 ) {
@@ -293,9 +302,6 @@ function add_network( $args = array() ) {
 	) );
 	$new_network_id = $wpdb->insert_id;
 
-	// Update global network list
-	$sites = $wpdb->get_results( "SELECT * FROM {$wpdb->site}" );
-
 	// If network was created, create a blog for it too
 	if ( ! empty( $new_network_id ) ) {
 
@@ -303,11 +309,7 @@ function add_network( $args = array() ) {
 			define( 'WP_INSTALLING', true );
 		}
 
-		// there's an ongoing error with wpmu_create_blog that throws a warning if meta is not defined:
-		// https://core.trac.wordpress.org/ticket/20793
-		// temporary fix -- set from current blog's value
-		// Looks like a fix is in for 3.7
-
+		// Create the site for the root of this network
 		$new_blog_id = wpmu_create_blog(
 			$r['domain'],
 			$r['path'],
@@ -377,14 +379,14 @@ function add_network( $args = array() ) {
 		switch_to_network( $clone_network );
 
 		foreach ( $options_to_clone as $option ) {
-			$options_cache[$option] = get_site_option( $option );
+			$options_cache[ $option ] = get_site_option( $option );
 		}
 
 		restore_current_network();
 		switch_to_network( $new_network_id );
 
 		foreach( $options_to_clone as $option ) {
-			if ( isset( $options_cache[$option] ) ) {
+			if ( isset( $options_cache[ $option ] ) ) {
 
 				// Fix for bug that prevents writing the ms_files_rewriting
 				// value for new networks.
