@@ -1,6 +1,6 @@
 {
   "name": "stuttter/wp-multi-network",
-  "description": "Group users together with taxonomies & terms",
+  "description": "A Network Management UI for global administrators in WordPress Multisite",
   "homepage": "https://github.com/stuttter/wp-multi-network",
   "type": "wordpress-plugin",
   "require": {
