@@ -7,34 +7,39 @@ Stable tag: 1.7.0
 
 == Description ==
 
-Turn your multi-site installation of WordPress into many multi-site networks, all surrounding one central user base.
+Turn your WordPress Multisite installation into many multisite networks, surrounding one global set of users.
 
-WP Multi Network allows cape wearing super-admins to create new networks of sites, allowing for infinitely extensible site, network, and domain arrangements.
+WP Multi Network allows global administrators to create new networks with their own sites and domain arrangements.
 
 == Installation ==
 
-Download and install using the built in WordPress plugin installer.
-
-Activate in the "Plugins" network admin panel using the "Network Activate" link.
-
-Comment out the `DOMAIN_CURRENT_SITE` line in your `wp-config.php` file.
-If you don't have this line, you probably need to <a href="https://codex.wordpress.org/Create_A_Network">enable multisite</a>.
-
-Start planning and creating your networks.
+* Download and install using the built in WordPress plugin installer.
+* Activate in the "Plugins" network admin panel using the "Network Activate" link.
+* Comment out the `DOMAIN_CURRENT_SITE` line in your `wp-config.php` file. If you don't have this line, you probably need to <a href="https://codex.wordpress.org/Create_A_Network">enable multisite</a>.
+* Start planning and creating your networks.
 
 == Frequently Asked Questions ==
 
-= Can I have separate domains? =
+= Can each network have a different domain? =
 
 Yes you can. That is what this plugin does best.
 
+Think of how WordPress.org works:
+
+* wordpress.org
+* buddypress.org
+* bbpress.org
+* wordcamp.org
+
+Users are global, and can login to any of those networks with the same credentials.
+
 = Will this work on standard WordPress? =
 
-Yes, but it won't do anything. You need to have the multi-site functionality turned on and working before using this plugin.
+You can activate it, but it won't do anything. You need to have the multisite functionality enabled and working first.
 
 = Where can I get support? =
 
-The WordPress support forums: https://wordpress.org/tags/wp-multi-network/
+The WordPress support forums: https://wordpress.org/support/plugin/wp-multi-network/
 
 = What's up with uploads? =
 
@@ -44,9 +49,7 @@ Unfortunately, this doesn't play well with multiple networks (yet). Installs tha
 WP Multi-Network needs to be running to help set the upload path for new sites, so all networks created with this plugin will have it network activated.
 If you disable it on one of your networks, any new site you create on that network will store its uploaded files under that network's main site's uploads folder. It's not pretty.
 
-But just leave this plugin activated and it will take care of everything. :)
-
-Thanks to RavanH for the suggestion!
+Just leave this plugin network-activated (or in mu-plugins) and it will take care of everything.
 
 = Where can I find documentation? =
 
@@ -60,6 +63,7 @@ Not much to talk about really. Check the code for details!
 * network.zero improvements
 * Fix site assignments
 * Various UI improvements
+* Global & function cleanup
 
 = 1.6.1 =
 * WordPress 4.3 UI compatibility updates

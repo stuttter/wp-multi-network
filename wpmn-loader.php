@@ -1,27 +1,13 @@
 <?php
 
 /**
- * WP Multi Network
- *
- * Created by David Dean
- * Refreshed by John James Jacoby for WordPress 3.0
- * Refreshed by Brian Layman for WordPress 3.1
- * Refreshed by John James Jacoby for WordPress 3.3
- * Refreshed by John James Jacoby for WordPress 3.5
- * Refreshed by David Dean for WordPress 3.6
- * Refreshed by John James Jacoby for WordPress 3.8
- *
- * @package WPMN
- */
-
-/**
  * Plugin Name: WP Multi-Network
  * Plugin URI:  https://wordpress.org/plugins/wp-multi-network/
- * Description: Adds a Network Management UI for super admins in a WordPress Multisite environment
+ * Description: A Network Management UI for global administrators in WordPress Multisite
  * Version:     1.7.0
  * Author:      johnjamesjacoby, ddean, BrianLayman, rmccue
  * Author URI:  http://jjj.me
- * Tags:        network, networks, network, blog, site, multisite, domain, subdomain, path
+ * Tags:        blog, domain, mapping, multisite, network, networks, path, site, subdomain
  * Network:     true
  * Text Domain: wp-multi-network
  * Domain Path: /languages
