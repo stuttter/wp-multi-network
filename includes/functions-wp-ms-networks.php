@@ -276,7 +276,7 @@ function add_network( $args = array() ) {
 		'user_id'          => get_current_user_id(),
 		'meta'             => array( 'public' => get_option( 'blog_public', false ) ),
 		'clone_network'    => false,
-		'options_to_clone' => false
+		'options_to_clone' => array_keys( network_options_to_copy() )
 	) );
 
 	// Bail if no user with this ID
@@ -287,11 +287,6 @@ function add_network( $args = array() ) {
 	// Permissive sanitization for super admin usage
 	$r['domain'] = str_replace( ' ', '', strtolower( $r['domain'] ) );
 	$r['path']   = str_replace( ' ', '', strtolower( $r['path']   ) );
-
-	// If no options, fallback on defaults
-	if ( empty( $r['options_to_clone'] ) ) {
-		$options_to_clone = array_keys( network_options_to_copy() );
-	}
 
 	// Check for existing network
 	$network = get_network_by_path( $r['domain'], $r['path'] );
@@ -379,23 +374,23 @@ function add_network( $args = array() ) {
 	if ( ! empty( $r['clone_network'] ) && wp_get_network( $r['clone_network'] ) ) {
 
 		$options_cache = array();
-		$clone_network = (int) $clone_network;
 
-		switch_to_network( $clone_network );
-
-		foreach ( $options_to_clone as $option ) {
+		// Old network
+		switch_to_network( $r['clone_network'] );
+		foreach ( $r['options_to_clone'] as $option ) {
 			$options_cache[ $option ] = get_site_option( $option );
 		}
-
 		restore_current_network();
+
+		// New network
 		switch_to_network( $new_network_id );
 
-		foreach( $options_to_clone as $option ) {
+		foreach ( $r['options_to_clone'] as $option ) {
 			if ( isset( $options_cache[ $option ] ) ) {
 
 				// Fix for bug that prevents writing the ms_files_rewriting
 				// value for new networks.
-				if ( $option === 'ms_files_rewriting' ) {
+				if ( 'ms_files_rewriting' === $option ) {
 					$wpdb->insert( $wpdb->sitemeta, array(
 						'site_id'    => $wpdb->siteid,
 						'meta_key'   => $option,
