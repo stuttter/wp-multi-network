@@ -120,7 +120,14 @@ class WPMN_Admin {
 	 *
 	 * @since 1.7.0
 	 */
-	public function enqueue_scripts() {
+	public function enqueue_scripts( $page = '' ) {
+
+		// Bail if not a network page
+		if ( ! in_array( $page, array( 'toplevel_page_networks', 'networks_page_add-new-network' ) ) ) {
+			return;
+		}
+
+		// Enqueue assets
 		wp_enqueue_style( 'wp-multi-network',  wpmn()->plugin_url . 'assets/css/wp-multi-network.css', array(),           wpmn()->asset_version, false );
 		wp_enqueue_script( 'wp-multi-network', wpmn()->plugin_url . 'assets/js/wp-multi-network.js',   array( 'jquery', 'post' ), wpmn()->asset_version, true  );
 	}
