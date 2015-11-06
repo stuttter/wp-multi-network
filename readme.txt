@@ -4,6 +4,9 @@ Tags: network, networks, blog, blogs, site, sites, domain, domains, mapping, dom
 Requires at least: 4.4
 Tested up to: 4.4
 Stable tag: 1.7.0
+License: GPLv2 or later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
+Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=9Q4F4EL5YJ62J
 
 == Description ==
 
