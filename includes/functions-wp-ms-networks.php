@@ -289,7 +289,9 @@ function add_network( $args = array() ) {
 	$r['path']   = str_replace( ' ', '', strtolower( $r['path']   ) );
 
 	// Check for existing network
-	$network = get_network_by_path( $r['domain'], $r['path'] );
+	$sql     = "SELECT * FROM {$wpdb->site} WHERE domain = %s AND path = %s LIMIT 1";
+	$query   = $wpdb->prepare( $sql, $r['domain'], $r['path'] );
+	$network = $wpdb->get_row( $query );
 
 	if ( ! empty( $network ) ) {
 		return new WP_Error( 'network_exists', __( 'Network already exists.', 'wp-multi-network' ) );
