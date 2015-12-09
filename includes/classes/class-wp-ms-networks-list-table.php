@@ -80,14 +80,14 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 
 		if ( ! empty( $search_conditions ) ) {
 
-			if ( is_numeric($search_conditions) && empty( $wild ) ) {
-				$query .= " AND ( {$wpdb->site}.site_id = '{$like_s}' )";
+			if ( is_numeric( $search_conditions ) && empty( $wild ) ) {
+				$query       .= " AND ( {$wpdb->site}.site_id = '{$like_s}' )";
 				$total_query .= " AND ( {$wpdb->site}.id = {$like_s} )";
 
 			} elseif ( is_subdomain_install() ) {
-				$blog_s = str_replace( '.' . $current_site->domain, '', $like_s );
-				$blog_s .= $wild . '.' . $current_site->domain;
-				$query .= " AND ( {$wpdb->site}.domain LIKE '$blog_s' ) ";
+				$blog_s       = str_replace( '.' . $current_site->domain, '', $like_s );
+				$blog_s      .= $wild . '.' . $current_site->domain;
+				$query       .= " AND ( {$wpdb->site}.domain LIKE '$blog_s' ) ";
 				$total_query .= " AND ( {$wpdb->site}.domain LIKE '$blog_s' ) ";
 
 			} else {
@@ -98,7 +98,7 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 					$blog_s = $like_s;
 				}
 
-				$query .= " WHERE  ( {$wpdb->site}.path LIKE '$blog_s' )";
+				$query       .= " WHERE  ( {$wpdb->site}.path LIKE '$blog_s' )";
 				$total_query .= " WHERE  ( {$wpdb->site}.path LIKE '$blog_s' )";
 			}
 		}
@@ -203,12 +203,12 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 	 */
 	public function get_columns() {
 		return apply_filters( 'wpmn_networks_columns', array(
-			'cb'       => '<input type="checkbox">',
-			'title'    => __( 'Network Title',  'wp-multi-network' ),
-			'domain'   => __( 'Domain',         'wp-multi-network' ),
-			'path'     => __( 'Path',           'wp-multi-network' ),
-			'blogs'    => __( 'Sites',          'wp-multi-network' ),
-			'admins'   => __( 'Network Admins', 'wp-multi-network' )
+			'cb'     => '<input type="checkbox">',
+			'title'  => __( 'Network Title',  'wp-multi-network' ),
+			'domain' => __( 'Domain',         'wp-multi-network' ),
+			'path'   => __( 'Path',           'wp-multi-network' ),
+			'blogs'  => __( 'Sites',          'wp-multi-network' ),
+			'admins' => __( 'Network Admins', 'wp-multi-network' )
 		) );
 	}
 
