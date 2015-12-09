@@ -331,7 +331,11 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 						$myurl = add_query_arg( array(
 							'page' => 'networks',
 							'id'   => $network['id']
-						) ); ?>
+						) );
+
+						$edit_network_url = add_query_arg( array(
+							'action' => 'edit_network'
+						), $myurl ); ?>
 
 						<strong>
 							<a href="<?php echo add_query_arg( array( 'action' => 'edit_network' ), $myurl ); ?>"><?php echo $network['sitename']; ?></a>
@@ -340,7 +344,7 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 						<?php
 
 						$actions = array(
-							'edit'          => '<span class="edit"><a href="' . add_query_arg( array( 'action' => 'edit_network' ), $myurl ) . '">' . esc_html__( 'Edit',         'wp-multi-network' ) . '</a></span>',
+							'edit'          => '<span class="edit"><a href="' . esc_url( $edit_network_url  ) . '">' . esc_html__( 'Edit',      'wp-multi-network' ) . '</a></span>',
 							'network_admin' => '<span class="edit"><a href="' . esc_url( $network_admin_url ) . '">' . esc_html__( 'Dashboard', 'wp-multi-network' ) . '</a></span>',
 							'visit'         => '<span class="edit"><a href="' . esc_url( $network_home_url  ) . '">' . esc_html__( 'Visit',     'wp-multi-network' ) . '</a></span>'
 						);
