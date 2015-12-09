@@ -3,15 +3,15 @@
 /**
  * Network Management Command
  */
-class WPMN_Command extends WP_CLI_Command {
+class WP_MS_Network_Command extends WP_CLI_Command {
 
 	/**
 	 * @var array Default fields to display for each object.
 	 */
 	protected $obj_fields = array(
-		"id",
-		"domain",
-		"path"
+		'id',
+		'domain',
+		'path'
 	);
 
 	/**
@@ -192,4 +192,4 @@ class WPMN_Command extends WP_CLI_Command {
 
 }
 
-WP_CLI::add_command( 'wp-multi-network', 'WPMN_Command' );
+WP_CLI::add_command( 'wp-multi-network', 'WP_MS_Network_Command' );

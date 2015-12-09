@@ -15,7 +15,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @since 1.3
  */
-class WPMN_Admin {
+class WP_MS_Networks_Admin {
 
 	/**
 	 * Hook methods in
@@ -100,7 +100,7 @@ class WPMN_Admin {
 
 		require_once wpmn()->plugin_dir . '/includes/classes/class-wp-ms-networks-list-table.php' ;
 
-		add_filter( "manage_{$page}-network_columns", array( new WP_MS_Networks_List_Table(), 'get_columns' ), 0 );
+		add_filter( "manage_{$page}-network_columns", array( 'WP_MS_Networks_List_Table', 'get_columns' ), 0 );
 	}
 
 	/**

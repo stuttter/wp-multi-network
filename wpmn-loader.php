@@ -119,7 +119,9 @@ class WPMN_Loader {
 
 			// Localization
 			load_plugin_textdomain( 'wp-multi-network', false, dirname( $this->basename ) . '/languages/' );
-			new WPMN_Admin();
+
+			// Setup the network admin
+			new WP_MS_Networks_Admin();
 		}
 
 		// Deprecated functions & classes
