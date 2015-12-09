@@ -91,6 +91,9 @@ class WP_MS_Networks_Admin {
 
 	/**
 	 * Add Networks menu and entries to the Network-level dashboard
+	 *
+	 * This method puts the cart before the horse, and could maybe live in the
+	 * WP_MS_Networks_List_Table class also.
 	 */
 	public function network_admin_menu() {
 		$page = add_menu_page( esc_html__( 'Networks', 'wp-multi-network' ), esc_html__( 'Networks', 'wp-multi-network' ), 'manage_options', 'networks', array( $this, 'networks_page_router' ), 'dashicons-networking', -1 );
@@ -100,7 +103,10 @@ class WP_MS_Networks_Admin {
 
 		require_once wpmn()->plugin_dir . '/includes/classes/class-wp-ms-networks-list-table.php' ;
 
-		add_filter( "manage_{$page}-network_columns", array( 'WP_MS_Networks_List_Table', 'get_columns' ), 0 );
+		// Only filter if not editing
+		if ( ! isset( $_GET['id'] ) ) {
+			add_filter( "manage_{$page}-network_columns", array( 'WP_MS_Networks_List_Table', 'get_columns' ), 0 );
+		}
 	}
 
 	/**
