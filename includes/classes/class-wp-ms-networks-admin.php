@@ -352,13 +352,23 @@ class WPMN_Admin {
 		} ?>
 
 		<div class="wrap">
-			<h1><?php esc_html_e( 'Networks', 'wp-multi-network' );
+			<h1><?php
 
-				if ( ! empty( $network ) && current_user_can( 'manage_network_options' ) ) : ?>
+				// Edit
+				if ( ! empty( $network )  ) :
+					esc_html_e( 'Edit Network', 'wp-multi-network' ); ?>
 
-					<a href="<?php echo esc_url( add_query_arg( array( 'page' => 'add-new-network' ), $this->admin_url() ) ); ?>" class="add-new-h2"><?php echo esc_html_x( 'Add New', 'network', 'wp-multi-network' ); ?></a>
+					<?php if ( current_user_can( 'manage_network_options' ) ) : ?>
 
-				<?php endif; ?></h1>
+						<a href="<?php echo esc_url( add_query_arg( array( 'page' => 'add-new-network' ), $this->admin_url() ) ); ?>" class="add-new-h2"><?php echo esc_html_x( 'Add New', 'network', 'wp-multi-network' ); ?></a>
+
+					<?php endif;
+
+				// Add New
+				else :
+					esc_html_e( 'Add New Network', 'wp-multi-network' );
+				endif; ?>
+			</h1>
 
 			<form method="post" id="edit-network-form" action="">
 				<div id="poststuff">
