@@ -184,7 +184,12 @@ function wpmn_edit_network_publish_metabox( $network = null ) {
 	// Button action
 	$action = empty( $network )
 		? 'create'
-		: 'update'; ?>
+		: 'update';
+
+	// Cancel URL
+	$cancel_url = add_query_arg( array(
+		'page' => 'networks'
+	), network_admin_url( 'admin.php' ) ); ?>
 
 	<div class="submitbox">
 		<div id="minor-publishing">
@@ -220,7 +225,7 @@ function wpmn_edit_network_publish_metabox( $network = null ) {
 		</div>
 
 		<div id="major-publishing-actions">
-			<a class="button" href="<?php echo esc_url( add_query_arg( array( 'page' => 'networks' ), network_admin_url( 'admin.php' ) ) ); ?>"><?php esc_html_e( 'Cancel', 'wp-multi-network' ); ?></a>
+			<a class="button" href="<?php echo esc_url( $cancel_url ); ?>"><?php esc_html_e( 'Cancel', 'wp-multi-network' ); ?></a>
 			<div id="publishing-action">
 				<?php submit_button( $button_text, 'primary', 'submit', false ); ?>
 				<input type="hidden" name="action" value="<?php echo esc_attr( $action ); ?>">
