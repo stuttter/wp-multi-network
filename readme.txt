@@ -66,7 +66,7 @@ Not much to talk about really. Check the code for details!
 * network.zero improvements
 * Fix site assignments
 * Various UI improvements
-* Global & function cleanup
+* Global, class, function, and method cleanup
 
 = 1.6.1 =
 * WordPress 4.3 UI compatibility updates
