@@ -71,7 +71,8 @@ function get_main_site_for_network( $network = null ) {
 		return false;
 	}
 
-	if ( ! $primary_id = wp_cache_get( 'network:' . $network->id . ':main_site', 'site-options' ) ) {
+	$primary_id = isset( $network->blog_id ) ? $network->blog_id : wp_cache_get( 'network:' . $network->id . ':main_site', 'site-options' );
+	if ( ! $primary_id ) {
 		$sql        = "SELECT blog_id FROM {$wpdb->blogs} WHERE domain = %s AND path = %s";
 		$query      = $wpdb->prepare( $sql, $network->domain, $network->path );
 		$primary_id = $wpdb->get_var( $query );
