@@ -610,6 +610,8 @@ function move_site( $site_id, $new_network_id ) {
 			return new WP_Error( 'network_not_exist', __( 'Network does not exist.', 'wp-multi-network' ) );
 		}
 
+		$path = substr( $site->path, strlen( $old_network->path ) );
+
 		// Tweak the domain and path if needed
 		// If the site domain is the same as the network domain on a subdomain
 		// install, don't prepend old "hostname"
@@ -619,7 +621,7 @@ function move_site( $site_id, $new_network_id ) {
 			if ( false !== ( $separator_pos = strpos( $site->domain, '.' ) ) ) {
 				$ex_dom = substr( $site->domain, 0, ( $separator_pos + 1 ) );
 				$domain = $ex_dom . $new_network->domain;
-				if ( get_blog_id_from_url( $domain ) ) {
+				if ( domain_exists( $domain, $path, $new_network_id ) ) {
 					return new WP_Error( 'subdomain_already_exist', __( 'Subdomain already exists in the new network.', 'wp-multi-network' ) );
 				}
 			} else {
@@ -627,8 +629,10 @@ function move_site( $site_id, $new_network_id ) {
 			}
 		} else {
 			$domain = $new_network->domain;
+			if ( domain_exists( $domain, $path, $new_network_id ) ) {
+				return new WP_Error( 'path_already_exist', __( 'Path already exists in the new network.', 'wp-multi-network' ) );
+			}
 		}
-		$path = substr( $site->path, strlen( $old_network->path ) );
 
 	// New network is zero (orphan)
 	} else {
