@@ -618,9 +618,15 @@ function move_site( $site_id, $new_network_id ) {
 		// Tweak the domain and path if needed
 		// If the site domain is the same as the network domain on a subdomain
 		// install, don't prepend old "hostname"
+		// If the site domain is a regular domain independent of the network's domain,
+		// keep the domain the same
 		if ( is_subdomain_install() && ( $site->domain !== $old_network->domain ) ) {
-			$ex_dom = substr( $site->domain, 0, ( strpos( $site->domain, '.' ) + 1 ) );
-			$domain = $ex_dom . $new_network->domain;
+			if ( false !== ( $separator_pos = strpos( $site->domain, '.' ) ) ) {
+				$ex_dom = substr( $site->domain, 0, ( $separator_pos + 1 ) );
+				$domain = $ex_dom . $new_network->domain;
+			} else {
+				$domain = $site->domain;
+			}
 		} else {
 			$domain = $new_network->domain;
 		}
