@@ -619,6 +619,9 @@ function move_site( $site_id, $new_network_id ) {
 			if ( false !== ( $separator_pos = strpos( $site->domain, '.' ) ) ) {
 				$ex_dom = substr( $site->domain, 0, ( $separator_pos + 1 ) );
 				$domain = $ex_dom . $new_network->domain;
+				if ( get_blog_id_from_url( $domain ) ) {
+					return new WP_Error( 'subdomain_already_exist', __( 'Subdomain already exists in the new network.', 'wp-multi-network' ) );
+				}
 			} else {
 				$domain = $site->domain;
 			}
