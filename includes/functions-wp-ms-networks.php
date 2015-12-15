@@ -603,11 +603,6 @@ function move_site( $site_id, $new_network_id ) {
 	$old_network_id = (int) $site->site_id;
 	$old_network    = wp_get_network( $old_network_id );
 
-	// No change
-	if ( $old_network_id === $new_network_id ) {
-		return new WP_Error( 'blog_not_moved', __( 'Site was not moved.', 'wp-multi-network' ) );
-	}
-
 	// New network is not zero
 	if ( 0 !== $new_network_id ) {
 		$new_network = wp_get_network( $new_network_id );
