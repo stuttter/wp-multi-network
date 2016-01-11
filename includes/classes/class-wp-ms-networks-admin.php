@@ -870,9 +870,9 @@ class WP_MS_Networks_Admin {
 		// Cast the network ID
 		$network_id = (int) $_GET['id'];
 
-		// Query for sites
-		$sql   = "SELECT * FROM {$wpdb->blogs}";
-		$prep  = $wpdb->prepare( $sql, (int) $_GET['id'] );
+		// Query for sites in this network
+		$sql   = "SELECT * FROM {$wpdb->blogs} WHERE site_id = %s";
+		$prep  = $wpdb->prepare( $sql, $network_id );
 		$sites = $wpdb->get_results( $prep );
 
 		// Loop through and move sites
