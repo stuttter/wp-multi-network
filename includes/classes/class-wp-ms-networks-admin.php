@@ -871,7 +871,7 @@ class WP_MS_Networks_Admin {
 		$network_id = (int) $_GET['id'];
 
 		// Query for sites in this network
-		$sql   = "SELECT * FROM {$wpdb->blogs} WHERE site_id = %s";
+		$sql   = "SELECT * FROM {$wpdb->blogs} WHERE site_id = %d";
 		$prep  = $wpdb->prepare( $sql, $network_id );
 		$sites = $wpdb->get_results( $prep );
 
