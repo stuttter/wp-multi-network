@@ -117,7 +117,7 @@ function wpmn_edit_network_assign_sites_metabox( $network = null ) {
 		</thead>
 		<tr>
 			<td class="column-available">
-				<p class="description"><?php esc_html_e( 'Subsites of other networks, and orphaned sites with no networks.', 'wp-multi-network' ); ?></p>
+				<p class="description"><?php esc_html_e( 'Subsites in other networks & orphaned sites without networks.', 'wp-multi-network' ); ?></p>
 				<select name="from[]" id="from" multiple>
 
 					<?php foreach ( $sites as $site ) : ?>
