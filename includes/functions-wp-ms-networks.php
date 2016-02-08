@@ -663,8 +663,8 @@ function move_site( $site_id = 0, $new_network_id = 0 ) {
 	}
 
 	// The silliest fixes in all of the land
-	$domain = str_replace( '..', '.',       rtrim( $domain, '.' ) . '.' );
-	$path   = str_replace( '//', '/', '/' . ltrim( $path,   '/' )       );
+	$domain = str_replace( '..', '.',       rtrim( $domain, '.' ) );
+	$path   = str_replace( '//', '/', '/' . ltrim( $path,   '/' ) );
 
 	// Move the site is the blogs table
 	$where  = array( 'blog_id' => $site->blog_id );
