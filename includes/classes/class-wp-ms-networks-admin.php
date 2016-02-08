@@ -834,11 +834,14 @@ class WP_MS_Networks_Admin {
 	 * @since 1.7.0
 	 */
 	private function move_site_handler() {
-		move_site( $_GET['blog_id'], $_POST['to'] );
+		$moved   = move_site( $_GET['blog_id'], $_POST['to'] );
+		$success = is_wp_error( $moved )
+			? '0'
+			: '1';
 
 		// Handle redirect
 		wp_safe_redirect( add_query_arg( array(
-			'site_moved' => '1',
+			'site_moved' => $success,
 		), network_admin_url( 'sites.php' ) ) );
 		exit;
 	}
