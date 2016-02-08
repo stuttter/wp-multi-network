@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * WP Multi Network Deprecated
+ *
+ * @package Plugins/Networks/Deprecated
+ */
+
 // Exit if accessed directly
 defined( 'ABSPATH' ) || exit;
 

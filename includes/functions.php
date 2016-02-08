@@ -3,27 +3,11 @@
 /**
  * WP Multi Network Functions
  *
- * @package WPMN
- * @subpackage Functions
+ * @package Plugins/Network/Functions
  */
 
 // Exit if accessed directly
 defined( 'ABSPATH' ) || exit;
-
-if ( ! function_exists( 'wp_get_scheme' ) ) :
-/**
- * Return the scheme in use based on is_ssl()
- *
- * @since 1.7.0
- *
- * @return string
- */
-function wp_get_scheme() {
-	return is_ssl()
-		? 'https://'
-		: 'http://';
-}
-endif;
 
 /**
  * Check to see if a network exists. Will check the networks object before
@@ -48,6 +32,57 @@ function get_networks() {
 	global $wpdb;
 
 	return $wpdb->get_results( "SELECT * FROM {$wpdb->site}" );
+}
+
+/**
+ *
+ * Return array of networks for which user is super admin, or FALSE if none
+ *
+ * @since 1.3
+ * @return array | FALSE
+ */
+function user_has_networks( $user_id = 0 ) {
+	global $wpdb;
+
+	// Use current user
+	if ( empty( $user_id ) ) {
+		global $current_user;
+
+		$user_id    = $current_user->ID;
+		$user_login = $current_user->user_login;
+
+	// Use passed user ID
+	} else {
+		$user_id    = (int) $user_id;
+		$user_info  = get_userdata( $user_id );
+		$user_login = $user_info->user_login;
+	}
+
+	// Setup the networks array
+	$my_networks = array();
+
+	// If multisite, get some site meta
+	if ( is_multisite() ) {
+
+		// Get the network admins
+		$sql        = "SELECT site_id, meta_value FROM {$wpdb->sitemeta} WHERE meta_key = %s";
+		$query      = $wpdb->prepare( $sql, 'site_admins' );
+		$all_admins = $wpdb->get_results( $query );
+
+		foreach( (array) $all_admins as $network ) {
+			$network_admins = maybe_unserialize( $network->meta_value );
+			if ( in_array( $user_login, $network_admins, true ) ) {
+				$my_networks[] = (int) $network->site_id;
+			}
+		}
+	}
+
+	// If there are no networks, return false
+	if ( empty( $my_networks ) ) {
+		$my_networks = false;
+	}
+
+	return apply_filters( 'networks_user_is_network_admin', $my_networks, $user_id );
 }
 
 /**
@@ -770,97 +805,3 @@ function network_options_to_copy() {
 		'welcome_email'         => __( 'Content of welcome email'               , 'wp-multi-network' )
 	) );
 }
-
-/**
- *
- * Return array of networks for which user is super admin, or FALSE if none
- *
- * @since 1.3
- * @return array | FALSE
- */
-function user_has_networks( $user_id = 0 ) {
-	global $wpdb;
-
-	// Use current user
-	if ( empty( $user_id ) ) {
-		global $current_user;
-
-		$user_id    = $current_user->ID;
-		$user_login = $current_user->user_login;
-
-	// Use passed user ID
-	} else {
-		$user_id    = (int) $user_id;
-		$user_info  = get_userdata( $user_id );
-		$user_login = $user_info->user_login;
-	}
-
-	// Setup the networks array
-	$my_networks = array();
-
-	// If multisite, get some site meta
-	if ( is_multisite() ) {
-
-		// Get the network admins
-		$sql        = "SELECT site_id, meta_value FROM {$wpdb->sitemeta} WHERE meta_key = %s";
-		$query      = $wpdb->prepare( $sql, 'site_admins' );
-		$all_admins = $wpdb->get_results( $query );
-
-		foreach( (array) $all_admins as $network ) {
-			$network_admins = maybe_unserialize( $network->meta_value );
-			if ( in_array( $user_login, $network_admins, true ) ) {
-				$my_networks[] = (int) $network->site_id;
-			}
-		}
-	}
-
-	// If there are no networks, return false
-	if ( empty( $my_networks ) ) {
-		$my_networks = false;
-	}
-
-	return apply_filters( 'networks_user_is_network_admin', $my_networks, $user_id );
-}
-
-/**
- * Sanitize a site path
- *
- * This function exists to prevent slashing issues while updating networks and
- * moving sites between networks.
- *
- * @since 1.8.0
- *
- * @param string $path
- *
- * @return string
- */
-function wp_sanitize_site_path( $path = '' ) {
-	$parts       = explode( '/', $path );
-	$no_empties  = array_filter( $parts );
-	$new_path    = implode( '/', $no_empties );
-	$end_slash   = trailingslashit( $new_path );
-	$left_trim   = ltrim( $end_slash, '/' );
-	$front_slash = "/{$left_trim}";
-	return $front_slash;
-}
-
-if ( ! function_exists( 'wp_get_main_network' ) ) :
-/**
- * Get the main network
- *
- * Uses the same logic as {@see is_main_network}, but returns the network object
- * instead.
- *
- * @return stdClass|null
- */
-function wp_get_main_network() {
-
-	// Bail if not multisite
-	if ( ! is_multisite() ) {
-		return null;
-	}
-
-	// Return main network ID
-	return wp_get_network( get_main_network_id() );
-}
-endif;

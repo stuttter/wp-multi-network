@@ -104,8 +104,9 @@ class WPMN_Loader {
 	 */
 	private function includes() {
 
-		// Functions & actions
-		require $this->plugin_dir . 'includes/functions-wp-ms-networks.php';
+		// Functions & Core Compatibility
+		require $this->plugin_dir . 'includes/compat.php';
+		require $this->plugin_dir . 'includes/functions.php';
 
 		// WordPress Admin
 		if ( is_network_admin() || is_admin() ) {

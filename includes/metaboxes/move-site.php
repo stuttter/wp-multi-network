@@ -3,7 +3,7 @@
 /**
  * Metaboxes related to moving a site to a different network
  *
- * @package Networks/Metaboxes/Site/Move
+ * @package Plugins/Networks/Metaboxes/Site/Move
  */
 
 // Exit if accessed directly

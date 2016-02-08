@@ -3,7 +3,7 @@
 /**
  * Metaboxes related to editing a network
  *
- * @package Networks/Metaboxes/Network/Edit
+ * @package Plugins/Networks/Metaboxes/Network/Edit
  */
 
 // Exit if accessed directly
