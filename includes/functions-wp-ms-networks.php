@@ -510,6 +510,9 @@ function update_network( $id, $domain, $path = '' ) {
 					update_blog_option( $site->blog_id, $option_name, $new_value );
 				}
 			}
+
+			// Refresh blog details
+			refresh_blog_details( $site->blog_id );
 		}
 	}
 
@@ -725,6 +728,9 @@ function move_site( $site_id = 0, $new_network_id = 0 ) {
 
 	// Delete rewrite rules for site at old URL
 	delete_blog_option( $site_id, 'rewrite_rules' );
+
+	// Refresh blog details
+	refresh_blog_details( $site_id );
 
 	// Site moved
 	do_action( 'move_site', $site_id, $old_network_id, $new_network_id );
