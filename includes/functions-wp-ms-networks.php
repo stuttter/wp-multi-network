@@ -720,7 +720,7 @@ function move_site( $site_id = 0, $new_network_id = 0 ) {
 		}
 
 		// Only update option if not already purposely overridden
-		if ( false !== strpos( $old_domain, $option->option_value ) ) {
+		if ( false !== strpos( $option->option_value, $old_domain ) ) {
 			$new_value = str_replace( $old_domain, $new_domain, $option->option_value );
 			update_blog_option( $site->blog_id, $option_name, $new_value );
 		}
