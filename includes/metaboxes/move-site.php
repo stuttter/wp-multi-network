@@ -22,7 +22,7 @@ function wpmn_move_site_list_metabox( $site = null ) {
 	global $wpdb;
 
 	// Get all networks
-	$networks = $wpdb->get_results( "SELECT * FROM {$wpdb->site}" ); //var_dump( $networks ); die;?>
+	$networks = $wpdb->get_results( "SELECT * FROM {$wpdb->site}" ); ?>
 
 	<table class="move-site widefat">
 		<tr>
