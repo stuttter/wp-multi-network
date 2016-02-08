@@ -43,79 +43,87 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 	 * @global type $current_site
 	 */
 	public function prepare_items() {
-		global $mode, $wpdb, $current_site;
+		global $mode, $wpdb;
 
-		// TODO: include network zero when there are unassigned sites
-
+		// Vars
 		$wild              = '';
-		$mode              = ( empty( $_REQUEST['mode'] ) ) ? 'list' : $_REQUEST['mode'];
 		$per_page          = $this->get_items_per_page( 'networks_per_page' );
 		$pagenum           = $this->get_pagenum();
-		$search_conditions = isset( $_REQUEST['s'] ) ? stripslashes( trim( $_REQUEST[ 's' ] ) ) : '';
+		$mode              = empty( $_REQUEST['mode']          ) ? 'list' : $_REQUEST['mode'];
+		$search_conditions = isset( $_REQUEST['s']             ) ? stripslashes( trim( $_REQUEST[ 's' ]             ) ) : '';
 		$admin_user        = isset( $_REQUEST['network_admin'] ) ? stripslashes( trim( $_REQUEST[ 'network_admin' ] ) ) : '' ;
 
+		// Searching?
 		if ( false !== strpos( $search_conditions, '*' ) ) {
 			$wild              = '%';
 			$search_conditions = trim( $search_conditions, '*' );
 		}
 
-		$like_s = esc_sql( $this->esc_like( $search_conditions ) );
+		// Totals
+		$total_query = "SELECT COUNT( id ) FROM {$wpdb->site} WHERE 1=1 ";
 
-		$total_query = 'SELECT COUNT( id ) FROM ' . $wpdb->site . ' WHERE 1=1 ';
-
+		// Big Join
 		$query = "SELECT {$wpdb->site}.*, meta1.meta_value as sitename, meta2.meta_value as network_admins, COUNT({$wpdb->blogs}.blog_id) as blogs, {$wpdb->blogs}.path as blog_path, {$wpdb->blogs}.site_id as site_id
 					FROM {$wpdb->site}
+
 				LEFT JOIN {$wpdb->blogs}
-					ON {$wpdb->blogs}.site_id = {$wpdb->site}.id {$search_conditions}
+					ON {$wpdb->blogs}.site_id = {$wpdb->site}.id
+
 				LEFT JOIN {$wpdb->sitemeta} meta1
 					ON
 						meta1.meta_key = 'site_name' AND
 						meta1.site_id = {$wpdb->site}.id
+
 				LEFT JOIN {$wpdb->sitemeta} meta2
 					ON
 						meta2.meta_key = 'site_admins' AND
 						meta2.site_id = {$wpdb->site}.id
+
 				WHERE 1=1 ";
 
-
+		// Searching
 		if ( ! empty( $search_conditions ) ) {
 
+			// Escape the like query
+			$like_s = '%' . $wpdb->esc_like( $search_conditions ) . '%';
+
+			// Site of blog ID
 			if ( is_numeric( $search_conditions ) && empty( $wild ) ) {
-				$query       .= " AND ( {$wpdb->site}.site_id = '{$like_s}' )";
-				$total_query .= " AND ( {$wpdb->site}.id = {$like_s} )";
+				$query       .= "AND ( {$wpdb->site}.site_id = '{$like_s}' )";
+				$total_query .= "AND ( {$wpdb->site}.id = {$like_s} )";
 
-			} elseif ( is_subdomain_install() ) {
-				$blog_s       = str_replace( '.' . $current_site->domain, '', $like_s );
-				$blog_s      .= $wild . '.' . $current_site->domain;
-				$query       .= " AND ( {$wpdb->site}.domain LIKE '$blog_s' ) ";
-				$total_query .= " AND ( {$wpdb->site}.domain LIKE '$blog_s' ) ";
-
+			// Domain, path, and site_name meta
 			} else {
+				$query       .= "AND ( ( {$wpdb->site}.domain LIKE '$like_s' ) ";
+				$total_query .= "AND ( ( {$wpdb->site}.domain LIKE '$like_s' ) ";
 
-				if ( $like_s != trim('/', $current_site->path) ) {
-					$blog_s = $current_site->path . $like_s . $wild . '/';
-				} else {
-					$blog_s = $like_s;
-				}
+				$query       .= "OR ( {$wpdb->site}.path LIKE '$like_s' ) ";
+				$total_query .= "OR ( {$wpdb->site}.path LIKE '$like_s' ) ";
 
-				$query       .= " WHERE  ( {$wpdb->site}.path LIKE '$blog_s' )";
-				$total_query .= " WHERE  ( {$wpdb->site}.path LIKE '$blog_s' )";
+				$query       .= "OR ( meta1.meta_value LIKE '$like_s' ) )";
+				$total_query .= "OR ( meta1.meta_value LIKE '$like_s' ) )";
 			}
 		}
 
+		// Admin users
 		if ( ! empty( $admin_user ) ) {
 			$query .= ' AND meta2.meta_value LIKE "%' . $admin_user . '%"';
-			// TODO: Fix total query
 		}
 
+		// Total
 		$total = $wpdb->get_var( $total_query );
 
+		// Prevent duplicates
 		$query   .= " GROUP BY {$wpdb->site}.id";
-		$order_by = isset( $_REQUEST['orderby'] ) ? $_REQUEST['orderby'] : '';
+
+		// Order by
+		$order_by = isset( $_REQUEST['orderby'] )
+			? $_REQUEST['orderby']
+			: '';
 
 		switch ( $order_by ) {
 			case 'domain':
-				$query .= ' ORDER BY ' . $wpdb->site . '.domain ';
+				$query .= " ORDER BY {$wpdb->site}.domain ";
 				break;
 			case 'title':
 				$query .= ' ORDER BY sitename ';
@@ -123,46 +131,25 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 			case 'sites':
 				$query .= ' ORDER BY blogs ';
 				break;
-			default :
-
 		}
 
+		// Order
 		if ( ! empty( $order_by ) ) {
 			$order  = ( isset( $_REQUEST['order'] ) && 'DESC' == strtoupper( $_REQUEST['order'] ) ) ? "DESC" : "ASC";
 			$query .= $order;
 		}
 
+		// Limit results
 		$query .= " LIMIT " . intval( ( $pagenum - 1 ) * $per_page ) . ", " . intval( $per_page );
 
+		// Get the results
 		$this->items = $wpdb->get_results( $query, ARRAY_A );
 
+		// Setup pagination
 		$this->set_pagination_args( array(
 			'total_items' => $total,
 			'per_page'    => $per_page,
 		) );
-	}
-
-	/**
-	 * SQL escape helper function
-	 *
-	 * Provide a fallback for the new SQL escape function
-	 *
-	 * @since 1.5.2
-	 *
-	 * @global object $wpdb
-	 * @param string $text
-	 * @return string Escaped input
-	 */
-	public function esc_like( $text ) {
-		global $wpdb;
-
-		if ( method_exists( $wpdb, 'esc_like' ) ) {
-			$escaped_text = $wpdb->esc_like( $text );
-		} else {
-			$escaped_text = like_escape( $text );
-		}
-
-		return $escaped_text;
 	}
 
 	/**
