@@ -56,7 +56,12 @@ class WP_MS_Networks_Admin {
 	/**
 	 * Add the Move action to Sites page on WP >= 3.1
 	 */
-	public function add_move_blog_link( $actions, $cur_blog_id ) {
+	public function add_move_blog_link( $actions = array(), $cur_blog_id = 0 ) {
+
+		// Bail if main site for network
+		if ( get_main_site_for_network() === (int) $cur_blog_id ) {
+			return $actions;
+		}
 
 		// Assemble URL
 		$url = add_query_arg( array(
@@ -160,7 +165,7 @@ class WP_MS_Networks_Admin {
 
 		// Look for possible notice
 		foreach ( $feedbacks as $type => $success ) {
-			if ( isset( $_GET[ $type ] ) && in_array( $_GET[ $type ], array_keys( $success ) ) ) :
+			if ( isset( $_GET[ $type ] ) && in_array( $_GET[ $type ], array_keys( $success ), true ) ) :
 				$updated = ( '1' === $_GET[ $type ] )
 					? 'updated'
 					: 'error'; ?>
@@ -832,9 +837,10 @@ class WP_MS_Networks_Admin {
 		move_site( $_GET['blog_id'], $_POST['to'] );
 
 		// Handle redirect
-		$this->handler_redirect( array(
+		wp_safe_redirect( add_query_arg( array(
 			'site_moved' => '1',
-		) );
+		), network_admin_url( 'sites.php' ) ) );
+		exit;
 	}
 
 	/**
