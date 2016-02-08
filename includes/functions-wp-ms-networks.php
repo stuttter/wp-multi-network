@@ -441,13 +441,13 @@ function update_network( $id, $domain, $path = '' ) {
 	}
 
 	// Set the arrays for updating the db
-	$update = array( 'domain' => $domain );
-	$update['path'] = empty( $path )
-		? '/'
-		: '/' . ltrim( trailingslashit( implode( array_filter( explode( '/', $path ) ) ) ), '/' );
+	$where  = array( 'id' => $network->id );
+	$update = array(
+		'domain' => $domain,
+		'path'   => wp_sanitize_site_path( $path )
+	);
 
 	// Attempt to update the network
-	$where         = array( 'id' => $network->id );
 	$update_result = $wpdb->update( $wpdb->site, $update, $where );
 
 	// Bail if update failed
@@ -671,16 +671,12 @@ function move_site( $site_id = 0, $new_network_id = 0 ) {
 		$path   = $site->path;
 	}
 
-	// The silliest fixes in all of the land
-	$domain = str_replace( '..', '.',       rtrim( $domain, '.' ) );
-	$path   = str_replace( '//', '/', '/' . ltrim( $path,   '/' ) );
-
 	// Move the site is the blogs table
 	$where  = array( 'blog_id' => $site->blog_id );
 	$update = array(
 		'site_id' => $new_network->id,
 		'domain'  => $domain,
-		'path'    => $path
+		'path'    => wp_sanitize_site_path( $path )
 	);
 	$update_result = $wpdb->update( $wpdb->blogs, $update, $where );
 
@@ -824,6 +820,28 @@ function user_has_networks( $user_id = 0 ) {
 	}
 
 	return apply_filters( 'networks_user_is_network_admin', $my_networks, $user_id );
+}
+
+/**
+ * Sanitize a site path
+ *
+ * This function exists to prevent slashing issues while updating networks and
+ * moving sites between networks.
+ *
+ * @since 1.8.0
+ *
+ * @param string $path
+ *
+ * @return string
+ */
+function wp_sanitize_site_path( $path = '' ) {
+	$parts       = explode( '/', $path );
+	$no_empties  = array_filter( $parts );
+	$new_path    = implode( '/', $no_empties );
+	$end_slash   = trailingslashit( $new_path );
+	$left_trim   = ltrim( $end_slash, '/' );
+	$front_slash = "/{$left_trim}";
+	return $front_slash;
 }
 
 if ( ! function_exists( 'wp_get_main_network' ) ) :
