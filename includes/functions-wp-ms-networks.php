@@ -568,14 +568,14 @@ function delete_network( $id, $delete_blogs = false ) {
 }
 
 /**
- * Move a blog from one network to another
+ * Move a site to a new network
  *
  * @since 1.3
  *
- * @param integer $site_id ID of blog to move
- * @param integer $new_network_id ID of destination network
+ * @param  integer  $site_id         ID of site to move
+ * @param  integer  $new_network_id  ID of destination network
  */
-function move_site( $site_id, $new_network_id ) {
+function move_site( $site_id = 0, $new_network_id = 0 ) {
 	global $wpdb;
 
 	// Get the site
@@ -610,21 +610,42 @@ function move_site( $site_id, $new_network_id ) {
 
 	// New network is not zero
 	if ( 0 !== $new_network_id ) {
+
+		// Get the destination network
 		$new_network = wp_get_network( $new_network_id );
+
+		// Bail if no network
 		if ( empty( $new_network ) ) {
 			return new WP_Error( 'network_not_exist', __( 'Network does not exist.', 'wp-multi-network' ) );
 		}
 
-		// Tweak the domain and path if needed
-		// If the site domain is the same as the network domain on a subdomain
-		// install, don't prepend old "hostname"
-		if ( is_subdomain_install() && ( $site->domain !== $old_network->domain ) ) {
-			$ex_dom = substr( $site->domain, 0, ( strpos( $site->domain, '.' ) + 1 ) );
-			$domain = $ex_dom . $new_network->domain;
-		} else {
-			$domain = $new_network->domain;
+		// Default to keeping the same domain & path
+		$domain = $site->domain;
+		$path   = $site->path;
+
+		// Look for nesting
+		$site_path    = $site->domain        . $site->path;
+		$network_path = $old_network->domain . $old_network->path;
+
+		// Site is made up of parent network domain & path
+		if ( false !== strpos( $site_path, $network_path ) ) {
+
+			// Get the diff
+			$diff = str_replace( $network_path, '', $site_path );
+
+			// Subdomain
+			if ( is_subdomain_install() ) {
+				$slug   = str_replace( '/', '.', $diff );
+				$domain = $slug . $new_network->domain;
+				$path   = $new_network->path;
+
+			// Subdirectory
+			} else {
+				$slug   = str_replace( '.', '/', $diff );
+				$domain = $new_network->domain;
+				$path   = $new_network->path . $slug;
+			}
 		}
-		$path = substr( $site->path, strlen( $old_network->path ) );
 
 	// New network is zero (orphan)
 	} else {
@@ -640,6 +661,10 @@ function move_site( $site_id, $new_network_id ) {
 		$domain = $site->domain;
 		$path   = $site->path;
 	}
+
+	// The silliest fixes in all of the land
+	$domain = str_replace( '..', '.',       rtrim( $domain, '.' ) . '.' );
+	$path   = str_replace( '//', '/', '/' . ltrim( $path,   '/' )       );
 
 	// Move the site is the blogs table
 	$where  = array( 'blog_id' => $site->blog_id );
@@ -694,6 +719,9 @@ function move_site( $site_id, $new_network_id ) {
 
 	// Site moved
 	do_action( 'move_site', $site_id, $old_network_id, $new_network_id );
+
+	// Return the new network ID as confirmation
+	return $new_network_id;
 }
 
 /**
