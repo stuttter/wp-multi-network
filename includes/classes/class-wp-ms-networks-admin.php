@@ -59,7 +59,7 @@ class WP_MS_Networks_Admin {
 	public function add_move_blog_link( $actions = array(), $cur_blog_id = 0 ) {
 
 		// Bail if main site for network
-		if ( get_main_site_for_network() === (int) $cur_blog_id ) {
+		if ( (int) get_current_site()->blog_id === (int) $cur_blog_id ) {
 			return $actions;
 		}
 
