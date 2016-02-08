@@ -294,7 +294,7 @@ class WP_MS_Networks_Admin {
 			<h1><?php esc_html_e( 'Networks', 'wp-multi-network' );
 
 				// Add New link
-				if ( current_user_can( 'manage_network_options' ) ) : ?>
+				if ( current_user_can( 'create_networks' ) ) : ?>
 
 					<a href="<?php echo esc_url( add_query_arg( array( 'page' => 'add-new-network' ), $this->admin_url() ) ); ?>" class="add-new-h2"><?php echo esc_html_x( 'Add New', 'network', 'wp-multi-network' ); ?></a>
 
@@ -359,7 +359,7 @@ class WP_MS_Networks_Admin {
 				if ( ! empty( $network )  ) :
 					esc_html_e( 'Edit Network', 'wp-multi-network' ); ?>
 
-					<?php if ( current_user_can( 'manage_network_options' ) ) : ?>
+					<?php if ( current_user_can( 'create_networks' ) ) : ?>
 
 						<a href="<?php echo esc_url( add_query_arg( array( 'page' => 'add-new-network' ), $this->admin_url() ) ); ?>" class="add-new-h2"><?php echo esc_html_x( 'Add New', 'network', 'wp-multi-network' ); ?></a>
 
@@ -413,7 +413,7 @@ class WP_MS_Networks_Admin {
 		<div class="wrap">
 			<h1><?php esc_html_e( 'Networks', 'wp-multi-network' );
 
-				if ( current_user_can( 'manage_network_options' ) ) : ?>
+				if ( current_user_can( 'create_networks' ) ) : ?>
 
 					<a href="<?php echo esc_url( add_query_arg( array( 'page' => 'add-new-network' ), $this->admin_url() ) ); ?>" class="add-new-h2"><?php echo esc_html_x( 'Add New', 'network', 'wp-multi-network' ); ?></a>
 
@@ -459,7 +459,7 @@ class WP_MS_Networks_Admin {
 		<div class="wrap">
 			<h1><?php esc_html_e( 'Delete Network', 'wp-multi-network' );
 
-				if ( current_user_can( 'manage_network_options' ) ) : ?>
+				if ( current_user_can( 'create_networks' ) ) : ?>
 
 					<a href="<?php echo esc_url( add_query_arg( array( 'page' => 'add-new-network' ), $this->admin_url() ) ); ?>" class="add-new-h2"><?php echo esc_html_x( 'Add New', 'network', 'wp-multi-network' ); ?></a>
 

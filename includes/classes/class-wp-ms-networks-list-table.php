@@ -12,9 +12,22 @@ defined( 'ABSPATH' ) || exit;
 class WP_MS_Networks_List_Table extends WP_List_Table {
 
 	/**
+	 * @var array Current user networks
+	 */
+	private $user_networks = array();
+
+	/**
 	 * Main constructor
 	 */
 	public function __construct() {
+
+		// Stash the user networks here once
+		$user_networks       = user_has_networks();
+		$this->user_networks = ( false !== $user_networks )
+			? $user_networks
+			: array();
+
+		// Setup the list table
 		parent::__construct( array(
 			'plural'   => 'networks',
 			'singular' => 'network',
@@ -30,7 +43,7 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 	 * @return bool
 	 */
 	public function ajax_user_can() {
-		return current_user_can( 'manage_network_options' );
+		return current_user_can( 'manage_networks' );
 	}
 
 	/**
@@ -180,7 +193,7 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 	public function get_bulk_actions() {
 		$actions = array();
 
-		if ( current_user_can( 'delete_sites' ) ) {
+		if ( current_user_can( 'delete_networks' ) ) {
 			$actions['delete'] = __( 'Delete', 'wp-multi-network' );
 		}
 
@@ -250,19 +263,30 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 	 *
 	 * @param object $network
 	 */
-	public function display_row( $network ) {
+	public function display_row( $network = array() ) {
+
+		// Skip if malformed network
+		if ( empty( $network['id'] ) ) {
+			return;
+		}
 
 		// Default class
 		$class = '';
 
+		// Cast to int
+		$network_id = (int) $network['id'];
+
 		// Row class
-		if ( get_current_site()->id == $network['id'] ) {
+		if ( get_current_site()->id === $network_id ) {
 			$class = 'active';
 		} else {
 			$class = ( 'alternate' === $class )
 				? ''
 				: 'alternate';
 		}
+
+		// Is this a root site?
+		$is_root = in_array( $network_id, array( get_main_network_id(), get_current_site()->id ), true );
 
 		// Start an output buffer
 		ob_start(); ?>
@@ -285,9 +309,9 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 					case 'cb': ?>
 						<th scope="row" class="check-column">
 
-							<?php if ( get_current_site()->id != $network['id'] && $network['id'] != 1 ) : ?>
+							<?php if ( false === $is_root ) : ?>
 
-								<input type="checkbox" id="network_<?php echo $network['site_id'] ?>" name="all_networks[]" value="<?php echo esc_attr( $network['site_id'] ) ?>">
+								<input type="checkbox" id="network_<?php echo esc_attr( $network['site_id'] ); ?>" name="all_networks[]" value="<?php echo esc_attr( $network['site_id'] ) ?>">
 
 							<?php endif; ?>
 
@@ -323,19 +347,25 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 
 						<?php
 
-						switch_to_network( $network['id'] );
+						$actions = array();
+
+						switch_to_network( $network_id );
 						$network_admin_url = network_admin_url();
 						$network_home_url  = network_home_url();
 						restore_current_network();
 
 						$myurl = add_query_arg( array(
 							'page' => 'networks',
-							'id'   => $network['id']
+							'id'   => $network_id
 						) );
 
 						$edit_network_url = add_query_arg( array(
 							'action' => 'edit_network'
-						), $myurl ); ?>
+						), $myurl );
+
+						$delete_network_url = wp_nonce_url( add_query_arg( array(
+							'action' => 'delete_network'
+						), $myurl ) ); ?>
 
 						<strong>
 							<a href="<?php echo add_query_arg( array( 'action' => 'edit_network' ), $myurl ); ?>"><?php echo $network['sitename']; ?></a>
@@ -343,19 +373,25 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 
 						<?php
 
-						$actions = array(
-							'edit'          => '<span class="edit"><a href="' . esc_url( $edit_network_url  ) . '">' . esc_html__( 'Edit',      'wp-multi-network' ) . '</a></span>',
-							'network_admin' => '<span class="edit"><a href="' . esc_url( $network_admin_url ) . '">' . esc_html__( 'Dashboard', 'wp-multi-network' ) . '</a></span>',
-							'visit'         => '<span class="edit"><a href="' . esc_url( $network_home_url  ) . '">' . esc_html__( 'Visit',     'wp-multi-network' ) . '</a></span>'
-						);
-
-						if ( get_current_site()->id != $network['id'] && $network['id'] != 1 ) {
-							if ( current_user_can( 'manage_network_options', $network['id'] ) ) {
-								$actions['delete']	= '<span class="delete"><a href="' . esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'delete_network' ), $myurl ) ) ) . '">' . esc_html__( 'Delete', 'wp-multi-network' ) . '</a></span>';
-							}
+						// Edit
+						if ( current_user_can( 'edit_network', $network_id ) ) {
+							$actions['edit'] = '<span class="edit"><a href="' . esc_url( $edit_network_url  ) . '">' . esc_html__( 'Edit',      'wp-multi-network' ) . '</a></span>';
 						}
 
-						$actions = apply_filters( 'manage_networks_action_links', array_filter( $actions ), $network['id'], $network['sitename'] );
+						// Dashboard
+						if ( current_user_can( 'manage_networks' ) ) {
+							$actions['network_admin'] = '<span><a href="' . esc_url( $network_admin_url ) . '">' . esc_html__( 'Dashboard', 'wp-multi-network' ) . '</a></span>';
+						}
+
+						// Visit
+						$actions['visit'] = '<span><a href="' . esc_url( $network_home_url ) . '">' . esc_html__( 'Visit', 'wp-multi-network' ) . '</a></span>';
+
+						// Delete
+						if ( ( false === $is_root ) && current_user_can( 'delete_network', $network_id ) ) {
+							$actions['delete']	= '<span class="delete"><a href="' . esc_url( $delete_network_url ) . '">' . esc_html__( 'Delete', 'wp-multi-network' ) . '</a></span>';
+						}
+
+						$actions = apply_filters( 'manage_networks_action_links', array_filter( $actions ), $network_id, $network['sitename'] );
 
 						echo $this->row_actions( $actions ); ?>
 
@@ -390,24 +426,10 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 
 						<?php break;
 
-					case 'plugins' :
-
-						if ( has_filter( 'wpmublogsaction' ) ) : ?>
-
-							<td valign="top" class="<?php echo $column_name; ?> column-<?php echo $column_name; ?>" <?php echo $style; ?>>
-
-								<?php do_action( 'wpmublogsaction', $network['id'] ); ?>
-
-							</td>
-
-						<?php endif;
-
-						break;
-
 					default: ?>
 
 						<td valign="top" class="<?php echo $column_name; ?> column-<?php echo $column_name; ?>" <?php echo $style; ?>>
-							<?php do_action( 'manage_sites_custom_column', $column_name, $network['id'] ); ?>
+							<?php do_action( 'manage_networks_custom_column', $column_name, $network_id ); ?>
 						</td>
 
 						<?php break;
