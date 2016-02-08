@@ -12,22 +12,9 @@ defined( 'ABSPATH' ) || exit;
 class WP_MS_Networks_List_Table extends WP_List_Table {
 
 	/**
-	 * @var array Current user networks
-	 */
-	private $user_networks = array();
-
-	/**
 	 * Main constructor
 	 */
 	public function __construct() {
-
-		// Stash the user networks here once
-		$user_networks       = user_has_networks();
-		$this->user_networks = ( false !== $user_networks )
-			? $user_networks
-			: array();
-
-		// Setup the list table
 		parent::__construct( array(
 			'plural'   => 'networks',
 			'singular' => 'network',
