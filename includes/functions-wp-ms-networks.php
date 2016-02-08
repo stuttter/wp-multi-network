@@ -784,25 +784,23 @@ function user_has_networks( $user_id = 0 ) {
 		$user_login = $user_info->user_login;
 	}
 
+	// Setup the networks array
+	$my_networks = array();
+
 	// If multisite, get some site meta
 	if ( is_multisite() ) {
 
 		// Get the network admins
-		$network_admin_records = $wpdb->get_results( $wpdb->prepare( "SELECT site_id, meta_value FROM {$wpdb->sitemeta} WHERE meta_key = %s", 'site_admins' ) );
+		$sql        = "SELECT site_id, meta_value FROM {$wpdb->sitemeta} WHERE meta_key = %s";
+		$query      = $wpdb->prepare( $sql, 'site_admins' );
+		$all_admins = $wpdb->get_results( $query );
 
-		// Setup the networks array
-		$my_networks = array();
-
-		foreach( (array) $network_admin_records as $network ) {
-			$admins = maybe_unserialize( $network->meta_value );
-			if ( in_array( $user_login, $admins ) ) {
+		foreach( (array) $all_admins as $network ) {
+			$network_admins = maybe_unserialize( $network->meta_value );
+			if ( in_array( $user_login, $network_admins, true ) ) {
 				$my_networks[] = (int) $network->site_id;
 			}
 		}
-
-	// If not multisite, use existing site
-	} else {
-		$my_networks = array();
 	}
 
 	// If there are no networks, return false
