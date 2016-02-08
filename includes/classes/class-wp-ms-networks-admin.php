@@ -165,7 +165,7 @@ class WP_MS_Networks_Admin {
 
 		// Look for possible notice
 		foreach ( $feedbacks as $type => $success ) {
-			if ( isset( $_GET[ $type ] ) && in_array( $_GET[ $type ], array_keys( $success ), true ) ) :
+			if ( isset( $_GET[ $type ] ) && in_array( $_GET[ $type ], array_keys( $success ) ) ) :
 				$updated = ( '1' === $_GET[ $type ] )
 					? 'updated'
 					: 'error'; ?>
