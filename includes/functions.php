@@ -364,7 +364,7 @@ function add_network( $args = array() ) {
 		);
 
 		// Bail if blog could not be created
-		if ( is_a( $new_blog_id, 'WP_Error' ) ) {
+		if ( is_wp_error( $new_blog_id ) ) {
 			return $new_blog_id;
 		}
 
@@ -475,6 +475,11 @@ function update_network( $id, $domain, $path = '' ) {
 		return new WP_Error( 'network_not_exist', __( 'Network does not exist.', 'wp-multi-network' ) );
 	}
 
+	// Bail if site URL is invalid
+	if ( ! wp_validate_site_url( $domain, $path, $network->blog_id ) ) {
+		return new WP_Error( 'blog_bad', sprintf( __( 'The site "%s" is invalid, not available, or already exists.', 'wp-multi-network' ), $domain . $path ) );
+	}
+
 	// Set the arrays for updating the db
 	$where  = array( 'id' => $network->id );
 	$update = array(
@@ -556,6 +561,9 @@ function update_network( $id, $domain, $path = '' ) {
 		'domain' => $network->domain,
 		'path'   => $network->path
 	) );
+
+	// Network updated
+	return true;
 }
 
 /**
@@ -652,6 +660,25 @@ function move_site( $site_id = 0, $new_network_id = 0 ) {
 		return new WP_Error( 'blog_not_moved', __( 'Site was not moved.', 'wp-multi-network' ) );
 	}
 
+	// Default to keeping the same domain & path
+	$domain = $site->domain;
+	$path   = $site->path;
+	$slug   = '';
+
+	// Look for nesting
+	$site_path    = $site->domain        . $site->path;
+	$network_path = $old_network->domain . $old_network->path;
+	$is_child     = ! strpos( $site_path, $network_path );
+
+	// Site is made up of parent network domain & path
+	if ( true === $is_child ) {
+		$diff = str_replace( $network_path, '', $site_path );
+		$slug = is_subdomain_install()
+			? str_replace( '/', '.', $diff )
+			: str_replace( '.', '/', $diff );
+		$slug = rtrim( $slug, '/' );
+	}
+
 	// New network is not zero
 	if ( 0 !== $new_network_id ) {
 
@@ -663,47 +690,29 @@ function move_site( $site_id = 0, $new_network_id = 0 ) {
 			return new WP_Error( 'network_not_exist', __( 'Network does not exist.', 'wp-multi-network' ) );
 		}
 
-		// Default to keeping the same domain & path
-		$domain = $site->domain;
-		$path   = $site->path;
+		// Subdomain
+		if ( is_subdomain_install() ) {
+			$domain = $slug . $new_network->domain;
+			$path   = $new_network->path;
 
-		// Look for nesting
-		$site_path    = $site->domain        . $site->path;
-		$network_path = $old_network->domain . $old_network->path;
-
-		// Site is made up of parent network domain & path
-		if ( false !== strpos( $site_path, $network_path ) ) {
-
-			// Get the diff
-			$diff = str_replace( $network_path, '', $site_path );
-
-			// Subdomain
-			if ( is_subdomain_install() ) {
-				$slug   = str_replace( '/', '.', $diff );
-				$domain = $slug . $new_network->domain;
-				$path   = $new_network->path;
-
-			// Subdirectory
-			} else {
-				$slug   = str_replace( '.', '/', $diff );
-				$domain = $new_network->domain;
-				$path   = $new_network->path . $slug;
-			}
+		// Subdirectory
+		} else {
+			$domain = $new_network->domain;
+			$path   = $new_network->path . $slug;
 		}
 
 	// New network is zero (orphan)
 	} else {
-
-		// Mock a zero network object
 		$new_network = new WP_Network( (object) array(
 			'domain' => 'network.zero',
 			'path'   => '/',
 			'id'     => '0'
 		) );
+	}
 
-		// Set domain & path to that of the current site
-		$domain = $site->domain;
-		$path   = $site->path;
+	// Bail if site already exists
+	if ( ! wp_validate_site_url( $domain, $path, $site->blog_id ) ) {
+		return new WP_Error( 'blog_bad', sprintf( __( 'The site "%s" is invalid, not available, or already exists.', 'wp-multi-network' ), $domain . $path ) );
 	}
 
 	// Move the site is the blogs table
