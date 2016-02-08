@@ -60,23 +60,29 @@ function get_main_site_for_network( $network = null ) {
 	global $wpdb;
 
 	// Get network
-	if ( empty( $network ) ) {
-		$network = $GLOBALS['current_site'];
-	} elseif ( ! is_object( $network ) ) {
-		$network = wp_get_network( $network );
-	}
+	$network = ! empty( $network )
+		? wp_get_network( $network )
+		: $GLOBALS['current_site'];
 
 	// Network not found
 	if ( empty( $network ) ) {
 		return false;
 	}
 
-	$primary_id = isset( $network->blog_id ) ? $network->blog_id : wp_cache_get( 'network:' . $network->id . ':main_site', 'site-options' );
-	if ( ! $primary_id ) {
-		$sql        = "SELECT blog_id FROM {$wpdb->blogs} WHERE domain = %s AND path = %s";
-		$query      = $wpdb->prepare( $sql, $network->domain, $network->path );
-		$primary_id = $wpdb->get_var( $query );
-		wp_cache_add( 'network:' . $network->id . ':main_site', $primary_id, 'site-options' );
+	// Use object site ID
+	if ( ! empty( $network->blog_id ) ) {
+		$primary_id = $network->blog_id;
+
+	// Look for cached value
+	} else {
+		$primary_id = wp_cache_get( "network:{$network->id}:main_site", 'site-options' );
+
+		if ( false === $primary_id ) {
+			$sql        = "SELECT blog_id FROM {$wpdb->blogs} WHERE domain = %s AND path = %s";
+			$query      = $wpdb->prepare( $sql, $network->domain, $network->path );
+			$primary_id = $wpdb->get_var( $query );
+			wp_cache_add( "network:{$network->id}:main_site", $primary_id, 'site-options' );
+		}
 	}
 
 	return (int) $primary_id;
