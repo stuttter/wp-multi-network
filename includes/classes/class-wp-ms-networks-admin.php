@@ -813,18 +813,20 @@ class WP_MS_Networks_Admin {
 		}
 
 		// Update domain & path
-		update_network( $network_id, $_POST['domain'], $_POST['path'] );
+		$updated = update_network( $network_id, $_POST['domain'], $_POST['path'] );
+		$success = 0;
 
-		// Update network title
-		switch_to_network( $network_id );
-		update_site_option( 'site_name', $_POST['title'] );
-		restore_current_network();
+		// Maybe update network title
+		if ( ! is_wp_error( $updated ) ) {
+			update_network_option( $network_id, 'site_name', $network_title );
+			$success = '1';
+		}
 
 		// Handle redirect
 		$this->handler_redirect( array(
 			'id'              => $network_id,
 			'action'          => 'edit_network',
-			'network_updated' => '1',
+			'network_updated' => $success,
 		) );
 	}
 
