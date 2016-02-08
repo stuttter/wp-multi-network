@@ -96,10 +96,10 @@ class WP_MS_Networks_Admin {
 	 * WP_MS_Networks_List_Table class also.
 	 */
 	public function network_admin_menu() {
-		add_menu_page( esc_html__( 'Networks', 'wp-multi-network' ), esc_html__( 'Networks', 'wp-multi-network' ), 'manage_options', 'networks', array( $this, 'networks_page_router' ), 'dashicons-networking', -1 );
+		add_menu_page( esc_html__( 'Networks', 'wp-multi-network' ), esc_html__( 'Networks', 'wp-multi-network' ), 'manage_networks', 'networks', array( $this, 'networks_page_router' ), 'dashicons-networking', -1 );
 
-		add_submenu_page( 'networks', esc_html__( 'All Networks', 'wp-multi-network' ), esc_html__( 'All Networks', 'wp-multi-network' ), 'manage_options', 'networks',        array( $this, 'networks_page_router' ) );
-		add_submenu_page( 'networks', esc_html__( 'Add New',      'wp-multi-network' ), esc_html__( 'Add New',      'wp-multi-network' ), 'manage_options', 'add-new-network', array( $this, 'edit_network_page'    ) );
+		add_submenu_page( 'networks', esc_html__( 'All Networks', 'wp-multi-network' ), esc_html__( 'All Networks', 'wp-multi-network' ), 'list_networks',   'networks',        array( $this, 'networks_page_router' ) );
+		add_submenu_page( 'networks', esc_html__( 'Add New',      'wp-multi-network' ), esc_html__( 'Add New',      'wp-multi-network' ), 'create_networks', 'add-new-network', array( $this, 'edit_network_page'    ) );
 
 		require_once wpmn()->plugin_dir . '/includes/classes/class-wp-ms-networks-list-table.php' ;
 	}
