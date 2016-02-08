@@ -12,7 +12,7 @@ WP Multi Network allows cape wearing super-admins to create new networks of site
 * Activate in the "Plugins" network admin panel using the "Network Activate" link.
 * Comment out the `DOMAIN_CURRENT_SITE` line in your `wp-config.php` file. If you don't have this line, you probably need to enable multisite.
 
-### Single Sign-on
+### Shared Cookies
 
 Stash something similar to this in your `wp-config.php` to share cookies across all sites & networks.
 ```
@@ -54,6 +54,10 @@ define( 'DOMAIN_CURRENT_SITE', $_SERVER['HTTP_HOST'] );
 define( 'WP_HOME',    'http://' . $_SERVER['HTTP_HOST'] );
 define( 'WP_SITEURL', 'http://' . $_SERVER['HTTP_HOST'] );
 ```
+
+### Single Sign-on
+
+Single Sign-on is a way to keep registered users signed into your installation regardless of what domain, subdomain, and path they are viewing. This functionality is outside the scope of what WP Multi Network hopes to provide, but a dedicated SSO plugin made specifically for WP Multi Network is in development.
 
 # FAQ
 
