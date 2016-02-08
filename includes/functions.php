@@ -475,8 +475,12 @@ function update_network( $id, $domain, $path = '' ) {
 		return new WP_Error( 'network_not_exist', __( 'Network does not exist.', 'wp-multi-network' ) );
 	}
 
+	// Get main site for this network
+	$site_id = get_main_site_for_network( $id );
+	$path    = wp_sanitize_site_path( $path );
+
 	// Bail if site URL is invalid
-	if ( ! wp_validate_site_url( $domain, $path, $network->blog_id ) ) {
+	if ( ! wp_validate_site_url( $domain, $path, $site_id ) ) {
 		return new WP_Error( 'blog_bad', sprintf( __( 'The site "%s" is invalid, not available, or already exists.', 'wp-multi-network' ), $domain . $path ) );
 	}
 
@@ -484,14 +488,14 @@ function update_network( $id, $domain, $path = '' ) {
 	$where  = array( 'id' => $network->id );
 	$update = array(
 		'domain' => $domain,
-		'path'   => wp_sanitize_site_path( $path )
+		'path'   => $path
 	);
 
 	// Attempt to update the network
 	$update_result = $wpdb->update( $wpdb->site, $update, $where );
 
 	// Bail if update failed
-	if ( empty( $update_result ) ) {
+	if ( is_wp_error( $update_result ) ) {
 		return new WP_Error( 'network_not_updated', __( 'Network could not be updated.', 'wp-multi-network' ) );
 	}
 
@@ -651,87 +655,19 @@ function move_site( $site_id = 0, $new_network_id = 0 ) {
 		return true;
 	}
 
-	// Store the old network ID for using later
-	$old_network_id = (int) $site->site_id;
-	$old_network    = wp_get_network( $old_network_id );
-
-	// No change
-	if ( $old_network_id === $new_network_id ) {
-		return new WP_Error( 'blog_not_moved', __( 'Site was not moved.', 'wp-multi-network' ) );
-	}
-
-	// Default to keeping the same domain & path
-	$domain = $site->domain;
-	$path   = $site->path;
-	$slug   = '';
-
-	// Look for nesting
-	$site_path    = $site->domain        . $site->path;
-	$network_path = $old_network->domain . $old_network->path;
-	$is_child     = ! strpos( $site_path, $network_path );
-
-	// Site is made up of parent network domain & path
-	if ( true === $is_child ) {
-		$diff = str_replace( $network_path, '', $site_path );
-		$slug = is_subdomain_install()
-			? str_replace( '/', '.', $diff )
-			: str_replace( '.', '/', $diff );
-		$slug = rtrim( $slug, '/' );
-	}
-
-	// New network is not zero
-	if ( 0 !== $new_network_id ) {
-
-		// Get the destination network
-		$new_network = wp_get_network( $new_network_id );
-
-		// Bail if no network
-		if ( empty( $new_network ) ) {
-			return new WP_Error( 'network_not_exist', __( 'Network does not exist.', 'wp-multi-network' ) );
-		}
-
-		// Subdomain
-		if ( is_subdomain_install() ) {
-			$domain = $slug . $new_network->domain;
-			$path   = $new_network->path;
-
-		// Subdirectory
-		} else {
-			$domain = $new_network->domain;
-			$path   = $new_network->path . $slug;
-		}
-
-	// New network is zero (orphan)
-	} else {
-		$new_network = new WP_Network( (object) array(
-			'domain' => 'network.zero',
-			'path'   => '/',
-			'id'     => '0'
-		) );
-	}
-
-	// Bail if site already exists
-	if ( ! wp_validate_site_url( $domain, $path, $site->blog_id ) ) {
-		return new WP_Error( 'blog_bad', sprintf( __( 'The site "%s" is invalid, not available, or already exists.', 'wp-multi-network' ), $domain . $path ) );
-	}
-
 	// Move the site is the blogs table
-	$where  = array( 'blog_id' => $site->blog_id );
-	$update = array(
-		'site_id' => $new_network->id,
-		'domain'  => $domain,
-		'path'    => wp_sanitize_site_path( $path )
-	);
-	$update_result = $wpdb->update( $wpdb->blogs, $update, $where );
+	$where  = array( 'blog_id' => $site->blog_id  );
+	$update = array( 'site_id' => $new_network_id );
+	$result = $wpdb->update( $wpdb->blogs, $update, $where );
 
 	// Bail if site could not be moved
-	if ( empty( $update_result ) ) {
+	if ( empty( $result ) ) {
 		return new WP_Error( 'blog_not_moved', __( 'Site could not be moved.', 'wp-multi-network' ) );
 	}
 
 	// Update old network count
-	if ( 0 !== $old_network_id ) {
-		switch_to_network( $old_network_id );
+	if ( 0 !== $site->site_id ) {
+		switch_to_network( $site->site_id );
 		wp_update_network_site_counts();
 		restore_current_network();
 	}
@@ -743,37 +679,11 @@ function move_site( $site_id = 0, $new_network_id = 0 ) {
 		restore_current_network();
 	}
 
-	// Change relevant blog options
-	$options_table = $wpdb->get_blog_prefix( $site->blog_id ) . 'options';
-	$old_domain    = $old_network->domain . $old_network->path;
-	$new_domain    = $new_network->domain . $new_network->path;
-
-	// Update all site options
-	foreach ( network_options_list() as $option_name ) {
-		$sql    = "SELECT * FROM {$options_table} WHERE option_name = %s";
-		$prep   = $wpdb->prepare( $sql, $option_name );
-		$option = $wpdb->get_row( $prep );
-
-		// No value, so skip it
-		if ( empty( $option ) ) {
-			continue;
-		}
-
-		// Only update option if not already purposely overridden
-		if ( false !== strpos( $option->option_value, $old_domain ) ) {
-			$new_value = str_replace( $old_domain, $new_domain, $option->option_value );
-			update_blog_option( $site->blog_id, $option_name, $new_value );
-		}
-	}
-
-	// Delete rewrite rules for site at old URL
-	delete_blog_option( $site_id, 'rewrite_rules' );
-
 	// Refresh blog details
 	refresh_blog_details( $site_id );
 
 	// Site moved
-	do_action( 'move_site', $site_id, $old_network_id, $new_network_id );
+	do_action( 'move_site', $site_id, $site->site_id, $new_network_id );
 
 	// Return the new network ID as confirmation
 	return $new_network_id;
@@ -788,8 +698,7 @@ function move_site( $site_id = 0, $new_network_id = 0 ) {
 function network_options_list() {
 	return apply_filters( 'network_options_list', array(
 		'siteurl',
-		'home',
-		'fileupload_url'
+		'home'
 	) );
 }
 

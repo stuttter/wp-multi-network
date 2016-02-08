@@ -69,7 +69,7 @@ function wp_validate_site_url( $domain, $path, $site_id = 0 ) {
 	$exists = domain_exists( $domain, $path, get_current_site()->id );
 
 	// Bail if domain is current site ID
-	if ( $exists === $site_id ) {
+	if ( $exists == $site_id ) {
 		return true;
 	}
 
