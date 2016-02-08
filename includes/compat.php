@@ -48,6 +48,92 @@ function wp_sanitize_site_path( $path = '' ) {
 }
 endif;
 
+if ( function_exists( 'wp_validate_site_url' ) ) :
+/**
+ * Is a site URL okay to save?
+ *
+ * @since 1.8.0
+ *
+ * @global wpdb $wpdb
+ *
+ * @param string $domain
+ * @param string $path
+ * @param string $slug
+ *
+ * @return boolean
+ */
+function wp_validate_site_url( $domain, $path, $slug = '' ) {
+	global $wpdb;
+
+	// Bail if empty
+	if ( empty( $slug ) ) {
+		return false;
+	}
+
+	// Bail if not lowercase or numbers
+	if ( preg_match( '/[^a-z0-9]+/', $slug ) ) {
+		return false;
+	}
+
+	// All numeric?
+	if ( preg_match( '/^[0-9]*$/', $slug ) ) {
+		return false;
+	}
+
+	// Bail if less than 4 chars
+	if ( strlen( $slug ) < 4 ) {
+		return false;
+	}
+
+	// Bail if domain exists on this network
+	if ( domain_exists( $domain, $path, get_current_site()->id ) ) {
+		return false;
+	}
+
+	// Bail if user is a super admin
+	if ( is_super_admin() ) {
+		return true;
+	}
+
+	// Get illegal names
+	$illegal_names = get_site_option( 'illegal_names' );
+
+	// Maybe merge reserved names
+	if ( ! is_subdomain_install() ) {
+		$illegal_names = array_merge( $illegal_names, get_subdirectory_reserved_names() );
+	}
+
+	// Bail if contains illegal names
+	if ( in_array( $slug, $illegal_names, true ) ) {
+		return false;
+	}
+
+	// Bail if username exists
+	if ( username_exists( $slug ) ) {
+		return false;
+	}
+
+	// Bail if subdirectory install and page exists on primary site of network
+	if ( ! is_subdomain_install() ) {
+		switch_to_blog( get_current_site()->blog_id );
+		$page = get_page_by_path( $slug );
+		restore_current_blog();
+		if ( ! empty( $page ) ) {
+			return false;
+		}
+	}
+
+	// Bail if site is in signups table
+	$signup = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->signups} WHERE domain = %s AND path = %s", $domain, $path ) );
+	if ( ! empty( $signup ) ) {
+		return false;
+	}
+
+	// Okay, s'all good
+	return true;
+}
+endif;
+
 if ( ! function_exists( 'wp_get_main_network' ) ) :
 /**
  * Get the main network
