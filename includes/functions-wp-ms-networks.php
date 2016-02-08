@@ -442,9 +442,9 @@ function update_network( $id, $domain, $path = '' ) {
 
 	// Set the arrays for updating the db
 	$update = array( 'domain' => $domain );
-	if ( ! empty( $path ) ) {
-		$update['path'] = $path;
-	}
+	$update['path'] = empty( $path )
+		? '/'
+		: '/' . ltrim( trailingslashit( implode( array_filter( explode( '/', $path ) ) ) ), '/' );
 
 	// Attempt to update the network
 	$where         = array( 'id' => $network->id );
@@ -505,7 +505,7 @@ function update_network( $id, $domain, $path = '' ) {
 				$value = $wpdb->get_row( $prep );
 
 				// Update if value exists
-				if ( ! empty( $value ) ) {
+				if ( ! empty( $value ) && ( false !== strpos( $value->option_value, $old_path ) ) ) {
 					$new_value = str_replace( $old_path, $full_path, $value->option_value );
 					update_blog_option( $site->blog_id, $option_name, $new_value );
 				}
