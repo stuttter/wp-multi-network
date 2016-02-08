@@ -877,25 +877,26 @@ class WP_MS_Networks_Admin {
 		$network_id = (int) $_GET['id'];
 
 		// Query for sites in this network
-		$sql   = "SELECT * FROM {$wpdb->blogs} WHERE site_id = %d";
-		$prep  = $wpdb->prepare( $sql, $network_id );
-		$sites = $wpdb->get_results( $prep );
+		$sql    = "SELECT blog_id FROM {$wpdb->blogs} WHERE site_id = %d";
+		$prep   = $wpdb->prepare( $sql, $network_id );
+		$sites  = $wpdb->get_results( $prep );
+		$moving = array_filter( array_merge( $to, $from ) );
 
 		// Loop through and move sites
-		foreach ( $sites as $site ) {
+		foreach ( $moving as $site_id ) {
 
 			// Skip the main site of this network
-			if ( is_main_site_for_network( $site->blog_id, $site->site_id ) ) {
+			if ( is_main_site_for_network( $site_id ) ) {
 				continue;
 			}
 
 			// Coming in
-			if ( in_array( $site->blog_id, $to ) ) {
-				move_site( $site->blog_id, $network_id );
+			if ( in_array( $site_id, $to ) && ! in_array( $site_id, $sites ) ) {
+				move_site( $site_id, $network_id );
 
 			// Orphaning out
-			} elseif ( in_array( $site->blog_id, $from ) ) {
-				move_site( $site->blog_id, 0 );
+			} elseif ( in_array( $site_id, $from ) ) {
+				move_site( $site_id, 0 );
 			}
 		}
 	}
