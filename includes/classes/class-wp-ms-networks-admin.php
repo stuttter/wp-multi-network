@@ -71,7 +71,9 @@ class WP_MS_Networks_Admin {
 		);
 
 		// Add URL to actions links
-		$actions['move'] = '<a href="' . esc_url( $url ) . '" class="move">' . esc_html__( 'Move', 'wp-multi-network' ) . '</a>';
+		if ( current_user_can( 'manage_networks' ) ) {
+			$actions['move'] = '<a href="' . esc_url( $url ) . '" class="move">' . esc_html__( 'Move', 'wp-multi-network' ) . '</a>';
+		}
 
 		// Return modified actions links
 		return $actions;
