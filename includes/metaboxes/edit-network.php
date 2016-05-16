@@ -103,7 +103,7 @@ function wpmn_edit_network_assign_sites_metabox( $network = null ) {
 		$sql        = "SELECT * FROM {$table_name} WHERE option_name = %s";
 		$prep       = $wpdb->prepare( $sql, 'blogname' );
 		$site_name  = $wpdb->get_row( $prep );
-		if (!hasFullNetworkAccess($site->site_id) && !is_super_admin()){
+		if (!hasFullNetworkAccess($site->site_id)){
 			continue;
 		}
 

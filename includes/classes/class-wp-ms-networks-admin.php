@@ -338,7 +338,7 @@ class WP_MS_Networks_Admin {
 			: null;
 
 
-		if ( !is_null($network) && !hasFullNetworkAccess($network->id) && !is_super_admin()){
+		if ( !is_null($network) && !hasFullNetworkAccess($network->id) ){
 			wp_die( esc_html__( 'You don\'t have access to this network.', 'wp-multi-network' ) );
 
 		}
@@ -467,7 +467,7 @@ class WP_MS_Networks_Admin {
 			wp_die( esc_html__( 'Invalid network id.', 'wp-multi-network' ) );
 		}
 
-		if (!hasFullNetworkAccess($network->id) && !is_super_admin()){
+		if (!hasFullNetworkAccess($network->id)){
 			wp_die( esc_html__( 'You don\'t have access to this network.', 'wp-multi-network' ) );
 
 		}

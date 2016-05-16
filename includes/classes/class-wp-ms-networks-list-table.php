@@ -53,7 +53,7 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 		$pagenum           = $this->get_pagenum();
 		$mode              = empty( $_REQUEST['mode']          ) ? 'list' : $_REQUEST['mode'];
 		$search_conditions = isset( $_REQUEST['s']             ) ? stripslashes( trim( $_REQUEST[ 's' ]             ) ) : '';
-		if (is_super_admin()) {
+		if (is_root_admin()) {
 			$admin_user = isset($_REQUEST['network_admin']) ? stripslashes(trim($_REQUEST['network_admin'])) : '';
 		} else {
 			$admin_user = $current_user->user_login;
