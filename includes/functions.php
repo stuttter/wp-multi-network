@@ -613,6 +613,55 @@ function update_network($id, $domain, $path = '')
     return true;
 }
 
+function is_root_admin($networkId=null)
+{
+    global $wpdb;
+
+    if (is_null($networkId)){
+        $site= get_current_site();
+        $networkId= $site->id;
+    }
+    $current_user = wp_get_current_user();
+
+    if (0 !== $current_user->ID) {
+        // check if super for root network
+        // Query
+        $sql = "SELECT meta_value FROM {$wpdb->sitemeta} WHERE site_id = %d and meta_key=%s";
+        $prep = $wpdb->prepare($sql, $networkId, 'admin_user_id');
+        $admin_user_id = $wpdb->get_var($prep);
+
+        return $current_user->ID === $admin_user_id;
+    }
+    return false;
+}
+
+function hasFullNetworkAccess($networkId=null){
+    global $wpdb;
+
+    if (is_null($networkId)){
+        $site= get_current_site();
+        $networkId= $site->id;
+    }
+
+    $current_user = wp_get_current_user();
+    if ( 0 !== $current_user->ID ) {
+        // Query
+        $sql = "SELECT meta_value FROM {$wpdb->sitemeta} WHERE site_id = %d and meta_key=%s";
+        $prep = $wpdb->prepare($sql, $networkId, 'site_admins');
+        $site_admins = $wpdb->get_var($prep);
+        $site_admins = unserialize($site_admins);
+        if ( is_array($site_admins) && in_array($current_user->user_login, $site_admins)){
+            return true;
+        } else{
+            // check if super for root network
+            return is_root_admin();
+        }
+    }
+
+    return false;
+}
+
+
 /**
  * Delete a network and all its blogs
  *
@@ -632,6 +681,9 @@ function delete_network($id, $delete_blogs = false)
         return new WP_Error('network_not_exist', __('Network does not exist.', 'wp-multi-network'));
     }
 
+    if (!hasFullNetworkAccess($id)){
+        return new WP_Error('no_network_access', __('You don\'t have access to this network', 'wp-multi-network'));
+    }
     // ensure there are no blogs attached to this network */
     $sql = "SELECT * FROM {$wpdb->blogs} WHERE site_id = %d";
     $prep = $wpdb->prepare($sql, $network->id);

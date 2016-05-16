@@ -96,17 +96,21 @@ function wpmn_edit_network_assign_sites_metabox( $network = null ) {
 
 	// Get sites
 	$sql   = "SELECT * FROM {$wpdb->blogs}";
-	$sites = $wpdb->get_results( $sql );
-
-	foreach ( $sites as $key => $site ) {
+	$sites_ = $wpdb->get_results( $sql );
+	$sites=[];
+	foreach ( $sites_ as $key => $site ) {
 		$table_name = $wpdb->get_blog_prefix( $site->blog_id ) . "options";
 		$sql        = "SELECT * FROM {$table_name} WHERE option_name = %s";
 		$prep       = $wpdb->prepare( $sql, 'blogname' );
 		$site_name  = $wpdb->get_row( $prep );
+		if (!hasFullNetworkAccess($site->site_id)){
+			continue;
+		}
 
-		$sites[ $key ]->name = stripslashes( $site_name->option_value );
-	} ?>
-
+		$site->name = stripslashes( $site_name->option_value );
+		$sites[]=$site;
+	}
+	?>
 	<table class="assign-sites widefat">
 		<thead>
 			<tr>

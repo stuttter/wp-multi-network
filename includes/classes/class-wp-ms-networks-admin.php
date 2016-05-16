@@ -337,6 +337,13 @@ class WP_MS_Networks_Admin {
 			? wp_get_network( $_GET['id'] )
 			: null;
 
+
+		if ( !is_null($network) && !hasFullNetworkAccess($network->id) ){
+			wp_die( esc_html__( 'You don\'t have access to this network.', 'wp-multi-network' ) );
+
+		}
+
+
 		// Metaboxes
 		add_meta_box( 'wpmn-edit-network-details', esc_html__( 'Details', 'wp-multi-network' ), 'wpmn_edit_network_details_metabox', get_current_screen()->id, 'normal', 'high', array( $network ) );
 		add_meta_box( 'wpmn-edit-network-publish', esc_html__( 'Network', 'wp-multi-network' ), 'wpmn_edit_network_publish_metabox', get_current_screen()->id, 'side',   'high', array( $network ) );
@@ -458,6 +465,11 @@ class WP_MS_Networks_Admin {
 
 		if ( empty( $network ) ) {
 			wp_die( esc_html__( 'Invalid network id.', 'wp-multi-network' ) );
+		}
+
+		if (!hasFullNetworkAccess($network->id)){
+			wp_die( esc_html__( 'You don\'t have access to this network.', 'wp-multi-network' ) );
+
 		}
 
 		// Get sites to delete
