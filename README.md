@@ -12,7 +12,13 @@ Renaming the subdomain is now handled automatically.
 
 A front-end network registration form is being developed as well. Coming soon.
 
-Lastly, some network permissions are updated. Network owners can now only delete their own network. Previouly, they could blow up other networks :O
+Network permissions updated. Introduces two super admins:
+1. Root domain super admin (Global Admin)
+2. Subdomain super admin (Network Admin)
+
+Global Admins can move sites between networks, delete and create networks, and add sites to networks. 
+
+Network Admins can delete their network, change its name, and add sites and users to their network.
 
 # Installation
 
