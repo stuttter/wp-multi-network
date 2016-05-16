@@ -45,14 +45,19 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 	public function prepare_items() {
 		global $mode, $wpdb;
 
+		$current_user = wp_get_current_user();
+
 		// Vars
 		$wild              = '';
 		$per_page          = $this->get_items_per_page( 'networks_per_page' );
 		$pagenum           = $this->get_pagenum();
 		$mode              = empty( $_REQUEST['mode']          ) ? 'list' : $_REQUEST['mode'];
 		$search_conditions = isset( $_REQUEST['s']             ) ? stripslashes( trim( $_REQUEST[ 's' ]             ) ) : '';
-		$admin_user        = isset( $_REQUEST['network_admin'] ) ? stripslashes( trim( $_REQUEST[ 'network_admin' ] ) ) : '' ;
-
+		if (is_super_admin()) {
+			$admin_user = isset($_REQUEST['network_admin']) ? stripslashes(trim($_REQUEST['network_admin'])) : '';
+		} else {
+			$admin_user = $current_user->user_login;
+		}
 		// Searching?
 		if ( false !== strpos( $search_conditions, '*' ) ) {
 			$wild              = '%';
