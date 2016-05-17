@@ -20,15 +20,7 @@ defined( 'ABSPATH' ) || exit;
  */
 function wpmn_edit_network_details_metabox( $network = null ) {
 
-	$sub_domain_network= get_site_option('only_sub_domain_network');
-	$sub_domain_network =($sub_domain_network===false)? true: $sub_domain_network ==='no';
-
-	if (defined('MAIN_DOMAIN')) {
-		$mainDomain =  MAIN_DOMAIN;
-	}else{
-		$current_site =get_current_site();
-		$mainDomain =$current_site->domain;
-	}
+	$sub_domain_network=isSubDomainNetwork();
 
 	// Domain
 	$domain = ! empty( $network->domain )
@@ -46,14 +38,13 @@ function wpmn_edit_network_details_metabox( $network = null ) {
 				<label for="domain"><?php esc_html_e( 'Domain', 'wp-multi-network' ); ?></label>
 			</th>
 			<td>
-			<?php if ($sub_domain_network){
-				$domainParts=explode('.',$domain);
-				$domain = count($domainParts)>1?$domainParts[0]:$domain;
+			<?php if ($sub_domain_network && !isRootDomain($domain)){
+				$domain = getSubDomain($domain);
 				?>
 				<label for="domain">
 					<span class="scheme"><?php echo wp_get_scheme(); ?></span>
 					<input type="text" name="domain" id="domain" class="regular-text" value="<?php echo esc_attr( $domain ); ?>">
-					.<?php echo $mainDomain;?>
+					.<?php echo getMainDomain();?>
 				</label>
 			<?php } else {?>
 				<label for="domain">

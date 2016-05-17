@@ -613,6 +613,74 @@ function update_network($id, $domain, $path = '')
     return true;
 }
 
+/**
+ * Get Main Domain for this website
+ *
+ * @return string
+ */
+function getMainDomain()
+{
+
+    if (defined('MAIN_DOMAIN')) {
+        $mainDomain = MAIN_DOMAIN;
+    } else {
+        $rootSite = wp_get_network(get_main_network_id());
+        $mainDomain = $rootSite->domain;
+    }
+
+    return $mainDomain;
+}
+
+/**
+ * Is this sub domain network
+ *
+ * @return bool
+ */
+function isSubDomainNetwork()
+{
+    $sub_domain_network = get_site_option('only_sub_domain_network');
+
+    return ($sub_domain_network === false) ? true : $sub_domain_network === 'no';
+}
+
+/**
+ * Get full domain name
+ *
+ * @param $subDomain
+ *
+ * @return string
+ */
+function getFullDomain($subDomain)
+{
+    if (isSubDomainNetwork()) {
+        return $subDomain . "." . getMainDomain();
+    } else {
+        return $subDomain;
+    }
+}
+function isRootDomain($domain){
+    $mainDomain=getMainDomain();
+
+    return strtolower($mainDomain)=== strtolower($domain);
+}
+
+/**
+ * Get sub domain from full domain
+ *
+ * @param $domain
+ * @return string
+ */
+function getSubDomain($domain)
+{
+    $mainDomain=getMainDomain();
+    $out = $domain;
+    if (isSubDomainNetwork() && !isRootDomain($domain) ) {
+        $out = str_replace("." . $mainDomain, "", $domain);
+    }
+
+    return $out;
+}
+
 function is_root_admin()
 {
     global $wpdb;
@@ -626,29 +694,30 @@ function is_root_admin()
         $site_admins = $wpdb->get_var($prep);
         $site_admins = unserialize($site_admins);
 
-        return ( is_array($site_admins) && in_array($current_user->user_login, $site_admins));
+        return (is_array($site_admins) && in_array($current_user->user_login, $site_admins));
     }
     return false;
 }
 
-function hasFullNetworkAccess($networkId=null){
+function hasFullNetworkAccess($networkId = null)
+{
     global $wpdb;
 
-    if (is_null($networkId)){
-        $site= get_current_site();
-        $networkId= $site->id;
+    if (is_null($networkId)) {
+        $site = get_current_site();
+        $networkId = $site->id;
     }
 
     $current_user = wp_get_current_user();
-    if ( 0 !== $current_user->ID ) {
+    if (0 !== $current_user->ID) {
         // Query
         $sql = "SELECT meta_value FROM {$wpdb->sitemeta} WHERE site_id = %d and meta_key=%s";
         $prep = $wpdb->prepare($sql, $networkId, 'site_admins');
         $site_admins = $wpdb->get_var($prep);
         $site_admins = unserialize($site_admins);
-        if ( is_array($site_admins) && in_array($current_user->user_login, $site_admins)){
+        if (is_array($site_admins) && in_array($current_user->user_login, $site_admins)) {
             return true;
-        } else{
+        } else {
             // check if super for root network
             return is_root_admin();
         }
@@ -677,7 +746,7 @@ function delete_network($id, $delete_blogs = false)
         return new WP_Error('network_not_exist', __('Network does not exist.', 'wp-multi-network'));
     }
 
-    if (!hasFullNetworkAccess($id)){
+    if (!hasFullNetworkAccess($id)) {
         return new WP_Error('no_network_access', __('You don\'t have access to this network', 'wp-multi-network'));
     }
     // ensure there are no blogs attached to this network */
