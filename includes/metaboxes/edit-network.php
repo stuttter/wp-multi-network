@@ -64,7 +64,7 @@ function wpmn_edit_network_details_metabox( $network = null ) {
 			</td>
 
 		</tr>
-		<?php  if (!empty($network) || !$sub_domain_network ){?>
+		<?php  if (!$sub_domain_network ){?>
 		<tr class="form-field form-required">
 			<th scope="row">
 				<label for="path"><?php esc_html_e( 'Path', 'wp-multi-network' ); ?></label>
