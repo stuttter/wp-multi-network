@@ -20,6 +20,16 @@ defined( 'ABSPATH' ) || exit;
  */
 function wpmn_edit_network_details_metabox( $network = null ) {
 
+	$sub_domain_network= get_site_option('only_sub_domain_network');
+	$sub_domain_network =($sub_domain_network===false)? true: $sub_domain_network ==='no';
+
+	if (defined('MAIN_DOMAIN')) {
+		$mainDomain =  MAIN_DOMAIN;
+	}else{
+		$current_site =get_current_site();
+		$mainDomain =$current_site->domain;
+	}
+
 	// Domain
 	$domain = ! empty( $network->domain )
 		? $network->domain
@@ -36,12 +46,25 @@ function wpmn_edit_network_details_metabox( $network = null ) {
 				<label for="domain"><?php esc_html_e( 'Domain', 'wp-multi-network' ); ?></label>
 			</th>
 			<td>
+			<?php if ($sub_domain_network){
+				$domainParts=explode('.',$domain);
+				$domain = count($domainParts)>1?$domainParts[0]:$domain;
+				?>
+				<label for="domain">
+					<span class="scheme"><?php echo wp_get_scheme(); ?></span>
+					<input type="text" name="domain" id="domain" class="regular-text" value="<?php echo esc_attr( $domain ); ?>">
+					.<?php echo $mainDomain;?>
+				</label>
+			<?php } else {?>
 				<label for="domain">
 					<span class="scheme"><?php echo wp_get_scheme(); ?></span>
 					<input type="text" name="domain" id="domain" class="regular-text" value="<?php echo esc_attr( $domain ); ?>">
 				</label>
+			<?php }?>
 			</td>
+
 		</tr>
+		<?php  if (!empty($network) || !$sub_domain_network ){?>
 		<tr class="form-field form-required">
 			<th scope="row">
 				<label for="path"><?php esc_html_e( 'Path', 'wp-multi-network' ); ?></label>
@@ -51,6 +74,7 @@ function wpmn_edit_network_details_metabox( $network = null ) {
 				<p class="description"><?php esc_html_e( 'Use "/" if you are unsure.', 'wp-multi-network' ); ?></p>
 			</td>
 		</tr>
+		<?php }?>
 	</table>
 
 <?php

@@ -196,7 +196,7 @@ class WP_MS_Networks_Admin {
 	public function page_save_handlers() {
 
 		// Create network
-		if ( isset( $_POST['action'] ) && isset( $_POST['domain'] ) && isset( $_POST['path'] ) && ( 'create' === $_POST['action'] ) ) {
+		if ( isset( $_POST['action'] ) && isset( $_POST['domain'] ) && ( 'create' === $_POST['action'] ) ) {
 			$this->add_network_handler();
 		}
 
@@ -352,7 +352,7 @@ class WP_MS_Networks_Admin {
 		if ( empty( $network ) ) {
 			$network_title = '';
 
-			add_meta_box( 'wpmn-edit-network-new-site', esc_html__( 'Root Site', 'wp-multi-network' ), 'wpmn_edit_network_new_site_metabox', get_current_screen()->id, 'advanced', 'high', array( $network ) );
+			//add_meta_box( 'wpmn-edit-network-new-site', esc_html__( 'Root Site', 'wp-multi-network' ), 'wpmn_edit_network_new_site_metabox', get_current_screen()->id, 'advanced', 'high', array( $network ) );
 		} else {
 			switch_to_network( $network->id );
 
@@ -712,6 +712,16 @@ class WP_MS_Networks_Admin {
 	 */
 	private function add_network_handler() {
 
+		$sub_domain_network= get_site_option('only_sub_domain_network');
+		$sub_domain_network =($sub_domain_network===false)? true: $sub_domain_network ==='no';
+
+		if (defined('MAIN_DOMAIN')) {
+			$mainDomain =  MAIN_DOMAIN;
+		}else{
+			$current_site =get_current_site();
+			$mainDomain =$current_site->domain;
+		}
+
 		// Options to copy
 		if ( isset( $_POST['options_to_clone'] ) && is_array( $_POST['options_to_clone'] ) ) {
 			$options_to_clone = array_keys( $_POST['options_to_clone'] );
@@ -734,10 +744,14 @@ class WP_MS_Networks_Admin {
 			? $_POST['domain']
 			: '';
 
+		if ($sub_domain_network){
+			$network_domain =$network_domain.".".$mainDomain;
+		}
+
 		// Path
 		$network_path = isset( $_POST['path'] )
 			? $_POST['path']
-			: '';
+			: '/';
 
 		// Path
 		$site_name = ! empty( $_POST['new_site'] )
@@ -793,6 +807,16 @@ class WP_MS_Networks_Admin {
 	 */
 	private function update_network_handler() {
 
+		$sub_domain_network= get_site_option('only_sub_domain_network');
+		$sub_domain_network =($sub_domain_network===false)? true: $sub_domain_network ==='no';
+
+		if (defined('MAIN_DOMAIN')) {
+			$mainDomain =  MAIN_DOMAIN;
+		}else{
+			$current_site =get_current_site();
+			$mainDomain =$current_site->domain;
+		}
+
 		// Cast
 		$network_id = (int) $_POST['network_id'];
 
@@ -814,7 +838,12 @@ class WP_MS_Networks_Admin {
 		// Path
 		$network_path = isset( $_POST['path'] )
 			? $_POST['path']
-			: '';
+			: '/';
+
+		if ($sub_domain_network){
+			$network_domain =$network_domain.'.'.$mainDomain;
+		}
+
 
 		// Bail if missing fields
 		if ( empty( $network_title ) || empty( $network_domain ) || empty( $network_path ) ) {
@@ -827,7 +856,7 @@ class WP_MS_Networks_Admin {
 		}
 
 		// Update domain & path
-		$updated = update_network( $network_id, $_POST['domain'], $_POST['path'] );
+		$updated = update_network( $network_id,$network_domain, $network_path);
 		$success = 0;
 
 		// Maybe update network title
