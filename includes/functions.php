@@ -613,24 +613,20 @@ function update_network($id, $domain, $path = '')
     return true;
 }
 
-function is_root_admin($networkId=null)
+function is_root_admin()
 {
     global $wpdb;
 
-    if (is_null($networkId)){
-        $site= get_current_site();
-        $networkId= $site->id;
-    }
     $current_user = wp_get_current_user();
 
     if (0 !== $current_user->ID) {
         // check if super for root network
-        // Query
         $sql = "SELECT meta_value FROM {$wpdb->sitemeta} WHERE site_id = %d and meta_key=%s";
-        $prep = $wpdb->prepare($sql, $networkId, 'admin_user_id');
-        $admin_user_id = $wpdb->get_var($prep);
+        $prep = $wpdb->prepare($sql, get_main_network_id(), 'site_admins');
+        $site_admins = $wpdb->get_var($prep);
+        $site_admins = unserialize($site_admins);
 
-        return $current_user->ID === $admin_user_id;
+        return ( is_array($site_admins) && in_array($current_user->user_login, $site_admins));
     }
     return false;
 }

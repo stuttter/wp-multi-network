@@ -65,7 +65,14 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 		}
 
 		// Totals
-		$total_query = "SELECT COUNT( id ) FROM {$wpdb->site} WHERE 1=1 ";
+		if ($admin_user !==''){
+			$totalWhere= ' meta.meta_value LIKE "%' . $admin_user . '%"';
+		}else{
+			$totalWhere='1=1';
+		}
+		$total_query = "SELECT COUNT( DISTINCT {$wpdb->site}.id ) FROM {$wpdb->site}
+						LEFT JOIN {$wpdb->sitemeta} meta ON meta.meta_key = 'site_admins' AND meta.site_id = {$wpdb->site}.id
+						WHERE {$totalWhere} ";
 
 		// Big Join
 		$query = "SELECT {$wpdb->site}.*, meta1.meta_value as sitename, meta2.meta_value as network_admins, COUNT({$wpdb->blogs}.blog_id) as blogs, {$wpdb->blogs}.path as blog_path, {$wpdb->blogs}.site_id as site_id
