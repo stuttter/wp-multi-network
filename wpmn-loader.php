@@ -1,15 +1,15 @@
 <?php
 
 /**
- * Plugin Name: WP Multi-Network
- * Plugin URI:  https://wordpress.org/plugins/wp-multi-network/
- * Description: A Network Management UI for global administrators in WordPress Multisite
- * Version:     1.8.0
- * Author:      johnjamesjacoby, ddean, BrianLayman, rmccue
- * Author URI:  http://jjj.me
+ * Plugin Name: WP Multi-Network On Subdomains
+ * Plugin URI:  https://wordpress.org/plugins/wp-multi-network-on-subdomains/
+ * Description: A Network Management UI for global administrators in WordPress Multisite - for subdomain networks and subdirectory sites
+ * Version:     1.0
+ * Author:      johnjamesjacoby, ddean, BrianLayman, rmccue, gabethegrape, ValeraBatanov
+ * Author URI:  http://digitalbojects.ca
  * Tags:        blog, domain, mapping, multisite, network, networks, path, site, subdomain
  * Network:     true
- * Text Domain: wp-multi-network
+ * Text Domain: wp-multi-network-on-subdomains
  * Domain Path: /languages
  */
 
