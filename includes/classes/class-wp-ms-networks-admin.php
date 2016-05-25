@@ -821,7 +821,11 @@ class WP_MS_Networks_Admin
             }
 
             // Activate WPMN on this new network
-            update_site_option('active_sitewide_plugins', array('wp-multi-network/wpmn-loader.php' => time()));
+            $plugins=get_site_option('active_sitewide_plugins',[]);
+            if (!isset($plugins['wp-multi-network/wpmn-loader.php'])){
+                $plugins['wp-multi-network/wpmn-loader.php']=time();
+            }
+            update_site_option('active_sitewide_plugins', $plugins);
             restore_current_network();
 
             // Redirect args
