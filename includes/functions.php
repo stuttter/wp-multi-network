@@ -107,7 +107,7 @@ function user_has_networks($user_id = 0)
 
         foreach ((array)$all_admins as $network) {
             $network_admins = maybe_unserialize($network->meta_value);
-            if (in_array($user_login, $network_admins, true)) {
+            if (is_array($network_admins) && in_array($user_login, $network_admins, true)) {
                 $my_networks[] = (int)$network->site_id;
             }
         }
