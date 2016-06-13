@@ -714,7 +714,7 @@ function hasFullNetworkAccess($networkId = null)
         $sql = "SELECT meta_value FROM {$wpdb->sitemeta} WHERE site_id = %d and meta_key=%s";
         $prep = $wpdb->prepare($sql, $networkId, 'site_admins');
         $site_admins = $wpdb->get_var($prep);
-        if (!is_null($site_admins)) {
+        if (!is_null($site_admins) && preg_match( "/^(O:|a:)/", $site_admins )) {
             $site_admins = unserialize($site_admins);
             if (is_array($site_admins) && in_array($current_user->user_login, $site_admins)) {
                 return true;
