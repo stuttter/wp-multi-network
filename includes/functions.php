@@ -58,6 +58,15 @@ function user_has_networks( $user_id = 0 ) {
 		$user_login = $user_info->user_login;
 	}
 
+	// This filter can be used to short-circuit the process of retrieving network IDs of a user
+	$my_networks = apply_filters( 'networks_pre_user_is_network_admin', null, $user_id );
+	if ( null !== $my_networks ) {
+		if ( empty( $my_networks ) ) {
+			$my_networks = false;
+		}
+		return apply_filters( 'networks_user_is_network_admin', $my_networks, $user_id );
+	}
+
 	// Setup the networks array
 	$my_networks = array();
 
