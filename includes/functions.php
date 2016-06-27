@@ -74,16 +74,9 @@ function user_has_networks( $user_id = 0 ) {
 	if ( is_multisite() ) {
 
 		// Get the network admins
-		$sql        = "SELECT site_id, meta_value FROM {$wpdb->sitemeta} WHERE meta_key = %s";
-		$query      = $wpdb->prepare( $sql, 'site_admins' );
-		$all_admins = $wpdb->get_results( $query );
-
-		foreach( (array) $all_admins as $network ) {
-			$network_admins = maybe_unserialize( $network->meta_value );
-			if ( in_array( $user_login, $network_admins, true ) ) {
-				$my_networks[] = (int) $network->site_id;
-			}
-		}
+		$sql         = "SELECT site_id FROM {$wpdb->sitemeta} WHERE meta_key = %s AND meta_value LIKE %s";
+		$query       = $wpdb->prepare( $sql, 'site_admins', '%"' . $user_login . '"%' );
+		$my_networks = array_map( 'intval', $wpdb->get_col( $query ) );
 	}
 
 	// If there are no networks, return false
