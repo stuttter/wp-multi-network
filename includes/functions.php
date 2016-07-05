@@ -9,6 +9,7 @@
 // Exit if accessed directly
 defined( 'ABSPATH' ) || exit;
 
+if ( ! funnction_exists( 'network_exists' ) ) :
 /**
  * Check to see if a network exists. Will check the networks object before
  * checking the database.
@@ -20,7 +21,9 @@ defined( 'ABSPATH' ) || exit;
 function network_exists( $network_id ) {
 	return wp_get_network( $network_id );
 }
+endif;
 
+if ( ! funnction_exists( 'get_networks' ) ) :
 /**
  * Get all networks
  *
@@ -33,7 +36,9 @@ function get_networks() {
 
 	return $wpdb->get_results( "SELECT * FROM {$wpdb->site}" );
 }
+endif;
 
+if ( ! funnction_exists( 'user_has_networks' ) ) :
 /**
  *
  * Return array of networks for which user is super admin, or FALSE if none
@@ -86,7 +91,9 @@ function user_has_networks( $user_id = 0 ) {
 
 	return apply_filters( 'networks_user_is_network_admin', $my_networks, $user_id );
 }
+endif;
 
+if ( ! funnction_exists( 'get_main_site_for_network' ) ) :
 /**
  * Get main site for a network
  *
@@ -124,7 +131,9 @@ function get_main_site_for_network( $network = null ) {
 
 	return (int) $primary_id;
 }
+endif;
 
+if ( ! funnction_exists( 'is_main_site_for_network' ) ) :
 /**
  * Is a site the main site for it's network?
  *
@@ -148,7 +157,9 @@ function is_main_site_for_network( $site_id ) {
 	// Compare & return
 	return ( (int) $main === (int) $site_id );
 }
+endif;
 
+if ( ! funnction_exists( 'get_network_name' ) ) :
 /**
  * Get name of the current network
  *
@@ -164,7 +175,9 @@ function get_network_name() {
 
 	return $site_name;
 }
+endif;
 
+if ( ! funnction_exists( 'switch_to_network' ) ) :
 /**
  * Problem: the various *_site_options() functions operate only on the current network
  * Workaround: change the current network
@@ -221,7 +234,9 @@ function switch_to_network( $new_network = 0, $validate = false ) {
 
 	return true;
 }
+endif;
 
+if ( ! funnction_exists( 'restore_current_network' ) ) :
 /**
  * Return to the current network
  *
@@ -257,7 +272,9 @@ function restore_current_network() {
 
 	return true;
 }
+endif;
 
+if ( ! funnction_exists( 'add_network' ) ) :
 /**
  * Add a new network
  *
@@ -456,7 +473,9 @@ function add_network( $args = array() ) {
 
 	return $new_network_id;
 }
+endif;
 
+if ( ! funnction_exists( 'update_network' ) ) :
 /**
  * Modify the domain/path of a network, and update all of its blogs
  *
@@ -571,7 +590,9 @@ function update_network( $id, $domain, $path = '' ) {
 	// Network updated
 	return true;
 }
+endif;
 
+if ( ! funnction_exists( 'delete_network' ) ) :
 /**
  * Delete a network and all its blogs
  *
@@ -624,7 +645,9 @@ function delete_network( $id, $delete_blogs = false ) {
 	// Network deleted
 	do_action( 'delete_network', $network );
 }
+endif;
 
+if ( ! funnction_exists( 'move_site' ) ) :
 /**
  * Move a site to a new network
  *
@@ -690,7 +713,9 @@ function move_site( $site_id = 0, $new_network_id = 0 ) {
 	// Return the new network ID as confirmation
 	return $new_network_id;
 }
+endif;
 
+if ( ! funnction_exists( 'network_options_list' ) ) :
 /**
  * Return list of URL-dependent options
  *
@@ -703,7 +728,9 @@ function network_options_list() {
 		'home'
 	) );
 }
+endif;
 
+if ( ! funnction_exists( 'network_options_to_copy' ) ) :
 /**
  * Return list of default options to copy
  *
@@ -725,3 +752,4 @@ function network_options_to_copy() {
 		'welcome_email'         => __( 'Content of welcome email'               , 'wp-multi-network' )
 	) );
 }
+endif;
