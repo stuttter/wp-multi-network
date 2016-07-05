@@ -9,7 +9,7 @@
 // Exit if accessed directly
 defined( 'ABSPATH' ) || exit;
 
-if ( ! funnction_exists( 'network_exists' ) ) :
+if ( ! function_exists( 'network_exists' ) ) :
 /**
  * Check to see if a network exists. Will check the networks object before
  * checking the database.
@@ -23,7 +23,7 @@ function network_exists( $network_id ) {
 }
 endif;
 
-if ( ! funnction_exists( 'get_networks' ) ) :
+if ( ! function_exists( 'get_networks' ) ) :
 /**
  * Get all networks
  *
@@ -38,7 +38,7 @@ function get_networks() {
 }
 endif;
 
-if ( ! funnction_exists( 'user_has_networks' ) ) :
+if ( ! function_exists( 'user_has_networks' ) ) :
 /**
  *
  * Return array of networks for which user is super admin, or FALSE if none
@@ -93,7 +93,7 @@ function user_has_networks( $user_id = 0 ) {
 }
 endif;
 
-if ( ! funnction_exists( 'get_main_site_for_network' ) ) :
+if ( ! function_exists( 'get_main_site_for_network' ) ) :
 /**
  * Get main site for a network
  *
@@ -133,7 +133,7 @@ function get_main_site_for_network( $network = null ) {
 }
 endif;
 
-if ( ! funnction_exists( 'is_main_site_for_network' ) ) :
+if ( ! function_exists( 'is_main_site_for_network' ) ) :
 /**
  * Is a site the main site for it's network?
  *
@@ -159,7 +159,7 @@ function is_main_site_for_network( $site_id ) {
 }
 endif;
 
-if ( ! funnction_exists( 'get_network_name' ) ) :
+if ( ! function_exists( 'get_network_name' ) ) :
 /**
  * Get name of the current network
  *
@@ -177,7 +177,7 @@ function get_network_name() {
 }
 endif;
 
-if ( ! funnction_exists( 'switch_to_network' ) ) :
+if ( ! function_exists( 'switch_to_network' ) ) :
 /**
  * Problem: the various *_site_options() functions operate only on the current network
  * Workaround: change the current network
@@ -236,7 +236,7 @@ function switch_to_network( $new_network = 0, $validate = false ) {
 }
 endif;
 
-if ( ! funnction_exists( 'restore_current_network' ) ) :
+if ( ! function_exists( 'restore_current_network' ) ) :
 /**
  * Return to the current network
  *
@@ -274,7 +274,7 @@ function restore_current_network() {
 }
 endif;
 
-if ( ! funnction_exists( 'add_network' ) ) :
+if ( ! function_exists( 'add_network' ) ) :
 /**
  * Add a new network
  *
@@ -475,7 +475,7 @@ function add_network( $args = array() ) {
 }
 endif;
 
-if ( ! funnction_exists( 'update_network' ) ) :
+if ( ! function_exists( 'update_network' ) ) :
 /**
  * Modify the domain/path of a network, and update all of its blogs
  *
@@ -592,7 +592,7 @@ function update_network( $id, $domain, $path = '' ) {
 }
 endif;
 
-if ( ! funnction_exists( 'delete_network' ) ) :
+if ( ! function_exists( 'delete_network' ) ) :
 /**
  * Delete a network and all its blogs
  *
@@ -647,7 +647,7 @@ function delete_network( $id, $delete_blogs = false ) {
 }
 endif;
 
-if ( ! funnction_exists( 'move_site' ) ) :
+if ( ! function_exists( 'move_site' ) ) :
 /**
  * Move a site to a new network
  *
@@ -715,7 +715,7 @@ function move_site( $site_id = 0, $new_network_id = 0 ) {
 }
 endif;
 
-if ( ! funnction_exists( 'network_options_list' ) ) :
+if ( ! function_exists( 'network_options_list' ) ) :
 /**
  * Return list of URL-dependent options
  *
@@ -730,7 +730,7 @@ function network_options_list() {
 }
 endif;
 
-if ( ! funnction_exists( 'network_options_to_copy' ) ) :
+if ( ! function_exists( 'network_options_to_copy' ) ) :
 /**
  * Return list of default options to copy
  *
