@@ -882,7 +882,33 @@ class WP_MS_Networks_Admin {
 		$sql    = "SELECT blog_id FROM {$wpdb->blogs} WHERE site_id = %d";
 		$prep   = $wpdb->prepare( $sql, $network_id );
 		$sites  = $wpdb->get_results( $prep );
-		$moving = array_filter( array_merge( $to, $from ) );
+
+		// Get site's ids list
+		$sitesList = array();
+		foreach ( $sites as $site ) {
+			$sitesList[] = $site->blog_id;
+		}
+
+		// Find sites which need to be moved into current network
+		$movingTo = [];
+		foreach ( $to as $site_id ) {
+			if ( in_array( $site_id, $sitesList ) ) {
+				continue;
+			}
+			$movingTo[] = $site_id;
+		}
+
+		// Find sites which need to be moved out from current network
+		$movingFrom = [];
+		foreach ( $from as $site_id ) {
+			if ( ! in_array( $site_id, $sitesList ) ) {
+				continue;
+			}
+			$movingFrom[] = $site_id;
+		}
+
+		// Merge into one array
+		$moving = array_filter( array_merge( $movingTo, $movingFrom ) );
 
 		// Loop through and move sites
 		foreach ( $moving as $site_id ) {
@@ -893,7 +919,7 @@ class WP_MS_Networks_Admin {
 			}
 
 			// Coming in
-			if ( in_array( $site_id, $to ) && ! in_array( $site_id, $sites ) ) {
+			if ( in_array( $site_id, $to ) && ! in_array( $site_id, $sitesList ) ) {
 				move_site( $site_id, $network_id );
 
 			// Orphaning out

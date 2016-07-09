@@ -38,6 +38,46 @@ function get_networks() {
 }
 endif;
 
+if ( ! function_exists( 'get_network_domain' ) ) :
+	/**
+	 * Get network's domain name
+	 *
+	 * @author Maxime CULEA
+	 * @since 1.7.1
+	 *
+	 * @param $network_id
+	 *
+	 * @return null|string
+	 */
+	function get_network_domain( $network_id ) {
+		global $wpdb;
+
+		return $wpdb->get_var( $wpdb->prepare( "SELECT domain FROM {$wpdb->site} WHERE id= %d", $network_id ) );
+	}
+endif;
+
+if ( ! function_exists( 'has_path_for_network' ) ) :
+	/**
+	 * Check if given path already exist in the given network (domain)
+	 *
+	 * @author Maxime CULEA
+	 * @since 1.7.1
+	 *
+	 * @param $network_id
+	 * @param $path
+	 *
+	 * @return bool
+	 */
+	function has_path_for_network( $network_id, $path ) {
+		global $wpdb;
+
+		// Check for existing network
+		$network = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->blogs} WHERE site_id = %d AND path = %s LIMIT 1", $network_id, $path ) );
+
+		return ! empty( $network );
+	}
+endif;
+
 if ( ! function_exists( 'user_has_networks' ) ) :
 /**
  *
@@ -680,9 +720,22 @@ function move_site( $site_id = 0, $new_network_id = 0 ) {
 		return true;
 	}
 
+	// Check if path already exist for network
+	if ( has_path_for_network( $new_network_id, $site->path ) ) {
+		return true;
+	}
+
 	// Move the site is the blogs table
 	$where  = array( 'blog_id' => $site->blog_id  );
 	$update = array( 'site_id' => $new_network_id );
+
+	// Get network domain
+	$new_network_domain = get_network_domain( $new_network_id );
+	if ( $new_network_id !== 0 && ! is_null( $new_network_domain ) ) {
+		// Change site domain with the retrieved network's domain
+		$update['domain'] = $new_network_domain;
+	}
+
 	$result = $wpdb->update( $wpdb->blogs, $update, $where );
 
 	// Bail if site could not be moved
@@ -702,6 +755,12 @@ function move_site( $site_id = 0, $new_network_id = 0 ) {
 		switch_to_network( $new_network_id );
 		wp_update_network_site_counts();
 		restore_current_network();
+	}
+
+	// Update blog's siteurl and home options
+	if ( 0 !== $new_network_id ) {
+		update_blog_option( $site_id, 'siteurl', str_replace( "/{$site->domain}/", "/{$new_network_domain}/", get_blog_option( $site_id, 'siteurl' ) ) );
+		update_blog_option( $site_id, 'home', str_replace( "/{$site->domain}/", "/{$new_network_domain}/", get_blog_option( $site_id, 'home' ) ) );
 	}
 
 	// Refresh blog details
