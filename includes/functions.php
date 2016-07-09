@@ -38,6 +38,46 @@ function get_networks() {
 }
 endif;
 
+if ( ! function_exists( 'get_network_domain' ) ) :
+	/**
+	 * Get network's domain name
+	 *
+	 * @author Maxime CULEA
+	 * @since 1.7.1
+	 *
+	 * @param $network_id
+	 *
+	 * @return null|string
+	 */
+	function get_network_domain( $network_id ) {
+		global $wpdb;
+
+		return $wpdb->get_var( $wpdb->prepare( "SELECT domain FROM {$wpdb->site} WHERE id= %d", $network_id ) );
+	}
+endif;
+
+if ( ! function_exists( 'has_path_for_network' ) ) :
+	/**
+	 * Check if given path already exist in the given network (domain)
+	 *
+	 * @author Maxime CULEA
+	 * @since 1.7.1
+	 *
+	 * @param $network_id
+	 * @param $path
+	 *
+	 * @return bool
+	 */
+	function has_path_for_network( $network_id, $path ) {
+		global $wpdb;
+
+		// Check for existing network
+		$network = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->blogs} WHERE site_id = %d AND path = %s LIMIT 1", $network_id, $path ) );
+
+		return ! empty( $network );
+	}
+endif;
+
 if ( ! function_exists( 'user_has_networks' ) ) :
 /**
  *
