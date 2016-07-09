@@ -720,9 +720,22 @@ function move_site( $site_id = 0, $new_network_id = 0 ) {
 		return true;
 	}
 
+	// Check if path already exist for network
+	if ( has_path_for_network( $new_network_id, $site->path ) ) {
+		return true;
+	}
+
 	// Move the site is the blogs table
 	$where  = array( 'blog_id' => $site->blog_id  );
 	$update = array( 'site_id' => $new_network_id );
+
+	// Get network domain
+	$new_network_domain = get_network_domain( $new_network_id );
+	if ( $new_network_id !== 0 && ! is_null( $new_network_domain ) ) {
+		// Change site domain with the retrieved network's domain
+		$update['domain'] = $new_network_domain;
+	}
+
 	$result = $wpdb->update( $wpdb->blogs, $update, $where );
 
 	// Bail if site could not be moved
@@ -742,6 +755,12 @@ function move_site( $site_id = 0, $new_network_id = 0 ) {
 		switch_to_network( $new_network_id );
 		wp_update_network_site_counts();
 		restore_current_network();
+	}
+
+	// Update blog's siteurl and home options
+	if ( 0 !== $new_network_id ) {
+		update_blog_option( $site_id, 'siteurl', str_replace( "/{$site->domain}/", "/{$new_network_domain}/", get_blog_option( $site_id, 'siteurl' ) ) );
+		update_blog_option( $site_id, 'home', str_replace( "/{$site->domain}/", "/{$new_network_domain}/", get_blog_option( $site_id, 'home' ) ) );
 	}
 
 	// Refresh blog details
