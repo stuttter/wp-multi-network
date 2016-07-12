@@ -23,21 +23,6 @@ function network_exists( $network_id ) {
 }
 endif;
 
-if ( ! function_exists( 'get_networks' ) ) :
-/**
- * Get all networks
- *
- * @since 1.0.0
- *
- * @return array Networks available on the installation
- */
-function get_networks() {
-	global $wpdb;
-
-	return $wpdb->get_results( "SELECT * FROM {$wpdb->site}" );
-}
-endif;
-
 if ( ! function_exists( 'user_has_networks' ) ) :
 /**
  *

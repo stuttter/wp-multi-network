@@ -134,3 +134,26 @@ function delete_network_option( $network_id, $key ) {
 	return $result;
 }
 endif;
+
+if ( ! function_exists( 'get_networks' ) ) :
+/**
+ * Get all networks
+ *
+ * @since 1.0.0
+ * @deprecated since version 4.6.0 WordPress
+ *
+ * @return array Networks available on the installation
+ */
+function get_networks( $args = array() ) {
+
+	// Support for WordPress 4.6.0, if you're doing something really weird
+	if ( class_exists( 'WP_Network_Query' ) ) {
+		$query = new WP_Network_Query();
+
+		return $query->query( $args );
+	}
+
+	// The original get_networks() function
+	return $GLOBALS['wpdb']->get_results( "SELECT * FROM {$GLOBALS['wpdb']->site}" );
+}
+endif;
