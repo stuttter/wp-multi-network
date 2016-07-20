@@ -454,7 +454,7 @@ function add_network( $args = array() ) {
 		restore_current_network();
 	}
 
-	do_action( 'add_network', $new_network_id );
+	do_action( 'add_network', $new_network_id, $r );
 
 	return $new_network_id;
 }
