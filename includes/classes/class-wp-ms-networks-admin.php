@@ -49,8 +49,8 @@ class WP_MS_Networks_Admin {
 		$network_admin = network_admin_url( 'admin.php' );
 		$args          = array( 'page' => 'networks' );
 		$result        = add_query_arg( $args, $network_admin );
-
-		return $result;
+		
+		return apply_filters( 'edit_networks_screen_url', $result );
 	}
 
 	/**
