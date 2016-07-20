@@ -69,11 +69,10 @@ class WP_MS_Networks_Admin {
 		}
 
 		// Assemble URL
-		$url = add_query_arg( array(
+		$url = $this->admin_url( array(
 			'action'  => 'move',
-			'blog_id' => (int) $cur_blog_id ),
-			$this->admin_url()
-		);
+			'blog_id' => (int) $cur_blog_id,
+		) );
 
 		// Add URL to actions links
 		if ( current_user_can( 'manage_networks' ) ) {
@@ -308,7 +307,7 @@ class WP_MS_Networks_Admin {
 				// Add New link
 				if ( current_user_can( 'create_networks' ) ) : ?>
 
-					<a href="<?php echo esc_url( add_query_arg( array( 'page' => 'add-new-network' ), $this->admin_url() ) ); ?>" class="add-new-h2"><?php echo esc_html_x( 'Add New', 'network', 'wp-multi-network' ); ?></a>
+					<a href="<?php echo esc_url( $this->admin_url( array( 'page' => 'add-new-network' ) ) ); ?>" class="add-new-h2"><?php echo esc_html_x( 'Add New', 'network', 'wp-multi-network' ); ?></a>
 
 				<?php endif;
 
@@ -317,12 +316,12 @@ class WP_MS_Networks_Admin {
 					printf( '<span class="subtitle">' . __( 'Search results for &#8220;%s&#8221;', 'wp-multi-network' ) . '</span>', esc_html( $_REQUEST['s'] ) );
 				endif; ?></h1>
 
-			<form method="post" action="<?php echo esc_url( add_query_arg( array( 'action' => 'domains' ), $this->admin_url() ) ); ?>" id="domain-search">
+			<form method="post" action="<?php echo esc_url( $this->admin_url( array( 'action' => 'domains' ) ) ); ?>" id="domain-search">
 				<?php $wp_list_table->search_box( esc_html__( 'Search Networks', 'wp-multi-network' ), 'networks' ); ?>
 				<input type="hidden" name="action" value="domains">
 			</form>
 
-			<form method="post" id="form-domain-list" action="<?php echo esc_url( add_query_arg( array( 'action' => 'all_networks' ), $this->admin_url() ) ); ?>">
+			<form method="post" id="form-domain-list" action="<?php echo esc_url( $this->admin_url( array( 'action' => 'all_networks' ) ) ); ?>">
 				<?php $wp_list_table->display(); ?>
 			</form>
 		</div>
@@ -373,7 +372,7 @@ class WP_MS_Networks_Admin {
 
 					<?php if ( current_user_can( 'create_networks' ) ) : ?>
 
-						<a href="<?php echo esc_url( add_query_arg( array( 'page' => 'add-new-network' ), $this->admin_url() ) ); ?>" class="add-new-h2"><?php echo esc_html_x( 'Add New', 'network', 'wp-multi-network' ); ?></a>
+						<a href="<?php echo esc_url( $this->admin_url( array( 'page' => 'add-new-network' ) ) ); ?>" class="add-new-h2"><?php echo esc_html_x( 'Add New', 'network', 'wp-multi-network' ); ?></a>
 
 					<?php endif;
 
@@ -427,7 +426,7 @@ class WP_MS_Networks_Admin {
 
 				if ( current_user_can( 'create_networks' ) ) : ?>
 
-					<a href="<?php echo esc_url( add_query_arg( array( 'page' => 'add-new-network' ), $this->admin_url() ) ); ?>" class="add-new-h2"><?php echo esc_html_x( 'Add New', 'network', 'wp-multi-network' ); ?></a>
+					<a href="<?php echo esc_url( $this->admin_url( array( 'page' => 'add-new-network' ) ) ); ?>" class="add-new-h2"><?php echo esc_html_x( 'Add New', 'network', 'wp-multi-network' ); ?></a>
 
 				<?php endif; ?></h1>
 
@@ -473,7 +472,7 @@ class WP_MS_Networks_Admin {
 
 				if ( current_user_can( 'create_networks' ) ) : ?>
 
-					<a href="<?php echo esc_url( add_query_arg( array( 'page' => 'add-new-network' ), $this->admin_url() ) ); ?>" class="add-new-h2"><?php echo esc_html_x( 'Add New', 'network', 'wp-multi-network' ); ?></a>
+					<a href="<?php echo esc_url( $this->admin_url( array( 'page' => 'add-new-network' ) ) ); ?>" class="add-new-h2"><?php echo esc_html_x( 'Add New', 'network', 'wp-multi-network' ); ?></a>
 
 				<?php endif; ?></h1>
 
