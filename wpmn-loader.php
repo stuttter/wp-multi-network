@@ -44,6 +44,11 @@ class WPMN_Loader {
 	public $asset_version = 201510070001;
 
 	/**
+	 * @var WP_MS_Networks_Admin|null Admin class instance
+	 */
+	public $admin = null;
+
+	/**
 	 * Load WP Multi Network
 	 *
 	 * @since 1.3
@@ -122,7 +127,7 @@ class WPMN_Loader {
 			load_plugin_textdomain( 'wp-multi-network', false, dirname( $this->basename ) . '/languages/' );
 
 			// Setup the network admin
-			new WP_MS_Networks_Admin();
+			$this->admin = new WP_MS_Networks_Admin();
 		}
 
 		// Deprecated functions & classes
