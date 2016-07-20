@@ -45,12 +45,17 @@ class WP_MS_Networks_Admin {
 	 *
 	 * @return string Absolute URL to Networks page
 	 */
-	public function admin_url() {
+	public function admin_url( $args = array() ) {
 		$network_admin = network_admin_url( 'admin.php' );
-		$args          = array( 'page' => 'networks' );
-		$result        = add_query_arg( $args, $network_admin );
-		
-		return apply_filters( 'edit_networks_screen_url', $result );
+
+		// Parse args
+		$r = wp_parse_args( $args, array(
+			'page' => 'networks'
+		) );
+
+		$result = add_query_arg( $r, $network_admin );
+
+		return apply_filters( 'edit_networks_screen_url', $result, $args );
 	}
 
 	/**
@@ -175,7 +180,7 @@ class WP_MS_Networks_Admin {
 				<div id="message" class="<?php echo esc_attr( $updated ); ?> notice is-dismissible">
 					<p>
 						<?php echo esc_html( $feedbacks[ $type ][ $_GET[ $type ] ] ); ?>
-						<a href="<?php echo esc_url( add_query_arg( array( 'page' => 'networks' ), network_admin_url( 'admin.php' ) ) ); ?>"><?php esc_html_e( 'Back to Networks.', 'wp-multi-network' ); ?></a>
+						<a href="<?php echo esc_url( $this->admin_url() ); ?>"><?php esc_html_e( 'Back to Networks.', 'wp-multi-network' ); ?></a>
 					</p>
 					<button type="button" class="notice-dismiss">
 						<span class="screen-reader-text"><?php esc_html_e( 'Dismiss this notice', 'wp-multi-network' ); ?></span>
@@ -952,13 +957,8 @@ class WP_MS_Networks_Admin {
 	 */
 	private function handler_redirect( $args = array() ) {
 
-		// Parse args
-		$r = wp_parse_args( $args, array(
-			'page' => 'networks'
-		) );
-
 		// Set feedback flags
-		wp_safe_redirect( add_query_arg( $r, network_admin_url( 'admin.php' ) ) );
+		wp_safe_redirect( $this->admin_url( $args ) );
 		exit;
 	}
 }
