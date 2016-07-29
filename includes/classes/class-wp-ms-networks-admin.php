@@ -866,12 +866,12 @@ class WP_MS_Networks_Admin {
 
 		// Coming in
 		$to = isset( $_POST['to'] )
-			? $_POST['to']
+			? array_map( 'absint', (array) $_POST['to'] )
 			: array();
 
 		// Orphaning out
 		$from = isset( $_POST['from'] )
-			? $_POST['from']
+			? array_map( 'absint', (array) $_POST['from'] )
 			: array();
 
 		// Bail early if no movement
@@ -883,10 +883,34 @@ class WP_MS_Networks_Admin {
 		$network_id = (int) $_GET['id'];
 
 		// Query for sites in this network
-		$sql    = "SELECT blog_id FROM {$wpdb->blogs} WHERE site_id = %d";
-		$prep   = $wpdb->prepare( $sql, $network_id );
-		$sites  = $wpdb->get_results( $prep );
-		$moving = array_filter( array_merge( $to, $from ) );
+		$sql   = "SELECT blog_id FROM {$wpdb->blogs} WHERE site_id = %d";
+		$prep  = $wpdb->prepare( $sql, $network_id );
+		$sites = $wpdb->get_results( $prep );
+
+		// Setup sites arrays
+		$sites_list = $moving_to = $moving_from = array();
+
+		// Get site's ids list
+		foreach ( $sites as $site ) {
+			$sites_list[] = (int) $site->blog_id;
+		}
+
+		// Moving out from current network
+		foreach ( $from as $site_id ) {
+			if ( in_array( $site_id, $sites_list ) ) {
+				$moving_from[] = $site_id;
+			}
+		}
+
+		// Moving into current network
+		foreach ( $to as $site_id ) {
+			if ( ! in_array( $site_id, $sites_list ) ) {
+				$moving_to[] = $site_id;
+			}
+		}
+
+		// Merge into one array
+		$moving = array_filter( array_merge( $moving_to, $moving_from ) );
 
 		// Loop through and move sites
 		foreach ( $moving as $site_id ) {
@@ -897,7 +921,7 @@ class WP_MS_Networks_Admin {
 			}
 
 			// Coming in
-			if ( in_array( $site_id, $to ) && ! in_array( $site_id, $sites ) ) {
+			if ( in_array( $site_id, $to ) && ! in_array( $site_id, $sites_list ) ) {
 				move_site( $site_id, $network_id );
 
 			// Orphaning out
