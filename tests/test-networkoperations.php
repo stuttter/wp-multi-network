@@ -3,7 +3,7 @@
 class WPMN_Tests_NetworkOperations extends WP_UnitTestCase {
 	public function test_network_exists() {
 		$network = $this->factory->network->create();
-		$this->assertTrue( network_exists( $network ) );
+		$this->assertTrue( network_exists( $network ) !== false );
 	}
 
 	public function test_network_exists_with_invalid_id() {
