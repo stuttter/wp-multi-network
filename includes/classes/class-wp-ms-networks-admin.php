@@ -280,6 +280,7 @@ class WP_MS_Networks_Admin {
 						$this->all_networks_page();
 						break;
 				}
+				break;
 
 			// All networks
 			default:
