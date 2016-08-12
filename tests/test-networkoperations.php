@@ -24,7 +24,8 @@ class WPMN_Tests_NetworkOperations extends WP_UnitTestCase {
 
 		// Move the site to the other network
 		$result = move_site( $site_id, $other_network_id );
-		$this->assertNull( $result, 'Site should be moved without error' );
+		$this->assertFalse( is_bool( $result ), 'Site should be moved without bailing' );
+		$this->assertFalse( is_wp_error( $result ), 'Site should be moved without error' );
 
 		// Reload site data
 		$site = $this->factory->blog->get_object_by_id( $site_id );
@@ -33,7 +34,8 @@ class WPMN_Tests_NetworkOperations extends WP_UnitTestCase {
 
 		// Move it back
 		$result = move_site( $site_id, 1 );
-		$this->assertNull( $result, 'Site should be moved without error' );
+		$this->assertFalse( is_bool( $result ), 'Site should be moved without bailing' );
+		$this->assertFalse( is_wp_error( $result ), 'Site should be moved without error' );
 
 		// Reload site data again
 		$site = $this->factory->blog->get_object_by_id( $site_id );
