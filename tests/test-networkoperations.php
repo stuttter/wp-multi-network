@@ -3,7 +3,7 @@
 class WPMN_Tests_NetworkOperations extends WP_UnitTestCase {
 	public function test_network_exists() {
 		$network = $this->factory->network->create();
-		$this->assertTrue( network_exists( $network ) );
+		$this->assertTrue( network_exists( $network ) !== false );
 	}
 
 	public function test_network_exists_with_invalid_id() {
@@ -16,7 +16,7 @@ class WPMN_Tests_NetworkOperations extends WP_UnitTestCase {
 		$site_id = $this->factory->blog->create();
 		$site = $this->factory->blog->get_object_by_id( $site_id );
 
-		$other_network_id = $this->factory->network->create();
+		$other_network_id = $this->factory->network->create( array( 'domain' => 'example.com', 'path' => '/', ) );
 		$other_network = $this->factory->network->get_object_by_id( $other_network_id );
 
 		// Check we start out in the main network
@@ -24,7 +24,8 @@ class WPMN_Tests_NetworkOperations extends WP_UnitTestCase {
 
 		// Move the site to the other network
 		$result = move_site( $site_id, $other_network_id );
-		$this->assertNull( $result, 'Site should be moved without error' );
+		$this->assertFalse( is_bool( $result ), 'Site should be moved without bailing' );
+		$this->assertFalse( is_wp_error( $result ), 'Site should be moved without error' );
 
 		// Reload site data
 		$site = $this->factory->blog->get_object_by_id( $site_id );
@@ -33,7 +34,8 @@ class WPMN_Tests_NetworkOperations extends WP_UnitTestCase {
 
 		// Move it back
 		$result = move_site( $site_id, 1 );
-		$this->assertNull( $result, 'Site should be moved without error' );
+		$this->assertFalse( is_bool( $result ), 'Site should be moved without bailing' );
+		$this->assertFalse( is_wp_error( $result ), 'Site should be moved without error' );
 
 		// Reload site data again
 		$site = $this->factory->blog->get_object_by_id( $site_id );
