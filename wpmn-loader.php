@@ -41,7 +41,7 @@ class WPMN_Loader {
 	/**
 	 * @var string Asset version
 	 */
-	public $asset_version = 201510070001;
+	public $asset_version = 201608160001;
 
 	/**
 	 * @var WP_MS_Networks_Admin|null Admin class instance

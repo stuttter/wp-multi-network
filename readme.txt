@@ -1,8 +1,8 @@
 === WP Multi Network ===
 Contributors: johnjamesjacoby, ddean, BrianLayman, rmccue
 Tags: network, networks, blog, blogs, site, sites, domain, domains, mapping, domain mapping, fun
-Requires at least: 4.4
-Tested up to: 4.4
+Requires at least: 4.6
+Tested up to: 4.7
 Stable tag: 1.8.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -66,6 +66,7 @@ Not much to talk about really. Check the code for details!
 * Fix bug allowing duplicate site URLs
 * Remove _network_option() functions
 * Remove network.zero placeholder
+* WordPress 4.5 & 4.6 compatibility updates
 
 = 1.7.0 =
 * WordPress 4.4 compatibility updates
