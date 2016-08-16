@@ -122,7 +122,7 @@ function wpmn_edit_network_assign_sites_metabox( $network = null ) {
 
 					<?php foreach ( $sites as $site ) : ?>
 
-						<?php if ( ( $site->site_id !== $network->id ) && ! is_main_site_for_network( $site->blog_id ) ) : ?>
+						<?php if ( ( (int) $site->site_id !== (int) $network->id ) && ! is_main_site_for_network( $site->blog_id ) ) : ?>
 
 							<option value="<?php echo esc_attr( $site->blog_id ); ?>">
 								<?php echo esc_html( sprintf( '%1$s (%2$s%3$s)', $site->name, $site->domain, $site->path ) ); ?>
@@ -144,7 +144,7 @@ function wpmn_edit_network_assign_sites_metabox( $network = null ) {
 
 					<?php foreach ( $sites as $site ) : ?>
 
-						<?php if ( $site->site_id === $network->id ) : ?>
+						<?php if ( (int) $site->site_id === (int) $network->id ) : ?>
 
 							<option value="<?php echo esc_attr( $site->blog_id ); ?>" <?php disabled( is_main_site_for_network( $site->blog_id ) ); ?>>
 								<?php echo esc_html( sprintf( '%1$s (%2$s%3$s)', $site->name, $site->domain, $site->path ) ); ?>
