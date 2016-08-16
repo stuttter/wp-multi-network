@@ -3,7 +3,7 @@ Contributors: johnjamesjacoby, ddean, BrianLayman, rmccue
 Tags: network, networks, blog, blogs, site, sites, domain, domains, mapping, domain mapping, fun
 Requires at least: 4.6
 Tested up to: 4.7
-Stable tag: 1.8.0
+Stable tag: 1.8.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=9Q4F4EL5YJ62J
@@ -59,6 +59,9 @@ Just leave this plugin network-activated (or in mu-plugins) and it will take car
 Not much to talk about really. Check the code for details!
 
 == Changelog ==
+
+= 1.8.1 =
+* Fix site reassignment metabox from moving sites incorrectly
 
 = 1.8.0 =
 * Support for core compat functions
