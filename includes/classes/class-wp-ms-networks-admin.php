@@ -280,6 +280,7 @@ class WP_MS_Networks_Admin {
 						$this->all_networks_page();
 						break;
 				}
+				break;
 
 			// All networks
 			default:
@@ -583,7 +584,7 @@ class WP_MS_Networks_Admin {
 
 					if ( RESCUE_ORPHANED_BLOGS ) { ?>
 
-						<div class="error">
+						<div class="error inline">
 							<h3><?php esc_html_e( 'You have selected the following networks for deletion', 'wp-multi-network' ); ?>:</h3>
 							<ul>
 								<?php foreach ( $network as $deleted_network ) : ?>
@@ -596,7 +597,7 @@ class WP_MS_Networks_Admin {
 
 					<?php } else { ?>
 
-						<div class="error">
+						<div class="error inline">
 							<h3><?php esc_html_e( 'You have selected the following networks for deletion', 'wp-multi-network' ); ?>:</h3>
 							<ul>
 								<?php foreach ( $network as $deleted_network ) : ?>
@@ -612,7 +613,7 @@ class WP_MS_Networks_Admin {
 
 				} else { ?>
 
-					<div id="message">
+					<div id="message inline">
 						<h3><?php esc_html_e( 'You have selected the following networks for deletion', 'wp-multi-network' ); ?>:</h3>
 						<ul>
 							<?php foreach ( $network as $deleted_network ) : ?>
