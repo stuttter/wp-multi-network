@@ -16,7 +16,7 @@ class WPMN_Tests_NetworkOperations extends WP_UnitTestCase {
 		$site_id = $this->factory->blog->create();
 		$site = $this->factory->blog->get_object_by_id( $site_id );
 
-		$other_network_id = $this->factory->network->create( array( 'domain' => 'example.com' ) );
+		$other_network_id = $this->factory->network->create( array( 'domain' => 'example.com', 'path' => '/', ) );
 		$other_network = $this->factory->network->get_object_by_id( $other_network_id );
 
 		// Check we start out in the main network
