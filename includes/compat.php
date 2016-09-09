@@ -170,6 +170,6 @@ function wp_get_main_network() {
 	}
 
 	// Return main network ID
-	return wp_get_network( get_main_network_id() );
+	return get_network( get_main_network_id() );
 }
 endif;
