@@ -46,7 +46,7 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 		$clone_network    = $assoc_args['clone_network'];
 		$options_to_clone = false;
 
-		if ( ! empty( $clone_network ) && ! wp_get_network( $clone_network ) ) {
+		if ( ! empty( $clone_network ) && is_null( get_network( $clone_network ) ) ) {
 			WP_CLI::error( sprintf( __( "Clone network %s doesn't exist.", 'wp-multi-network' ), $clone_network ) );
 
 			if ( ! empty( $assoc_args['options_to_clone'] ) ) {
