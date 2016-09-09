@@ -339,7 +339,7 @@ class WP_MS_Networks_Admin {
 
 		// Get the network
 		$network = isset( $_GET['id'] )
-			? wp_get_network( $_GET['id'] )
+			? get_network( $_GET['id'] )
 			: null;
 
 		// Metaboxes
@@ -459,7 +459,7 @@ class WP_MS_Networks_Admin {
 		global $wpdb;
 
 		// get network by id
-		$network = wp_get_network( $_GET['id'] );
+		$network = get_network( $_GET['id'] );
 
 		if ( empty( $network ) ) {
 			wp_die( esc_html__( 'Invalid network id.', 'wp-multi-network' ) );
