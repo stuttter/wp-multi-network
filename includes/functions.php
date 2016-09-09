@@ -19,7 +19,11 @@ if ( ! function_exists( 'network_exists' ) ) :
  * @param integer $network_id ID of network to verify
  */
 function network_exists( $network_id ) {
-	return wp_get_network( $network_id );
+	$network = get_network( $network_id );
+	if ( null === $network ) { 
+		return false; 
+	}
+	return true;
 }
 endif;
 
@@ -90,7 +94,7 @@ function get_main_site_for_network( $network = null ) {
 
 	// Get network
 	$network = ! empty( $network )
-		? wp_get_network( $network )
+		? get_network( $network )
 		: $GLOBALS['current_site'];
 
 	// Network not found
