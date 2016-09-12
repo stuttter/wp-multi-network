@@ -11,8 +11,7 @@ defined( 'ABSPATH' ) || exit;
 
 if ( ! function_exists( 'network_exists' ) ) :
 /**
- * Check to see if a network exists. Will check the networks object before
- * checking the database.
+ * Check to see if a network exists.
  *
  * @since 1.3
  *
