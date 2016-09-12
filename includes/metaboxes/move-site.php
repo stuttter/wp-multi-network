@@ -14,24 +14,23 @@ defined( 'ABSPATH' ) || exit;
  *
  * @since 1.7.0
  *
- * @global type $wpdb
- *
- * @param object $site Results of get_blog_details()
+ * @param WP_Site $site Results of get_blog_details()
  */
 function wpmn_move_site_list_metabox( $site = null ) {
-	global $wpdb;
 
 	// Get all networks
-	$networks = $wpdb->get_results( "SELECT * FROM {$wpdb->site}" ); ?>
+	$networks = get_networks(); ?>
 
 	<table class="move-site widefat">
 		<tr>
 			<th><?php echo esc_html( get_blog_option( $site->blog_id, 'blogname' ) ); ?></th>
 			<td>
 				<select name="to" id="to">
-					<option value="0">
-						<?php esc_html_e( '&mdash; No Network &mdash;', 'wp-multi-network' ); ?>
-					</option><?php
+					<option value="0"><?php
+
+						esc_html_e( '&mdash; No Network &mdash;', 'wp-multi-network' );
+
+					?></option><?php
 
 					// Loop through networks
 					foreach ( $networks as $new_network ) :
@@ -59,7 +58,7 @@ function wpmn_move_site_list_metabox( $site = null ) {
  *
  * @since 1.7.0
  *
- * @param object $site
+ * @param WP_Site $site
  */
 function wpmn_move_site_assign_metabox( $site = null ) {
 ?>
@@ -68,13 +67,13 @@ function wpmn_move_site_assign_metabox( $site = null ) {
 		<div id="minor-publishing">
 			<div id="misc-publishing-actions">
 				<div class="misc-pub-section curtime misc-pub-section-first">
-					<span><?php printf( __( 'Created: <strong>%1$s</strong>',  'wp-user-profiles' ), $site->registered ); ?></span>
+					<span><?php printf( __( 'Created: <strong>%1$s</strong>',  'wp-multi-network' ), $site->registered ); ?></span>
 				</div>
 				<div class="misc-pub-section misc-pub-section-last" id="domain">
-					<span><?php printf( __( 'Domain: <strong>%1$s</strong>', 'wp-user-profiles' ), $site->domain ); ?></span>
+					<span><?php printf( __( 'Domain: <strong>%1$s</strong>', 'wp-multi-network' ), $site->domain ); ?></span>
 				</div>
 				<div class="misc-pub-section misc-pub-section-last" id="path">
-					<span><?php printf( __( 'Path: <strong>%1$s</strong>', 'wp-user-profiles' ), $site->path ); ?></span>
+					<span><?php printf( __( 'Path: <strong>%1$s</strong>', 'wp-multi-network' ), $site->path ); ?></span>
 				</div>
 			</div>
 
