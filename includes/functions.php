@@ -19,12 +19,7 @@ if ( ! function_exists( 'network_exists' ) ) :
  * @param integer $network_id ID of network to verify
  */
 function network_exists( $network_id ) {
-	$network = get_network( $network_id );
-	if ( null === $network ) {
-		return false;
-	}
-
-	return $network;
+	return ( null !== get_network( $network_id ) );
 }
 endif;
 
