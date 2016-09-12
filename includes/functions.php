@@ -238,7 +238,7 @@ function restore_current_network() {
 	$new_network = array_pop( $switched_network_stack );
 
 	if ( $new_network->id == $current_site->id ) {
-		do_action( 'switch_site', $current_site->id, $current_site->id );
+		do_action( 'switch_network', $current_site->id, $current_site->id );
 		$switched_network = ( ! empty( $switched_network_stack ) );
 		return true;
 	}
