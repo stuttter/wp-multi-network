@@ -71,7 +71,7 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 
 		// Get total network count
 		$count = get_networks( array_merge( $args, array(
-			'count' => true,
+			'count'  => true,
 			'offset' => 0,
 			'number' => 0,
 		) ) );
@@ -304,11 +304,9 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 	public function column_blogs( $network ) {
 
 		// Get site count for each network
-		$sites = get_sites( array(
-			'network_id' => $network->id,
-			'count'      => true
-		) );
+		$sites = get_network_option( $network->id, 'blog_count' );
 
+		// Switch to get href
 		switch_to_network( $network->id );
 		$url = network_admin_url( 'sites.php' );
 		restore_current_network();
