@@ -483,59 +483,36 @@ class WP_MS_Networks_Admin {
 				<?php
 
 				// Network has sites
-				if ( ! empty( $sites ) ) :
+				if ( ! empty( $sites ) ) : ?>
 
-					// Orphaned sites are rescued
-					if ( RESCUE_ORPHANED_BLOGS ) : ?>
+					<div id="message" class="network-delete">
+						<p><?php esc_html_e( 'The following sites are associated with this network:', 'wp-multi-network' ); ?></p>
+						<ul class="delete-sites">
 
-						<div id="message" class="network-delete">
-							<p><?php esc_html_e( 'The following sites are associated with this network:', 'wp-multi-network' ); ?></p>
-							<ul class="delete-sites">
+							<?php foreach ( $sites as $site ) : ?>
 
-								<?php foreach ( $sites as $site ) : ?>
+								<li><?php echo esc_html( $site->domain . $site->path ); ?></li>
 
-									<li><?php echo esc_html( $site->domain . $site->path ); ?></li>
+							<?php endforeach; ?>
 
-								<?php endforeach; ?>
+						</ul>
+						<p>
+							<input type="checkbox" name="override" id="override">
+							<label for="override">
+								<?php if ( wp_should_rescue_orphaned_sites() ) :
+									esc_html_e( 'Rescue these sites', 'wp-multi-network' );
+								else :
+									esc_html_e( 'Delete these sites', 'wp-multi-network' );
+								endif; ?>
+							</label>
+						</p>
+					</div>
+					<p><?php printf( esc_html__( 'Are you sure you want to delete the entire "%s" network?', 'wp-multi-network' ), esc_html( $network->domain . $network->path ) ); ?></p><?php
 
-							</ul>
-							<p>
-								<input type="checkbox" name="override" id="override">
-								<label for="override">
-									<?php esc_html_e( 'Rescue these sites', 'wp-multi-network' ); ?>
-								</label>
-							</p>
-						</div>
-						<p><?php printf( esc_html__( 'Are you sure you want to delete the entire "%s" network?', 'wp-multi-network' ), esc_html( $network->domain . $network->path ) ); ?></p>
-
-					<?php else : ?>
-
-						<div id="message" class="network-delete">
-							<p><?php esc_html_e( 'The following sites are associated with this network:', 'wp-multi-network' ); ?></p>
-							<ul class="delete-sites">
-
-								<?php foreach ( $sites as $site ) : ?>
-
-									<li><?php echo esc_html( $site->domain . $site->path ); ?></li>
-
-								<?php endforeach; ?>
-
-							</ul>
-							<p>
-								<input type="checkbox" name="override" id="override">
-								<label for="override">
-									<?php esc_html_e( 'Delete these sites', 'wp-multi-network' ); ?>
-								</label>
-							</p>
-						</div>
-						<p><?php printf( esc_html__( 'Are you sure you want to delete the entire "%s" network?', 'wp-multi-network' ), esc_html( wp_get_scheme() . $network->domain . $network->path ) ); ?></p>
-
-					<?php
-
-					endif;
 				endif;
 
 				submit_button( esc_html__( 'Delete Network', 'wp-multi-network' ), 'primary', 'delete', false ); ?>
+
 				<a class="button" href="<?php echo esc_url( $this->admin_url() ); ?>"><?php esc_html_e( 'Cancel', 'wp-multi-network' ); ?></a>
 			</form>
 		</div>
@@ -545,85 +522,79 @@ class WP_MS_Networks_Admin {
 
 	/**
 	 * Output the delete multiple networks page
-	 *
-	 * @global object $wpdb
 	 */
 	public function delete_multiple_network_page() {
-		global $wpdb;
 
+		// Get posted networks
 		$all_networks = array_map( 'absint', $_POST['all_networks'] );
 
+		// Prevent primary network from being deleted
+		if ( isset( $all_networks[ get_main_network_id() ] ) ) {
+			unset( $all_networks[ get_main_network_id() ] );
+		}
+
+		// Query for networks
+		$networks = get_networks( array(
+			'network__in' => $all_networks
+		) );
+
+		// Bail if no networks
+		if ( empty( $networks ) ) {
+			wp_die( esc_html__( 'You have selected an invalid network or networks for deletion', 'wp-multi-network' ) );
+		}
+
 		// Ensure each network is valid
-		foreach ( $all_networks as $network ) {
+		foreach ( $networks as $network ) {
 			if ( ! get_network( $network ) ) {
 				wp_die( esc_html__( 'You have selected an invalid network for deletion.', 'wp-multi-network' ) );
 			}
 		}
 
-		// remove primary network from list
-		if ( in_array( 1, $all_networks ) ) {
-			$sites = array();
-			foreach ( $all_networks as $network ) {
-				if ( $network != 1 ) {
-					$sites[] = $network;
-				}
-			}
-			$all_networks = $sites;
-		}
-
-		$network = $wpdb->get_results( "SELECT * FROM {$wpdb->site} WHERE id IN (" . implode( ',', $all_networks ) . ')' );
-		if ( empty( $network ) ) {
-			wp_die( esc_html__( 'You have selected an invalid network or networks for deletion', 'wp-multi-network' ) );
-		}
-
-		$sites = $wpdb->get_results( "SELECT * FROM {$wpdb->blogs} WHERE site_id IN (" . implode( ',', $all_networks ) . ')' ); ?>
+		// Query for sites in selected networks
+		$sites = get_sites( array(
+			'network__in' => $all_networks
+		) ); ?>
 
 		<div class="wrap">
 			<h1><?php esc_html_e( 'Networks', 'wp-multi-network' ); ?></h1>
 			<h3><?php esc_html_e( 'Delete Multiple Networks', 'wp-multi-network' ); ?></h3>
 			<form method="post" action="<?php echo esc_url( $this->admin_url() ); ?>">
-				<?php if ( ! empty( $sites ) ) {
+				<?php if ( ! empty( $sites ) ) : ?>
 
-					if ( RESCUE_ORPHANED_BLOGS ) { ?>
+					<div class="error inline">
+						<h3><?php esc_html_e( 'You have selected the following networks for deletion', 'wp-multi-network' ); ?>:</h3>
+						<ul>
+							<?php foreach ( $networks as $deleted_network ) : ?>
+								<li><input type="hidden" name="deleted_networks[]" value="<?php echo esc_attr( $deleted_network->id ); ?>"><?php echo esc_html( $deleted_network->domain . $deleted_network->path ); ?></li>
+							<?php endforeach; ?>
+						</ul>
+						<p><?php
 
-						<div class="error inline">
-							<h3><?php esc_html_e( 'You have selected the following networks for deletion', 'wp-multi-network' ); ?>:</h3>
-							<ul>
-								<?php foreach ( $network as $deleted_network ) : ?>
-									<li><input type="hidden" name="deleted_networks[]" value="<?php echo esc_attr( $deleted_network->id ); ?>"><?php echo esc_html( $deleted_network->domain . $deleted_network->path ); ?></li>
-								<?php endforeach; ?>
-							</ul>
-							<p><?php esc_html_e( 'There are blogs associated with one or more of these networks. Deleting them will move these blogs to the holding network.', 'wp-multi-network' ); ?></p>
-							<p><label for="override"><?php esc_html_e( 'If you still want to delete these networks, check the following box', 'wp-multi-network' ); ?>:</label> <input type="checkbox" name="override" id="override"></p>
-						</div>
+						if ( wp_should_rescue_orphaned_sites() ) {
+							esc_html_e( 'One or more of these networks has existing sites. Deleting these networks will orphan these sites.', 'wp-multi-network' );
+						} else {
+							esc_html_e( 'One or more of these networks has existing sites. Deleting these networks will permanently delete these sites.', 'wp-multi-network' );
+						}
 
-					<?php } else { ?>
+						?></p>
+						<p>
+							<label for="override"><?php esc_html_e( 'Please confirm that you still want to delete these networks', 'wp-multi-network' ); ?>:</label>
+							<input type="checkbox" name="override" id="override">
+						</p>
+					</div>
 
-						<div class="error inline">
-							<h3><?php esc_html_e( 'You have selected the following networks for deletion', 'wp-multi-network' ); ?>:</h3>
-							<ul>
-								<?php foreach ( $network as $deleted_network ) : ?>
-									<li><input type="hidden" name="deleted_networks[]" value="<?php echo esc_attr( $deleted_network->id ); ?>"><?php echo esc_html( $deleted_network->domain . $deleted_network->path ); ?></li>
-								<?php endforeach; ?>
-							</ul>
-							<p><?php esc_html_e( 'There are blogs associated with one or more of these networks. Deleting them will delete those blogs as well.', 'wp-multi-network' ); ?></p>
-							<p><label for="override"><?php esc_html_e( 'If you still want to delete these networks, check the following box', 'wp-multi-network' ); ?>:</label> <input type="checkbox" name="override" id="override"></p>
-						</div>
-
-					<?php
-					}
-
-				} else { ?>
+				<?php else : ?>
 
 					<div id="message inline">
 						<h3><?php esc_html_e( 'You have selected the following networks for deletion', 'wp-multi-network' ); ?>:</h3>
 						<ul>
-							<?php foreach ( $network as $deleted_network ) : ?>
+							<?php foreach ( $networks as $deleted_network ) : ?>
 								<li><input type="hidden" name="deleted_networks[]" value="<?php echo esc_attr( $deleted_network->id ); ?>"><?php echo esc_html( $deleted_network->domain . $deleted_network->path ); ?></li>
 							<?php endforeach; ?>
 						</ul>
 					</div>
-				<?php } ?>
+
+				<?php endif; ?>
 
 				<p><?php esc_html_e( 'Are you sure you want to delete these networks?', 'wp-multi-network' ); ?></p>
 				<input type="submit" name="delete_multiple" value="<?php esc_html_e( 'Delete Networks', 'wp-multi-network' ); ?>" class="button">
@@ -646,7 +617,7 @@ class WP_MS_Networks_Admin {
 			<?php
 
 			$my_networks = user_has_networks();
-			foreach( $my_networks as $key => $network_id ) {
+			foreach ( $my_networks as $key => $network_id ) {
 				$my_networks[ $key ] = $wpdb->get_row( $wpdb->prepare(
 					'SELECT s.*, sm.meta_value as site_name, b.blog_id FROM ' . $wpdb->site . ' s LEFT JOIN ' . $wpdb->sitemeta . ' as sm ON sm.site_id = s.id AND sm.meta_key = %s LEFT JOIN ' . $wpdb->blogs . ' b ON s.id = b.site_id AND b.path = s.path WHERE s.id = %d',
 					'site_name',
@@ -721,22 +692,22 @@ class WP_MS_Networks_Admin {
 
 		// Title
 		$network_title = isset( $_POST['title'] )
-			? $_POST['title']
+			? strip_tags( $_POST['title'] )
 			: '';
 
 		// Domain
 		$network_domain = isset( $_POST['domain'] )
-			? $_POST['domain']
+			? str_replace( ' ', '', strtolower( $_POST['domain'] ) )
 			: '';
 
 		// Path
 		$network_path = isset( $_POST['path'] )
-			? $_POST['path']
+			? str_replace( ' ', '', strtolower( $_POST['path'] ) )
 			: '';
 
-		// Path
+		// Site name
 		$site_name = ! empty( $_POST['new_site'] )
-			? $_POST['new_site']
+			? strip_tags( $_POST['new_site'] )
 			: $network_title;
 
 		// Bail if missing fields
@@ -800,17 +771,17 @@ class WP_MS_Networks_Admin {
 
 		// Title
 		$network_title = isset( $_POST['title'] )
-			? $_POST['title']
+			? strip_tags( $_POST['title'] )
 			: '';
 
 		// Domain
 		$network_domain = isset( $_POST['domain'] )
-			? $_POST['domain']
+			? str_replace( ' ', '', strtolower( $_POST['domain'] ) )
 			: '';
 
 		// Path
 		$network_path = isset( $_POST['path'] )
-			? $_POST['path']
+			? str_replace( ' ', '', strtolower( $_POST['path'] ) )
 			: '';
 
 		// Bail if missing fields
@@ -825,7 +796,7 @@ class WP_MS_Networks_Admin {
 
 		// Update domain & path
 		$updated = update_network( $network_id, $_POST['domain'], $_POST['path'] );
-		$success = 0;
+		$success = '0';
 
 		// Maybe update network title
 		if ( ! is_wp_error( $updated ) ) {
@@ -863,11 +834,8 @@ class WP_MS_Networks_Admin {
 	 * Handle the request to reassign sites
 	 *
 	 * @since 1.7.0
-	 *
-	 * @global object $wpdb
 	 */
 	private function reassign_sites_handler() {
-		global $wpdb;
 
 		// Coming in
 		$to = isset( $_POST['to'] )
@@ -887,29 +855,25 @@ class WP_MS_Networks_Admin {
 		// Cast the network ID
 		$network_id = (int) $_GET['id'];
 
-		// Query for sites in this network
-		$sql   = "SELECT blog_id FROM {$wpdb->blogs} WHERE site_id = %d";
-		$prep  = $wpdb->prepare( $sql, $network_id );
-		$sites = $wpdb->get_results( $prep );
-
 		// Setup sites arrays
-		$sites_list = $moving_to = $moving_from = array();
+		$moving_to = $moving_from = array();
 
-		// Get site's ids list
-		foreach ( $sites as $site ) {
-			$sites_list[] = (int) $site->blog_id;
-		}
+		// Query for sites in this network
+		$sites_list = get_sites( array(
+			'network_id' => $network_id,
+			'fields'     => 'ids'
+		) );
 
 		// Moving out from current network
 		foreach ( $from as $site_id ) {
-			if ( in_array( $site_id, $sites_list ) ) {
+			if ( in_array( $site_id, $sites_list, true ) ) {
 				$moving_from[] = $site_id;
 			}
 		}
 
 		// Moving into current network
 		foreach ( $to as $site_id ) {
-			if ( ! in_array( $site_id, $sites_list ) ) {
+			if ( ! in_array( $site_id, $sites_list, true ) ) {
 				$moving_to[] = $site_id;
 			}
 		}
@@ -926,11 +890,11 @@ class WP_MS_Networks_Admin {
 			}
 
 			// Coming in
-			if ( in_array( $site_id, $to ) && ! in_array( $site_id, $sites_list ) ) {
+			if ( in_array( $site_id, $to ) && ! in_array( $site_id, $sites_list, true ) ) {
 				move_site( $site_id, $network_id );
 
 			// Orphaning out
-			} elseif ( in_array( $site_id, $from ) ) {
+			} elseif ( in_array( $site_id, $from, true ) ) {
 				move_site( $site_id, 0 );
 			}
 		}
