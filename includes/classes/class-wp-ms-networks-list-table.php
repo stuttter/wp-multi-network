@@ -167,13 +167,25 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 	 * @since 2.0.0
 	 */
 	public function display_rows() {
+
+		// Start buffer
+		ob_start();
+
+		// Loop through rows
 		foreach ( $this->items as $network ) {
-			echo "<tr class='active'>";
+			$class = ( (int) get_current_site()->id === (int) $network->id )
+				? 'current'
+				: 'not-current';
 
-			$this->single_row_columns( $network );
+			?><tr class="<?php echo esc_attr( $class ); ?>"><?php
 
-			echo '</tr>';
+				$this->single_row_columns( $network );
+
+			?></tr><?php
 		}
+
+		// End buffer
+		echo ob_get_clean();
 	}
 
 	/**

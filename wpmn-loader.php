@@ -4,7 +4,7 @@
  * Plugin Name: WP Multi-Network
  * Plugin URI:  https://wordpress.org/plugins/wp-multi-network/
  * Description: A Network Management UI for global administrators in WordPress Multisite
- * Version:     1.8.1
+ * Version:     2.0.0
  * Author:      johnjamesjacoby, ddean, BrianLayman, rmccue
  * Author URI:  http://jjj.me
  * Tags:        blog, domain, mapping, multisite, network, networks, path, site, subdomain
@@ -41,7 +41,7 @@ class WPMN_Loader {
 	/**
 	 * @var string Asset version
 	 */
-	public $asset_version = 201608160001;
+	public $asset_version = 201609120001;
 
 	/**
 	 * @var WP_MS_Networks_Admin|null Admin class instance
@@ -51,7 +51,7 @@ class WPMN_Loader {
 	/**
 	 * Load WP Multi Network
 	 *
-	 * @since 1.3
+	 * @since 1.3.0
 	 * @access public
 	 *
 	 * @uses WPMN_Loader::constants() To setup some constants
@@ -67,7 +67,7 @@ class WPMN_Loader {
 	/**
 	 * Set some constants
 	 *
-	 * @since 1.3
+	 * @since 1.3.0
 	 * @access private
 	 */
 	private function constants() {
@@ -91,7 +91,7 @@ class WPMN_Loader {
 	/**
 	 * Set some globals
 	 *
-	 * @since 1.3
+	 * @since 1.3.0
 	 * @access private
 	 *
 	 * @uses plugin_dir_path() To generate bbPress plugin path
@@ -107,7 +107,7 @@ class WPMN_Loader {
 	/**
 	 * Include the required files
 	 *
-	 * @since 1.3
+	 * @since 1.3.0
 	 * @access private
 	 *
 	 * @uses is_network_admin() To only include admin code when needed
@@ -150,7 +150,7 @@ class WPMN_Loader {
 /**
  * Hook loader into plugins_loaded
  *
- * @since 1.3
+ * @since 1.3.0
  */
 function setup_multi_network() {
 	wpmn();
