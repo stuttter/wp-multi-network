@@ -73,13 +73,18 @@ class WPMN_Loader {
 	private function constants() {
 
 		/**
-		 * true = Redirect blogs from deleted network to holding network
-		 *        instead of deleting them. Requires network zero above.
+		 * false = Delete sites when deleting networks (default)
 		 *
-		 * false = Allow blogs belonging to deleted networks to be deleted.
+		 * true = Prevent sites from being deleted when their networks are
+		 *        deleted. Sets them to site_id 0 instead.
 		 */
 		if ( ! defined( 'RESCUE_ORPHANED_BLOGS' ) ) {
 			define( 'RESCUE_ORPHANED_BLOGS', false );
+		}
+
+		// Don't load deprecated functions
+		if ( ! defined( 'WPMN_DEPRECATED' ) ) {
+			define( 'WPMN_DEPRECATED', false );
 		}
 	}
 
@@ -114,7 +119,7 @@ class WPMN_Loader {
 		require $this->plugin_dir . 'includes/functions.php';
 
 		// WordPress Admin
-		if ( is_network_admin() || is_admin() ) {
+		if ( is_blog_admin() || is_network_admin() ) {
 
 			// Metaboxes
 			require $this->plugin_dir . 'includes/metaboxes/move-site.php';
@@ -131,7 +136,7 @@ class WPMN_Loader {
 		}
 
 		// Deprecated functions & classes
-		if ( defined( 'WPMN_DEPRECATED' ) && WPMN_DEPRECATED ) {
+		if ( defined( 'WPMN_DEPRECATED' ) && ( true === WPMN_DEPRECATED ) ) {
 			require $this->plugin_dir . 'includes/deprecated.php';
 		}
 
