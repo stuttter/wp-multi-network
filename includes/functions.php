@@ -49,10 +49,9 @@ function user_has_networks( $user_id = 0 ) {
 
 	// Use current user
 	if ( empty( $user_id ) ) {
-		global $current_user;
-
-		$user_id    = $current_user->ID;
-		$user_login = $current_user->user_login;
+		$user_info  = wp_get_current_user();
+		$user_id    = $user_info->ID;
+		$user_login = $user_info->user_login;
 
 	// Use passed user ID
 	} else {
