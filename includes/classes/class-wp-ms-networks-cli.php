@@ -46,7 +46,7 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 		$clone_network    = $assoc_args['clone_network'];
 		$options_to_clone = false;
 
-		if ( ! empty( $clone_network ) && ! wp_get_network( $clone_network ) ) {
+		if ( ! empty( $clone_network ) && ! get_network( $clone_network ) ) {
 			WP_CLI::error( sprintf( __( "Clone network %s doesn't exist.", 'wp-multi-network' ), $clone_network ) );
 
 			if ( ! empty( $assoc_args['options_to_clone'] ) ) {
@@ -149,9 +149,7 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 		}
 
 		WP_CLI::success( sprintf( __( 'Blog %d has moved to network %d.', 'wp-multi-network' ), $site_id, $new_network_id ) );
-
 	}
-
 
 	/**
 	 * List all networks.
@@ -189,7 +187,6 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 	protected function get_formatter( &$assoc_args ) {
 		return new WP_CLI\Formatter( $assoc_args, $this->obj_fields, 'wp-multi-network' );
 	}
-
 }
 
 WP_CLI::add_command( 'wp-multi-network', 'WP_MS_Network_Command' );

@@ -339,7 +339,7 @@ class WP_MS_Networks_Admin {
 
 		// Get the network
 		$network = isset( $_GET['id'] )
-			? wp_get_network( $_GET['id'] )
+			? get_network( $_GET['id'] )
 			: null;
 
 		// Metaboxes
@@ -458,8 +458,10 @@ class WP_MS_Networks_Admin {
 	public function delete_network_page() {
 		global $wpdb;
 
-		// get network by id
-		$network = wp_get_network( $_GET['id'] );
+		// Get the network
+		$network = isset( $_GET['id'] )
+			? get_network( $_GET['id'] )
+			: null;
 
 		if ( empty( $network ) ) {
 			wp_die( esc_html__( 'Invalid network id.', 'wp-multi-network' ) );
@@ -553,7 +555,7 @@ class WP_MS_Networks_Admin {
 
 		// Ensure each network is valid
 		foreach ( $all_networks as $network ) {
-			if ( ! wp_get_network( $network ) ) {
+			if ( ! get_network( $network ) ) {
 				wp_die( esc_html__( 'You have selected an invalid network for deletion.', 'wp-multi-network' ) );
 			}
 		}
@@ -787,10 +789,12 @@ class WP_MS_Networks_Admin {
 	private function update_network_handler() {
 
 		// Cast
-		$network_id = (int) $_POST['network_id'];
+		$network_id = ! empty( $_POST['network_id'] )
+			? (int) $_POST['network_id']
+			: 0;
 
 		// Bail if invalid network
-		if ( ! wp_get_network( $network_id ) ) {
+		if ( ! get_network( $network_id ) ) {
 			wp_die( esc_html__( 'Invalid network id.', 'wp-multi-network' ) );
 		}
 

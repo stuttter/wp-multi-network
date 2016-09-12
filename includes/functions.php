@@ -19,7 +19,12 @@ if ( ! function_exists( 'network_exists' ) ) :
  * @param integer $network_id ID of network to verify
  */
 function network_exists( $network_id ) {
-	return wp_get_network( $network_id );
+	$network = get_network( $network_id );
+	if ( null === $network ) {
+		return false;
+	}
+
+	return $network;
 }
 endif;
 
@@ -89,9 +94,7 @@ function get_main_site_for_network( $network = null ) {
 	global $wpdb;
 
 	// Get network
-	$network = ! empty( $network )
-		? wp_get_network( $network )
-		: $GLOBALS['current_site'];
+	$network = get_network( $network );
 
 	// Network not found
 	if ( empty( $network ) ) {
@@ -177,7 +180,7 @@ function switch_to_network( $new_network = 0, $validate = false ) {
 		$new_network = $current_site->id;
 	}
 
-	if ( ( true == $validate ) && ! wp_get_network( $new_network ) ) {
+	if ( ( true == $validate ) && ! get_network( $new_network ) ) {
 		return false;
 	}
 
@@ -200,7 +203,7 @@ function switch_to_network( $new_network = 0, $validate = false ) {
 
 	// Switch the current site over
 	$prev_site_id = $current_site->id;
-	$current_site = wp_get_network( $new_network );
+	$current_site = get_network( $new_network );
 
 	// Figure out the current network's main site.
 	if ( ! isset( $current_site->blog_id ) ) {
@@ -378,7 +381,7 @@ function add_network( $args = array() ) {
 		 */
 
 		// Switch to main network (if it exists)
-		if ( defined( 'SITE_ID_CURRENT_SITE' ) && wp_get_network( SITE_ID_CURRENT_SITE ) ) {
+		if ( defined( 'SITE_ID_CURRENT_SITE' ) && get_network( SITE_ID_CURRENT_SITE ) ) {
 			switch_to_network( SITE_ID_CURRENT_SITE );
 			$use_files_rewriting = get_site_option( 'ms_files_rewriting' );
 			restore_current_network();
@@ -419,7 +422,7 @@ function add_network( $args = array() ) {
 	}
 
 	// Clone the network meta from an existing network
-	if ( ! empty( $r['clone_network'] ) && wp_get_network( $r['clone_network'] ) ) {
+	if ( ! empty( $r['clone_network'] ) && get_network( $r['clone_network'] ) ) {
 
 		$options_cache = array();
 
@@ -474,7 +477,7 @@ function update_network( $id, $domain, $path = '' ) {
 	global $wpdb;
 
 	// Get network
-	$network = wp_get_network( $id );
+	$network = get_network( $id );
 
 	// Bail if network not found
 	if ( empty( $network ) ) {
@@ -589,7 +592,7 @@ function delete_network( $id, $delete_blogs = false ) {
 	global $wpdb;
 
 	// Get network
-	$network = wp_get_network( $id );
+	$network = get_network( $id );
 
 	// Bail if network does not exist
 	if ( empty( $network ) ) {
