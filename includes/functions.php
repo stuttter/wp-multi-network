@@ -346,6 +346,7 @@ function add_network( $args = array() ) {
 		'path'             => '/',
 		'site_name'        => __( 'New Network', 'wp-multi-network' ),
 		'user_id'          => get_current_user_id(),
+		'super_user_id'    => get_current_user_id(),
 		'meta'             => array( 'public' => get_option( 'blog_public', false ) ),
 		'clone_network'    => false,
 		'options_to_clone' => array_keys( network_options_to_copy() )
@@ -355,7 +356,10 @@ function add_network( $args = array() ) {
 	if ( empty( $r['user_id'] ) || ! get_userdata( $r['user_id'] ) ) {
 		return new WP_Error( 'network_user', __( 'User does not exist.', 'wp-multi-network' ) );
 	}
-
+	// Bail if no super user with this ID
+	if ( empty( $r['super_user_id'] ) || ! get_userdata( $r['super_user_id'] ) ) {
+		return new WP_Error( 'network_super_admin', __( 'Super user does not exist.', 'wp-multi-network' ) );
+	}
 	// Permissive sanitization for super admin usage
 	$r['domain'] = str_replace( ' ', '', strtolower( $r['domain'] ) );
 	$r['path']   = str_replace( ' ', '', strtolower( $r['path']   ) );
@@ -400,6 +404,11 @@ function add_network( $args = array() ) {
 		if ( is_wp_error( $new_blog_id ) ) {
 			return $new_blog_id;
 		}
+
+		switch_to_network( $new_network_id );
+		add_site_option( 'site_admins', array() );
+		grant_super_admin( $r['super_user_id']);
+		restore_current_network();
 
 		/**
 		 * Fix upload_path for main sites on secondary networks
