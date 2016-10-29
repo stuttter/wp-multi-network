@@ -300,8 +300,15 @@ if ( ! function_exists( 'add_network' ) ) :
  *                                     product on a domain.
  *     @type string  $site_name        Name of the root blog to be created on
  *                                     the new network.
+ *
+ *     @type string  $network_name     Name of the new network.
+ *
  *     @type integer $user_id          ID of the user to add as the site owner.
  *                                     Defaults to current user ID.
+ *
+ *     @type integer $super_user_id    ID of the user to add as the network administrator.
+ *                                     Defaults to current user ID.
+ *
  *     @type array   $meta             Array of metadata to save to this network.
  *                                     Defaults to array( 'public' => false ).
  *     @type integer $clone_network    ID of network whose networkmeta values are
@@ -310,7 +317,7 @@ if ( ! function_exists( 'add_network' ) ) :
  *                                     when cloning - default NULL.
  * }
  *
- * @return integer ID of newly created network
+ * @return integer|WP_Error ID of newly created network
  */
 function add_network( $args = array() ) {
 	global $wpdb;
@@ -344,7 +351,8 @@ function add_network( $args = array() ) {
 	$r = wp_parse_args( $args, array(
 		'domain'           => '',
 		'path'             => '/',
-		'site_name'        => __( 'New Network', 'wp-multi-network' ),
+		'site_name'        => __( 'New Network Site', 'wp-multi-network' ),
+		'network_name'     => __( 'New Network', 'wp-multi-network' ),
 		'user_id'          => get_current_user_id(),
 		'super_user_id'    => get_current_user_id(),
 		'meta'             => array( 'public' => get_option( 'blog_public', false ) ),
@@ -404,6 +412,14 @@ function add_network( $args = array() ) {
 		if ( is_wp_error( $new_blog_id ) ) {
 			return $new_blog_id;
 		}
+		
+		if ( isset( $r['network_name'] ) && ! empty( $r['network_name'] ) ) {
+			$network_name = $r['network_name'];
+		} else {
+			$network_name = $r['site_name'];
+		}
+
+		update_network_option( $new_network_id, 'site_name', $network_name );
 
 		switch_to_network( $new_network_id );
 		add_site_option( 'site_admins', array() );
@@ -507,7 +523,7 @@ if ( ! function_exists( 'update_network' ) ) :
  *
  * @since 1.3
  *
- * @param integer id ID of network to modify
+ * @param integer $id ID of network to modify
  * @param string $domain New domain for network
  * @param string $path New path for network
  */

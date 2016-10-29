@@ -30,7 +30,10 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 	 * : This will be the super administrator for the network.
 	 *
 	 * [--site_name=<site_name>]
-	 * : Name of new network
+	 * : Name of the new network site
+	 *
+	 * [--network_name=<network_name>]
+	 * : Name of the new network
 	 *
 	 * [--clone_network=<clone_network>]
 	 * : ID of network to clone
@@ -46,6 +49,7 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 		$assoc_args = wp_parse_args( $assoc_args, array(
 			'super_user'    => false,
 			'site_name'        => false,
+			'network_name'     => false,
 			'clone_network'    => false,
 			'options_to_clone' => false
 		) );
@@ -77,6 +81,7 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 			'domain'           => $domain,
 			'path'             => $path,
 			'site_name'        => $assoc_args['site_name'],
+			'network_name'     => $assoc_args['network_name'],
 			'user_id'          => get_current_user_id(),
 			'super_user_id'    => $super_user_id,
 			'clone_network'    => $clone_network,
