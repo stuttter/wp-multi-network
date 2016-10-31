@@ -20,7 +20,7 @@ function wpmn_edit_network_details_metabox( $network = null ) {
 
 	// Domain
 	$domain = ! empty( $network->domain )
-		? $network->domain
+		? Requests_IDNAEncoder::encode( $network->domain )
 		: '';
 
 	// Path
