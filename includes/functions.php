@@ -306,7 +306,7 @@ if ( ! function_exists( 'add_network' ) ) :
  *     @type integer $user_id          ID of the user to add as the site owner.
  *                                     Defaults to current user ID.
  *
- *     @type integer $super_user_id    ID of the user to add as the network administrator.
+ *     @type integer $network_admin_id    ID of the user to add as the network administrator.
  *                                     Defaults to current user ID.
  *
  *     @type array   $meta             Array of metadata to save to this network.
@@ -354,7 +354,7 @@ function add_network( $args = array() ) {
 		'site_name'        => __( 'New Network Site', 'wp-multi-network' ),
 		'network_name'     => __( 'New Network', 'wp-multi-network' ),
 		'user_id'          => get_current_user_id(),
-		'super_user_id'    => get_current_user_id(),
+		'network_admin_id'    => get_current_user_id(),
 		'meta'             => array( 'public' => get_option( 'blog_public', false ) ),
 		'clone_network'    => false,
 		'options_to_clone' => array_keys( network_options_to_copy() )
@@ -365,7 +365,7 @@ function add_network( $args = array() ) {
 		return new WP_Error( 'network_user', __( 'User does not exist.', 'wp-multi-network' ) );
 	}
 	// Bail if no super user with this ID
-	if ( empty( $r['super_user_id'] ) || ! get_userdata( $r['super_user_id'] ) ) {
+	if ( empty( $r['network_admin_id'] ) || ! get_userdata( $r['network_admin_id'] ) ) {
 		return new WP_Error( 'network_super_admin', __( 'Super user does not exist.', 'wp-multi-network' ) );
 	}
 	// Permissive sanitization for super admin usage
@@ -423,7 +423,7 @@ function add_network( $args = array() ) {
 
 		switch_to_network( $new_network_id );
 		add_site_option( 'site_admins', array() );
-		grant_super_admin( $r['super_user_id']);
+		grant_super_admin( $r['network_admin_id']);
 		restore_current_network();
 
 		/**
