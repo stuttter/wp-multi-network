@@ -18,11 +18,21 @@ defined( 'ABSPATH' ) || exit;
 class WP_MS_Networks_Admin {
 
 	/**
+	 * Stash the feedback in a private array to avoid running it multiple times.
+	 *
+	 * @since 2.0.0
+	 * @var array
+	 */
+	private $feedback_strings = array();
+
+	/**
 	 * Hook methods in
 	 *
 	 * @since 1.3.0
 	 */
 	public function __construct() {
+
+		$this->set_feedback_strings();
 
 		// Menus
 		add_action( 'admin_menu',         array( $this, 'admin_menu'                   ) );
@@ -107,7 +117,7 @@ class WP_MS_Networks_Admin {
 	}
 
 	/**
-	 * Add a seperator between the 'Networks' and 'Dashboard' menu items on the
+	 * Add a separator between the 'Networks' and 'Dashboard' menu items on the
 	 * Network dashboard
 	 *
 	 * @since 1.5.2
@@ -119,7 +129,7 @@ class WP_MS_Networks_Admin {
 	/** Assets ****************************************************************/
 
 	/**
-	 * Add javascript on networks admin pages only
+	 * Add JavaScript on networks admin pages only
 	 *
 	 * @since 2.0.0
 	 */
@@ -138,14 +148,12 @@ class WP_MS_Networks_Admin {
 	/** Notices ***************************************************************/
 
 	/**
-	 * Action feedback
+	 * Feedback strings
 	 *
-	 * @since 1.3.0
+	 * @since 2.1.0
 	 */
-	public function network_admin_notices() {
-
-		// Possible feedbacks
-		$feedbacks = array(
+	private function set_feedback_strings() {
+		$this->feedback_strings = array(
 			'network_updated' => array(
 				'1' => esc_html__( 'Network updated.',     'wp-multi-network' ),
 				'0' => esc_html__( 'Network not updated.', 'wp-multi-network' )
@@ -159,32 +167,49 @@ class WP_MS_Networks_Admin {
 				'0' => esc_html__( 'Network not deleted.', 'wp-multi-network' )
 			),
 			'site_moved' => array(
-				'1' => esc_html__( 'Site moved.',     'wp-multi-network' ),
-				'0' => esc_html__( 'Site not moved.', 'wp-multi-network' )
+				'1' => esc_html__( 'Site moved.',          'wp-multi-network' ),
+				'0' => esc_html__( 'Site not moved.',      'wp-multi-network' )
 			)
 		);
+	}
+
+	/**
+	 * Action feedback
+	 *
+	 * @since 1.3.0
+	 */
+	public function network_admin_notices() {
+
+		// Bail if no query vars to get
+		if ( empty( $_GET ) ) {
+			return;
+		}
+
+		// Possible feedback
+		$feedback = array_intersect_key( $_GET, $this->feedback_strings );
+
+		// Bail if no feedback
+		if ( empty( $feedback ) ) {
+			return;
+		}
 
 		// Look for possible notice
-		foreach ( $feedbacks as $type => $success ) {
-			if ( isset( $_GET[ $type ] ) && in_array( $_GET[ $type ], array_keys( $success ) ) ) :
-				$updated = ( '1' === $_GET[ $type ] )
-					? 'updated'
-					: 'error'; ?>
+		$type    = key( $feedback );
+		$updated = ( '1' === $_GET[ $type ] )
+			? 'updated'
+			: 'error'; ?>
 
-				<div id="message" class="<?php echo esc_attr( $updated ); ?> notice is-dismissible">
-					<p>
-						<?php echo esc_html( $feedbacks[ $type ][ $_GET[ $type ] ] ); ?>
-						<a href="<?php echo esc_url( $this->admin_url() ); ?>"><?php esc_html_e( 'Back to Networks.', 'wp-multi-network' ); ?></a>
-					</p>
-					<button type="button" class="notice-dismiss">
-						<span class="screen-reader-text"><?php esc_html_e( 'Dismiss this notice', 'wp-multi-network' ); ?></span>
-					</button>
-				</div>
+		<div id="message" class="<?php echo esc_attr( $updated ); ?> notice is-dismissible">
+			<p>
+				<?php echo esc_html( $this->feedback_strings[ $type ][ $_GET[ $type ] ] ); ?>
+				<a href="<?php echo esc_url( $this->admin_url() ); ?>"><?php esc_html_e( 'Back to Networks.', 'wp-multi-network' ); ?></a>
+			</p>
+			<button type="button" class="notice-dismiss">
+				<span class="screen-reader-text"><?php esc_html_e( 'Dismiss this notice', 'wp-multi-network' ); ?></span>
+			</button>
+		</div>
 
-			<?php
-				break;
-			endif;
-		}
+		<?php
 	}
 
 	/** Routers ***************************************************************/
@@ -262,26 +287,22 @@ class WP_MS_Networks_Admin {
 		// Create network
 		if ( isset( $_POST['action'] ) && isset( $_POST['domain'] ) && isset( $_POST['path'] ) && ( 'create' === $_POST['action'] ) ) {
 			$this->handle_add_network();
-		}
 
 		// Update network
-		if ( isset( $_POST['action'] ) && isset( $_POST['network_id'] ) && ( 'update' === $_POST['action'] ) ) {
+		} elseif ( isset( $_POST['action'] ) && isset( $_POST['network_id'] ) && ( 'update' === $_POST['action'] ) ) {
 			$this->handle_reassign_sites();
 			$this->handle_update_network();
-		}
 
 		// Delete network
-		if ( isset( $_POST['delete'] ) && isset( $_GET['id'] ) ) {
+		} elseif ( isset( $_POST['delete'] ) && isset( $_GET['id'] ) ) {
 			$this->handle_delete_network();
-		}
 
 		// Delete many networks
-		if ( isset( $_POST['delete_multiple'] ) && isset( $_POST['deleted_networks'] ) ) {
+		} elseif ( isset( $_POST['delete_multiple'] ) && isset( $_POST['deleted_networks'] ) ) {
 			$this->handle_delete_networks();
-		}
 
 		// Move site to different network
-		if ( isset( $_POST['move'] ) && isset( $_GET['blog_id'] ) ) {
+		} elseif ( isset( $_POST['move'] ) && isset( $_GET['blog_id'] ) ) {
 			$this->handle_move_site();
 		}
 	}
@@ -782,9 +803,12 @@ class WP_MS_Networks_Admin {
 	 */
 	private function handle_update_network() {
 
+		// Unslash posted data for sanitization
+		$posted = wp_unslash( $_POST );
+
 		// Cast
-		$network_id = ! empty( $_POST['network_id'] )
-			? (int) $_POST['network_id']
+		$network_id = ! empty( $posted['network_id'] )
+			? (int) $posted['network_id']
 			: 0;
 
 		// Bail if invalid network
@@ -793,18 +817,21 @@ class WP_MS_Networks_Admin {
 		}
 
 		// Title
-		$network_title = isset( $_POST['title'] )
-			? strip_tags( $_POST['title'] )
+		$network_title = isset( $posted['title'] )
+			? sanitize_text_field( $posted['title'] )
 			: '';
 
 		// Domain
-		$network_domain = isset( $_POST['domain'] )
-			? str_replace( ' ', '', strtolower( $_POST['domain'] ) )
+		$network_domain = isset( $posted['domain'] )
+			? str_replace( ' ', '', strtolower( sanitize_text_field( $posted['domain'] ) ) )
 			: '';
 
+		// Punycode support
+		$network_domain = Requests_IDNAEncoder::encode( $network_domain );
+
 		// Path
-		$network_path = isset( $_POST['path'] )
-			? str_replace( ' ', '', strtolower( $_POST['path'] ) )
+		$network_path = isset( $posted['path'] )
+			? str_replace( ' ', '', strtolower( sanitize_text_field( $posted['path'] ) ) )
 			: '';
 
 		// Bail if missing fields
@@ -817,7 +844,7 @@ class WP_MS_Networks_Admin {
 		}
 
 		// Update domain & path
-		$updated = update_network( $network_id, $_POST['domain'], $_POST['path'] );
+		$updated = update_network( $network_id, $network_domain, $network_path );
 		$success = '0';
 
 		// Maybe update network title
