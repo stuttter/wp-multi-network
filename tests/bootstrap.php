@@ -4,7 +4,7 @@
  *
  * @package WordPress
  * @subpackage JSON API
-*/
+ */
 
 // Support for:
 // 1. `WP_DEVELOP_DIR` environment variable
