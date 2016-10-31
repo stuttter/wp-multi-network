@@ -7,7 +7,6 @@ class WPMN_Tests_NetworkOperations extends WP_UnitTestCase {
 	}
 
 	public function test_network_exists_with_invalid_id() {
-		$this->assertFalse( network_exists( 0 ), "Network 0 doesn't exist" );
 		$this->assertFalse( network_exists( -1 ), 'Network IDs must be positive' );
 	}
 
