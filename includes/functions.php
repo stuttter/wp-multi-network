@@ -421,11 +421,6 @@ function add_network( $args = array() ) {
 
 		update_network_option( $new_network_id, 'site_name', $network_name );
 
-		switch_to_network( $new_network_id );
-		add_site_option( 'site_admins', array() );
-		grant_super_admin( $r['network_admin_id']);
-		restore_current_network();
-
 		/**
 		 * Fix upload_path for main sites on secondary networks
 		 * This applies only to new installs (WP 3.5+)
@@ -507,6 +502,14 @@ function add_network( $args = array() ) {
 
 		restore_current_network();
 	}
+
+	switch_to_network( $new_network_id );
+	// Grant super admin adds 'admin' as network admin if the 'site_admins' option does not exist.
+	if ( empty( $r['clone_network'] ) ) {
+		add_site_option( 'site_admins', array() );
+	}
+	grant_super_admin( $r['network_admin_id']);
+	restore_current_network();
 
 	// Clean network cache
 	clean_network_cache( array() );
