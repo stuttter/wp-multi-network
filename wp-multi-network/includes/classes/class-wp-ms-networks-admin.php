@@ -284,6 +284,11 @@ class WP_MS_Networks_Admin {
 	 */
 	public function route_save_handlers() {
 
+		// Check admin referrer on post actions
+		if ( 'POST' === strtoupper( $_SERVER['REQUEST_METHOD'] ) ) {
+			check_admin_referer( 'edit_network', 'network_edit' );
+		}
+
 		// Create network
 		if ( isset( $_POST['action'] ) && isset( $_POST['domain'] ) && isset( $_POST['path'] ) && ( 'create' === $_POST['action'] ) ) {
 			$this->handle_add_network();
@@ -544,6 +549,8 @@ class WP_MS_Networks_Admin {
 					<p><?php printf( esc_html__( 'Are you sure you want to delete the entire "%s" network?', 'wp-multi-network' ), esc_html( $network->domain . $network->path ) ); ?></p><?php
 
 				endif;
+
+				wp_nonce_field( 'edit_network', 'network_edit' );
 
 				submit_button( esc_html__( 'Delete Network', 'wp-multi-network' ), 'primary', 'delete', false ); ?>
 
