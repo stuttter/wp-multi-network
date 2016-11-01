@@ -226,9 +226,6 @@ class WP_MS_Networks_Admin {
 			wp_die( esc_html__( 'You do not have permission to access this page.', 'wp-multi-network' ) );
 		}
 
-		// Handle form saving
-		$this->route_save_handlers();
-
 		// What action is taking place?
 		$action = isset( $_GET['action'] )
 			? sanitize_key( $_GET['action'] )
@@ -284,30 +281,30 @@ class WP_MS_Networks_Admin {
 	 */
 	public function route_save_handlers() {
 
-		// Check admin referrer on post actions
-		if ( 'POST' === strtoupper( $_SERVER['REQUEST_METHOD'] ) ) {
-			check_admin_referer( 'edit_network', 'network_edit' );
-		}
-
 		// Create network
 		if ( isset( $_POST['action'] ) && isset( $_POST['domain'] ) && isset( $_POST['path'] ) && ( 'create' === $_POST['action'] ) ) {
+			$this->check_nonce();
 			$this->handle_add_network();
 
 		// Update network
 		} elseif ( isset( $_POST['action'] ) && isset( $_POST['network_id'] ) && ( 'update' === $_POST['action'] ) ) {
+			$this->check_nonce();
 			$this->handle_reassign_sites();
 			$this->handle_update_network();
 
 		// Delete network
 		} elseif ( isset( $_POST['delete'] ) && isset( $_GET['id'] ) ) {
+			$this->check_nonce();
 			$this->handle_delete_network();
 
 		// Delete many networks
 		} elseif ( isset( $_POST['delete_multiple'] ) && isset( $_POST['deleted_networks'] ) ) {
+			$this->check_nonce();
 			$this->handle_delete_networks();
 
 		// Move site to different network
 		} elseif ( isset( $_POST['move'] ) && isset( $_GET['blog_id'] ) ) {
+			$this->check_nonce();
 			$this->handle_move_site();
 		}
 	}
@@ -1029,5 +1026,14 @@ class WP_MS_Networks_Admin {
 
 		// Filter & return
 		return apply_filters( 'edit_networks_screen_url', $result, $r, $args );
+	}
+
+	/**
+	 * Check the nonce
+	 *
+	 * @since 2.1.0
+	 */
+	private function check_nonce() {
+		check_admin_referer( 'edit_network', 'network_edit' );
 	}
 }
