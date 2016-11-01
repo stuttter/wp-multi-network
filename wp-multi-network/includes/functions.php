@@ -114,6 +114,8 @@ function get_main_site_for_network( $network = null ) {
 
 	// Look for cached value
 	} else {
+
+		// Cache key format found in ms_load_current_site_and_network()
 		$primary_id = wp_cache_get( "network:{$network->id}:main_site", 'site-options' );
 
 		// Primary site ID not cached, so try to get it from all sites
