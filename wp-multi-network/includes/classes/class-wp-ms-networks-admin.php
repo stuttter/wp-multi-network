@@ -333,14 +333,7 @@ class WP_MS_Networks_Admin {
 
 			add_meta_box( 'wpmn-edit-network-new-site', esc_html__( 'Root Site', 'wp-multi-network' ), 'wpmn_edit_network_new_site_metabox', get_current_screen()->id, 'advanced', 'high', array( $network ) );
 		} else {
-			switch_to_network( $network->id );
-
-			// Network title?
-			$network_title = ! empty( $network )
-				? get_site_option( 'site_name' )
-				: '';
-
-			restore_current_network();
+			$network_title = get_network_option( $network, 'site_name', '' );
 
 			add_meta_box( 'wpmn-edit-network-assign-sites', esc_html__( 'Site Assignment', 'wp-multi-network' ), 'wpmn_edit_network_assign_sites_metabox', get_current_screen()->id, 'advanced', 'high', array( $network ) );
 		} ?>
@@ -778,15 +771,14 @@ class WP_MS_Networks_Admin {
 
 		// Update title
 		if ( ! empty( $result ) && ! is_wp_error( $result ) ) {
-			switch_to_network( $result );
 
+			// Maybe update the site name
 			if ( ! empty( $_POST['title'] ) ) {
-				update_site_option( 'site_name', $_POST['title'] );
+				update_network_option( $result, 'site_name', $_POST['title'] );
 			}
 
 			// Activate WPMN on this new network
-			update_site_option( 'active_sitewide_plugins', array( 'wp-multi-network/wpmn-loader.php' => time() ) );
-			restore_current_network();
+			update_network_option( $result, 'active_sitewide_plugins', array( 'wp-multi-network/wpmn-loader.php' => time() ) );
 
 			// Redirect args
 			$r = array( 'network_created' => '1' );

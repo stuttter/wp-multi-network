@@ -388,6 +388,9 @@ function add_network( $args = array() ) {
 			define( 'WP_INSTALLING', true );
 		}
 
+		// Switch to the new network so counts are properly bumped
+		switch_to_network( $new_network_id );
+
 		// Create the site for the root of this network
 		$new_blog_id = wpmu_create_blog(
 			$r['domain'],
@@ -397,6 +400,9 @@ function add_network( $args = array() ) {
 			$r['meta'],
 			$new_network_id
 		);
+
+		// Switch back to the current network, to avoid any issues
+		restore_current_network();
 
 		// Bail if blog could not be created
 		if ( is_wp_error( $new_blog_id ) ) {
@@ -408,11 +414,9 @@ function add_network( $args = array() ) {
 		 * This applies only to new installs (WP 3.5+)
 		 */
 
-		// Switch to main network (if it exists)
+		// Switch to network (if set & exists)
 		if ( defined( 'SITE_ID_CURRENT_SITE' ) && get_network( SITE_ID_CURRENT_SITE ) ) {
-			switch_to_network( SITE_ID_CURRENT_SITE );
-			$use_files_rewriting = get_site_option( 'ms_files_rewriting' );
-			restore_current_network();
+			$use_files_rewriting = get_network_option( SITE_ID_CURRENT_SITE, 'ms_files_rewriting' );
 		} else {
 			$use_files_rewriting = get_site_option( 'ms_files_rewriting' );
 		}
@@ -420,7 +424,7 @@ function add_network( $args = array() ) {
 		global $wp_version;
 
 		// Create the upload_path and upload_url_path values
-		if ( ! $use_files_rewriting && version_compare( $wp_version, '3.7', '<' ) ) {
+		if ( empty( $use_files_rewriting ) && version_compare( $wp_version, '3.7', '<' ) ) {
 
 			// WP_CONTENT_URL is locked to the current site and can't be overridden,
 			//  so we have to replace the hostname the hard way
@@ -449,44 +453,44 @@ function add_network( $args = array() ) {
 		}
 	}
 
-	// Clone the network meta from an existing network
+	// Clone network meta from an existing network.
+	//
+	// We currently use the _options() API to get cache integration for free,
+	// but it may be better to read & write directly to $wpdb->sitemeta.
 	if ( ! empty( $r['clone_network'] ) && get_network( $r['clone_network'] ) ) {
 
+		// Temporary array
 		$options_cache = array();
 
 		// Old network
-		switch_to_network( $r['clone_network'] );
 		foreach ( $r['options_to_clone'] as $option ) {
-			$options_cache[ $option ] = get_site_option( $option );
+			$options_cache[ $option ] = get_network_option( $r['clone_network'], $option );
 		}
-		restore_current_network();
 
 		// New network
-		switch_to_network( $new_network_id );
-
 		foreach ( $r['options_to_clone'] as $option ) {
-			if ( isset( $options_cache[ $option ] ) ) {
 
-				// Fix for bug that prevents writing the ms_files_rewriting
-				// value for new networks.
-				if ( 'ms_files_rewriting' === $option ) {
-					$wpdb->insert( $wpdb->sitemeta, array(
-						'site_id'    => $wpdb->siteid,
-						'meta_key'   => $option,
-						'meta_value' => $options_cache[ $option ]
-					) );
-				} else {
-					add_site_option( $option, $options_cache[ $option ] );
-				}
+			// Skip if option isn't available to copy
+			if ( ! isset( $options_cache[ $option ] ) ) {
+				continue;
+			}
+
+			// Fix for bug that prevents writing the ms_files_rewriting
+			// value for new networks.
+			if ( 'ms_files_rewriting' === $option ) {
+				$wpdb->insert( $wpdb->sitemeta, array(
+					'site_id'    => $wpdb->siteid,
+					'meta_key'   => $option,
+					'meta_value' => $options_cache[ $option ]
+				) );
+			} else {
+				update_network_option( $new_network_id, $option, $options_cache[ $option ] );
 			}
 		}
-		unset( $options_cache );
-
-		restore_current_network();
 	}
 
 	// Clean network cache
-	clean_network_cache( array() );
+	clean_network_cache( $new_network_id );
 
 	do_action( 'add_network', $new_network_id, $r );
 

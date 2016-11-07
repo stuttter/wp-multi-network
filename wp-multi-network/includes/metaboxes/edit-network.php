@@ -186,23 +186,16 @@ function wpmn_edit_network_publish_metabox( $network = null ) {
 		<div id="minor-publishing">
 			<div id="misc-publishing-actions">
 
-				<?php if ( ! empty( $network ) ) :
-
-					// Switch
-					switch_to_network( $network->id ); ?>
+				<?php if ( ! empty( $network ) ) : ?>
 
 					<div class="misc-pub-section misc-pub-section-first" id="network">
-						<span><?php printf( __( 'Name: <strong>%1$s</strong>',  'wp-multi-network' ), get_site_option( 'site_name' ) ); ?></span>
+						<span><?php printf( __( 'Name: <strong>%1$s</strong>',  'wp-multi-network' ), get_network_option( $network->id, 'site_name' ) ); ?></span>
 					</div>
 					<div class="misc-pub-section misc-pub-section-last" id="sites">
-						<span><?php printf( __( 'Sites: <strong>%1$s</strong>', 'wp-multi-network' ), get_site_option( 'blog_count' ) ); ?></span>
+						<span><?php printf( __( 'Sites: <strong>%1$s</strong>', 'wp-multi-network' ), get_network_option( $network->id, 'blog_count' ) ); ?></span>
 					</div>
 
-					<?php
-
-					// Switch back
-					restore_current_network();
-				else : ?>
+				<?php else : ?>
 
 					<div class="misc-pub-section misc-pub-section-first" id="sites">
 						<span><?php esc_html_e( 'Creating a network with 1 new site.', 'wp-multi-network' ); ?></span>
