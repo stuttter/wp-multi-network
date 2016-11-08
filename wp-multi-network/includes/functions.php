@@ -201,24 +201,28 @@ if ( ! function_exists( 'switch_to_network' ) ) :
 function switch_to_network( $new_network = 0, $validate = false ) {
 	global $wpdb, $switched_network, $switched_network_stack, $current_site;
 
+	// Default to the current network ID
 	if ( empty( $new_network ) ) {
 		$new_network = $current_site->id;
 	}
 
+	// Bail if network does not exist
 	if ( ( true == $validate ) && ! get_network( $new_network ) ) {
 		return false;
 	}
 
+	// Maybe initialize the network switching stack global
 	if ( empty( $switched_network_stack ) ) {
 		$switched_network_stack = array();
 	}
 
+	// Tack the current network at the end of the stack
 	array_push( $switched_network_stack, $current_site );
 
 	/**
-	 * If we're switching to the same network id that we're on,
+	 * If we're switching to the same network ID that we're on,
 	 * set the right vars, do the associated actions, but skip
-	 * the extra unnecessary work
+	 * the extra unnecessary work.
 	 */
 	if ( $current_site->id === $new_network ) {
 		do_action( 'switch_network', $current_site->id, $current_site->id );
@@ -230,19 +234,23 @@ function switch_to_network( $new_network = 0, $validate = false ) {
 	$prev_site_id = $current_site->id;
 	$current_site = get_network( $new_network );
 
-	// Figure out the current network's main site.
+	// Maybe populate network's main site.
 	if ( ! isset( $current_site->blog_id ) ) {
 		$current_site->blog_id = get_main_site_for_network( $current_site );
 	}
 
+	// Maybe populate network's name
 	if ( ! isset( $current_site->site_name ) ) {
 		$current_site->site_name = get_network_name();
 	}
 
+	// Update network globals
 	$wpdb->siteid       = $current_site->id;
 	$GLOBALS['site_id'] = $current_site->id;
+	$GLOBALS['domain']  = $current_site->domain;
 
 	do_action( 'switch_network', $current_site->id, $prev_site_id );
+
 	$switched_network = true;
 
 	return true;
@@ -258,30 +266,41 @@ if ( ! function_exists( 'restore_current_network' ) ) :
 function restore_current_network() {
 	global $wpdb, $switched_network, $switched_network_stack, $current_site;
 
-	if ( false == $switched_network ) {
+	// Bail if not switched
+	if ( true !== $switched_network ) {
 		return false;
 	}
 
+	// Bail if no stack
 	if ( ! is_array( $switched_network_stack ) ) {
 		return false;
 	}
 
+	// Get the last network in the stack
 	$new_network = array_pop( $switched_network_stack );
 
+	/**
+	 * If we're restoring to the same network ID that we're on,
+	 * set the right vars, do the associated actions, but skip
+	 * the extra unnecessary work.
+	 */
 	if ( $new_network->id == $current_site->id ) {
 		do_action( 'switch_network', $current_site->id, $current_site->id );
 		$switched_network = ( ! empty( $switched_network_stack ) );
 		return true;
 	}
 
-	$prev_site_id       = $current_site->id;
+	// Save the previous network ID for action at the end
+	$prev_network_id    = $current_site->id;
 
+	// Restore network globals
 	$current_site       = $new_network;
 	$wpdb->siteid       = $new_network->id;
 	$GLOBALS['site_id'] = $new_network->id;
+	$GLOBALS['domain']  = $new_network->domain;
+	$switched_network   = ! empty( $switched_network_stack );
 
-	do_action( 'switch_network', $new_network->id, $prev_site_id );
-	$switched_network = ( ! empty( $switched_network_stack ) );
+	do_action( 'switch_network', $new_network->id, $prev_network_id );
 
 	return true;
 }
