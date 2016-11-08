@@ -298,9 +298,10 @@ function restore_current_network() {
 	$wpdb->siteid       = $new_network->id;
 	$GLOBALS['site_id'] = $new_network->id;
 	$GLOBALS['domain']  = $new_network->domain;
-	$switched_network   = ! empty( $switched_network_stack );
 
 	do_action( 'switch_network', $new_network->id, $prev_network_id );
+
+	$switched_network = ! empty( $switched_network_stack );
 
 	return true;
 }
