@@ -57,7 +57,7 @@ Just leave this plugin network-activated (or in mu-plugins) and it will take car
 = Can I achieve a multi-level URL path structure domain/network/site with
 subfolder network? =
 
-To achieve structure in this fashion network1/site1, network1/site2 etc,
+To achieve nested folder paths in this fashion network1/site1, network1/site2 etc,
 please follow the steps in https://paulund.co.uk/wordpress-multisite-nested-paths to construct a custom sunrise.php (Thanks to https://paulund.co.uk for providing these steps).
 
 = Where can I find documentation? =
