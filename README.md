@@ -79,6 +79,10 @@ WP Multi-Network needs to be running to set the upload path for new sites. As su
 
 (TL;DR - Leave this plugin activated and it will make sure uploads go where they're suppose do.)
 
+### Can I achieve a multi-level URL path structure domain/network/site with subfolder network?
+
+To achieve nested folder paths in this fashion `network1/site1`, `network1/site2` etc, please follow the steps in this [article](https://paulund.co.uk/wordpress-multisite-nested-paths) to construct a custom `sunrise.php` (Thanks to https://paulund.co.uk for providing these steps).
+
 ### Can I contribute?
 
 Please! The number of users needing multiple WordPress networks is growing fast. Having an easy-to-use interface and powerful set of functions is critical to managing complex WordPress installations. If this is your thing, please help us out!
