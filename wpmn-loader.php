@@ -5,7 +5,7 @@
  * Plugin URI:  https://wordpress.org/plugins/wp-multi-network/
  * Description: A Network Management UI for global administrators in WordPress Multisite
  * Author:      johnjamesjacoby, ddean, BrianLayman, rmccue
- * Author URI:  http://jjj.me
+ * Author URI:  https://jjj.blog
  * Tags:        blog, domain, mapping, multisite, network, networks, path, site, subdomain
  * Network:     true
  * License:     GPL v2 or later
