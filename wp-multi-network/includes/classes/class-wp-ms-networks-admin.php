@@ -634,8 +634,13 @@ class WP_MS_Networks_Admin {
 				<?php endif; ?>
 
 				<p><?php esc_html_e( 'Are you sure you want to delete these networks?', 'wp-multi-network' ); ?></p>
-				<input type="submit" name="delete_multiple" value="<?php esc_html_e( 'Delete Networks', 'wp-multi-network' ); ?>" class="button">
-				<input type="submit" name="cancel" value="<?php esc_html_e( 'Cancel', 'wp-multi-network' ); ?>" class="button">
+				<?php
+
+				wp_nonce_field( 'edit_network', 'network_edit' );
+
+				submit_button( esc_html__( 'Delete Networks', 'wp-multi-network' ), 'primary', 'delete_multiple', false ); ?>
+
+				<a class="button" href="<?php echo esc_url( $this->admin_url() ); ?>"><?php esc_html_e( 'Cancel', 'wp-multi-network' ); ?></a>
 			</form>
 		</div>
 
