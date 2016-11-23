@@ -565,9 +565,7 @@ class WP_MS_Networks_Admin {
 			: array();
 
 		// Prevent primary network from being deleted
-		if ( isset( $all_networks[ $network_id ] ) ) {
-			unset( $all_networks[ $network_id ] );
-		}
+		$all_networks = array_diff( $all_networks, array( $network_id ) );
 
 		// Query for networks
 		$networks = get_networks( array(
