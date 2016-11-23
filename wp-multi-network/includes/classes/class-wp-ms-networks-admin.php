@@ -333,7 +333,7 @@ class WP_MS_Networks_Admin {
 
 			add_meta_box( 'wpmn-edit-network-new-site', esc_html__( 'Root Site', 'wp-multi-network' ), 'wpmn_edit_network_new_site_metabox', get_current_screen()->id, 'advanced', 'high', array( $network ) );
 		} else {
-			$network_title = get_network_option( $network, 'site_name', '' );
+			$network_title = get_network_option( $network->id, 'site_name', '' );
 
 			add_meta_box( 'wpmn-edit-network-assign-sites', esc_html__( 'Site Assignment', 'wp-multi-network' ), 'wpmn_edit_network_assign_sites_metabox', get_current_screen()->id, 'advanced', 'high', array( $network ) );
 		} ?>
