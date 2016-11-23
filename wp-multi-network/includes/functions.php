@@ -411,6 +411,9 @@ function add_network( $args = array() ) {
 		// Switch to the new network so counts are properly bumped
 		switch_to_network( $new_network_id );
 
+		// Ensure upload constants are envoked
+		ms_upload_constants();
+
 		// Create the site for the root of this network
 		$new_blog_id = wpmu_create_blog(
 			$r['domain'],
