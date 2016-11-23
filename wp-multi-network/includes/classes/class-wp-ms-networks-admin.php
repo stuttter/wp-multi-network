@@ -719,36 +719,39 @@ class WP_MS_Networks_Admin {
 	 */
 	private function handle_add_network() {
 
+		// Unslash posted data for sanitization
+		$posted = wp_unslash( $_POST );
+
 		// Options to copy
-		if ( isset( $_POST['options_to_clone'] ) && is_array( $_POST['options_to_clone'] ) ) {
-			$options_to_clone = array_keys( $_POST['options_to_clone'] );
+		if ( isset( $posted['options_to_clone'] ) && is_array( $posted['options_to_clone'] ) ) {
+			$options_to_clone = array_keys( $posted['options_to_clone'] );
 		} else {
 			$options_to_clone = array_keys( network_options_to_copy() );
 		}
 
 		// Clone from
-		$clone = isset( $_POST['clone_network'] )
-			? (int) $_POST['clone_network']
+		$clone = isset( $posted['clone_network'] )
+			? (int) $posted['clone_network']
 			: get_current_site()->id;
 
 		// Title
-		$network_title = isset( $_POST['title'] )
-			? strip_tags( $_POST['title'] )
+		$network_title = isset( $posted['title'] )
+			? strip_tags( $posted['title'] )
 			: '';
 
 		// Domain
-		$network_domain = isset( $_POST['domain'] )
-			? str_replace( ' ', '', strtolower( $_POST['domain'] ) )
+		$network_domain = isset( $posted['domain'] )
+			? str_replace( ' ', '', strtolower( $posted['domain'] ) )
 			: '';
 
 		// Path
-		$network_path = isset( $_POST['path'] )
-			? str_replace( ' ', '', strtolower( $_POST['path'] ) )
+		$network_path = isset( $posted['path'] )
+			? str_replace( ' ', '', strtolower( $posted['path'] ) )
 			: '';
 
 		// Site name
-		$site_name = ! empty( $_POST['new_site'] )
-			? strip_tags( $_POST['new_site'] )
+		$site_name = ! empty( $posted['new_site'] )
+			? strip_tags( $posted['new_site'] )
 			: $network_title;
 
 		// Bail if missing fields
@@ -773,8 +776,8 @@ class WP_MS_Networks_Admin {
 		if ( ! empty( $result ) && ! is_wp_error( $result ) ) {
 
 			// Maybe update the site name
-			if ( ! empty( $_POST['title'] ) ) {
-				update_network_option( $result, 'site_name', $_POST['title'] );
+			if ( ! empty( $posted['title'] ) ) {
+				update_network_option( $result, 'site_name', $posted['title'] );
 			}
 
 			// Activate WPMN on this new network
