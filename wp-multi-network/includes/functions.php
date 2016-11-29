@@ -656,6 +656,12 @@ function update_network( $id, $domain, $path = '' ) {
 		}
 	}
 
+	// Update counts
+	switch_to_network( $network->id );
+	wp_maybe_update_network_site_counts();
+	wp_maybe_update_network_user_counts();
+	restore_current_network();
+
 	// Update network cache
 	clean_network_cache( array( $network->id ) );
 
