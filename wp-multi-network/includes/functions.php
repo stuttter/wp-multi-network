@@ -663,7 +663,7 @@ function update_network( $id, $domain, $path = '' ) {
 	restore_current_network();
 
 	// Update network cache
-	clean_network_cache( array( $network->id ) );
+	clean_network_cache( $network->id );
 
 	// Network updated
 	do_action( 'update_network', $network->id, array(
@@ -728,7 +728,7 @@ function delete_network( $network_id, $delete_blogs = false ) {
 	$wpdb->query( $prep );
 
 	// Clean network cache
-	clean_network_cache( array( $network->id ) );
+	clean_network_cache( $network->id );
 
 	// Network deleted
 	do_action( 'delete_network', $network );
