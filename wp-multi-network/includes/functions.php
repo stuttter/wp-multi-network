@@ -307,6 +307,39 @@ function restore_current_network() {
 }
 endif;
 
+if ( ! function_exists( 'insert_network' ) ) :
+/**
+ * Store basic network info in the sites table.
+ *
+ * This function creates a row in the wp_site table and returns
+ * the new network ID. It is the first step in creating a new network.
+ *
+ * @since 2.2.0
+ *
+ * @global wpdb $wpdb WordPress database abstraction object.
+ *
+ * @param string $domain  The domain of the new network.
+ * @param string $path    The path of the new network.
+
+ * @return int|false The ID of the new row
+ */
+function insert_network( $domain, $path = '/' ) {
+	global $wpdb;
+
+	$path   = trailingslashit( $path );
+	$result = $wpdb->insert( $wpdb->site, array( 'domain' => $domain, 'path' => $path ) );
+	if ( empty( $result ) || is_wp_error( $result ) ) {
+		return false;
+	}
+
+	$network_id = (int) $wpdb->insert_id;
+
+	clean_network_cache( $network_id );
+
+	return $network_id;
+}
+endif;
+
 if ( ! function_exists( 'add_network' ) ) :
 /**
  * Add a new network
