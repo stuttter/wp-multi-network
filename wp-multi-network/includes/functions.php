@@ -307,6 +307,24 @@ function restore_current_network() {
 }
 endif;
 
+if ( ! function_exists( '_wp_update_network_counts' ) ) :
+/**
+ * Do not use directly.
+ *
+ * This will go away once wp_update_network_counts() no longer sucks.
+ *
+ * @since 2.2.0
+ *
+ * @param int $network_id
+ */
+function _wp_update_network_counts( $network_id ) {
+	switch_to_network( $network_id );
+	wp_update_network_site_counts();
+	wp_update_network_user_counts();
+	restore_current_network();
+}
+endif;
+
 if ( ! function_exists( 'insert_network' ) ) :
 /**
  * Store basic network info in the sites table.
@@ -657,10 +675,7 @@ function update_network( $id, $domain, $path = '' ) {
 	}
 
 	// Update counts
-	switch_to_network( $network->id );
-	wp_maybe_update_network_site_counts();
-	wp_maybe_update_network_user_counts();
-	restore_current_network();
+	_wp_update_network_counts( $network->id );
 
 	// Update network cache
 	clean_network_cache( $network->id );
@@ -780,16 +795,12 @@ function move_site( $site_id = 0, $new_network_id = 0 ) {
 
 	// Update old network count
 	if ( 0 !== $site->site_id ) {
-		switch_to_network( $site->site_id );
-		wp_update_network_site_counts();
-		restore_current_network();
+		_wp_update_network_counts( $site->site_id );
 	}
 
 	// Update new network count
 	if ( 0 !== $new_network_id ) {
-		switch_to_network( $new_network_id );
-		wp_update_network_site_counts();
-		restore_current_network();
+		_wp_update_network_counts( $new_network_id );
 	}
 
 	// Refresh blog details
