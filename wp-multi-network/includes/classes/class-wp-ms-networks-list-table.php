@@ -237,7 +237,7 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 		}
 
 		/**
-		 * Filters the default post display states used in the posts list table.
+		 * Filters the default network display states used in the network list table.
 		 *
 		 * @since 2.2.0
 		 *
