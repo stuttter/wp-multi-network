@@ -318,7 +318,7 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 
 		?>
 
-		<strong><a href="<?php echo esc_url( $network_admin_url ); ?>" class="edit"><?php echo esc_html( $network->site_name ); ?></a></strong><?php echo $network_states; ?>
+		<strong><a href="<?php echo esc_url( $network_admin_url ); ?>" class="edit"><?php echo esc_html( $network->site_name ); ?></a><?php echo $network_states; ?></strong>
 
 		<?php
 	}
