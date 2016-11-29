@@ -428,11 +428,7 @@ function add_network( $args = array() ) {
 	}
 
 	// Insert new network
-	$wpdb->insert( $wpdb->site, array(
-		'domain' => $r['domain'],
-		'path'   => $r['path']
-	) );
-	$new_network_id = $wpdb->insert_id;
+	$new_network_id = insert_network( $r['domain'], $r['path'] );
 
 	// If network was created, create a blog for it too
 	if ( ! empty( $new_network_id ) ) {
