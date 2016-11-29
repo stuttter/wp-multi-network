@@ -219,6 +219,54 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 	}
 
 	/**
+	 * Get network states
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param WP_Network $network
+	 */
+	private function get_states( $network ) {
+
+		// Defaults
+		$network_states = array();
+		$network_state  = '';
+
+		// Primary
+		if ( is_main_network( $network->id ) ) {
+			$network_states['primary'] = esc_html__( 'Primary', 'wp-multi-network' );
+		}
+
+		/**
+		 * Filters the default post display states used in the posts list table.
+		 *
+		 * @since 2.2.0
+		 *
+		 * @param array   $network_states An array of network display states.
+		 * @param WP_Post $network        The current network object.
+		 */
+		$network_states = apply_filters( 'display_network_states', $network_states, $network );
+
+		// Setup states
+		if ( ! empty( $network_states ) ) {
+			$state_count = count( $network_states );
+			$i = 0;
+			$network_state = ' &mdash; ';
+
+			// Concatenate states
+			foreach ( $network_states as $state ) {
+				++$i;
+				( $i === $state_count )
+					? $sep = ''
+					: $sep = ', ';
+
+				$network_state .= "<span class='network-state'>{$state}{$sep}</span>";
+			}
+		}
+
+		return $network_state;
+	}
+
+	/**
 	 * Handles the checkbox column output.
 	 *
 	 * @since 2.0.0
@@ -252,34 +300,25 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 	 */
 	public function column_title( $network ) {
 
-		$network_states = array();
-		$network_state  = '';
+		// Get states
+		$network_states = $this->get_states( $network );
 
-		if ( ! empty( $network_states ) ) {
-			$state_count = count( $network_states );
-			$i = 0;
-			$network_state .= ' - ';
-
-			foreach ( $network_states as $state ) {
-				++$i;
-				$sep = ( $i == $state_count ) ? '' : ', ';
-				$network_state .= "<span class='post-state'>{$state}{$sep}</span>";
-			}
-		}
-
+		// Edit
 		if ( current_user_can( 'edit_network', $network->id ) ) {
 			$network_admin_url = add_query_arg( array(
 				'page'   => 'networks',
 				'action' => 'edit_network',
 				'id'     => $network->id
 			), network_admin_url( 'admin.php' ) );
+
+		// Manage
 		} elseif ( current_user_can( 'manage_networks' ) ) {
 			$network_admin_url = network_admin_url( '/' );
 		}
 
 		?>
 
-		<strong><a href="<?php echo esc_url( $network_admin_url ); ?>" class="edit"><?php echo esc_html( $network->site_name ); ?></a></strong><?php echo $network_state; ?>
+		<strong><a href="<?php echo esc_url( $network_admin_url ); ?>" class="edit"><?php echo esc_html( $network->site_name ); ?></a></strong><?php echo $network_states; ?>
 
 		<?php
 	}
