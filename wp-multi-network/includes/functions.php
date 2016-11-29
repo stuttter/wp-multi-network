@@ -559,6 +559,9 @@ function add_network( $args = array() ) {
 		}
 	}
 
+	// Update counts
+	_wp_update_network_counts( $new_network_id );
+
 	// Clean network cache
 	clean_network_cache( $new_network_id );
 
