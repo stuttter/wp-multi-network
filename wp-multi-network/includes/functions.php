@@ -579,7 +579,7 @@ function add_network( $args = array() ) {
 			// value for new networks.
 			if ( 'ms_files_rewriting' === $option ) {
 				$wpdb->insert( $wpdb->sitemeta, array(
-					'site_id'    => $wpdb->siteid,
+					'site_id'    => $new_network_id,
 					'meta_key'   => $option,
 					'meta_value' => $options_cache[ $option ]
 				) );
