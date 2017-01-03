@@ -23,8 +23,17 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 	 * <path>
 	 * : Path for network
 	 *
+	 * --user=<id|login|email>
+	 * : Set the WordPress user, this will be the administrator for the site and administrator for the network if network_admin is not provided.
+	 *
+	 * [--network_admin=<id|login|email>]
+	 * : This will be the administrator for the network.
+	 *
 	 * [--site_name=<site_name>]
-	 * : Name of new network
+	 * : Name of the new network site
+	 *
+	 * [--network_name=<network_name>]
+	 * : Name of the new network
 	 *
 	 * [--clone_network=<clone_network>]
 	 * : ID of network to clone
@@ -38,10 +47,23 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 		list( $domain, $path ) = $args;
 
 		$assoc_args = wp_parse_args( $assoc_args, array(
+			'network_admin'    => false,
 			'site_name'        => false,
+			'network_name'     => false,
 			'clone_network'    => false,
 			'options_to_clone' => false
 		) );
+
+		if ( $assoc_args['network_admin'] ) {
+			$users = new \WP_CLI\Fetchers\User();
+			$user = $users->get( $assoc_args['network_admin'] );
+			if ( ! $user ) {
+				return new WP_Error( 'network_super_admin', __( 'Super user does not exist.', 'wp-multi-network' ) );
+			}
+			$network_admin_id = $user->ID;
+		} else {
+			$network_admin_id = get_current_user_id();
+		}
 
 		$clone_network    = $assoc_args['clone_network'];
 		$options_to_clone = false;
@@ -59,7 +81,9 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 			'domain'           => $domain,
 			'path'             => $path,
 			'site_name'        => $assoc_args['site_name'],
+			'network_name'     => $assoc_args['network_name'],
 			'user_id'          => get_current_user_id(),
+			'network_admin_id'    => $network_admin_id,
 			'clone_network'    => $clone_network,
 			'options_to_clone' => $options_to_clone
 		) );

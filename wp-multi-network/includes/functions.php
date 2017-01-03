@@ -373,8 +373,15 @@ if ( ! function_exists( 'add_network' ) ) :
  *                                     product on a domain.
  *     @type string  $site_name        Name of the root blog to be created on
  *                                     the new network.
+ *
+ *     @type string  $network_name     Name of the new network.
+ *
  *     @type integer $user_id          ID of the user to add as the site owner.
  *                                     Defaults to current user ID.
+ *
+ *     @type integer $network_admin_id    ID of the user to add as the network administrator.
+ *                                     Defaults to current user ID.
+ *
  *     @type array   $meta             Array of metadata to save to this network.
  *                                     Defaults to array( 'public' => false ).
  *     @type integer $clone_network    ID of network whose networkmeta values are
@@ -383,7 +390,7 @@ if ( ! function_exists( 'add_network' ) ) :
  *                                     when cloning - default NULL.
  * }
  *
- * @return integer ID of newly created network
+ * @return integer|WP_Error ID of newly created network
  */
 function add_network( $args = array() ) {
 	global $wpdb;
@@ -413,20 +420,30 @@ function add_network( $args = array() ) {
 		}
 	}
 
+	// Get current user ID to pass into args
+	$current_user_id = get_current_user_id();
+
 	// Parse args
 	$r = wp_parse_args( $args, array(
 		'domain'           => '',
 		'path'             => '/',
-		'site_name'        => __( 'New Network', 'wp-multi-network' ),
-		'user_id'          => get_current_user_id(),
+		'site_name'        => __( 'New Network Site', 'wp-multi-network' ),
+		'network_name'     => __( 'New Network',      'wp-multi-network' ),
+		'user_id'          => $current_user_id,
+		'network_admin_id' => $current_user_id,
 		'meta'             => array( 'public' => get_option( 'blog_public', false ) ),
 		'clone_network'    => false,
 		'options_to_clone' => array_keys( network_options_to_copy() )
 	) );
 
-	// Bail if no user with this ID
+	// Bail if no user with this ID for site
 	if ( empty( $r['user_id'] ) || ! get_userdata( $r['user_id'] ) ) {
 		return new WP_Error( 'network_user', __( 'User does not exist.', 'wp-multi-network' ) );
+	}
+
+	// Bail if no user with this ID for network
+	if ( empty( $r['network_admin_id'] ) || ! get_userdata( $r['network_admin_id'] ) ) {
+		return new WP_Error( 'network_super_admin', __( 'User does not exist.', 'wp-multi-network' ) );
 	}
 
 	// Permissive sanitization for super admin usage
@@ -448,85 +465,98 @@ function add_network( $args = array() ) {
 	// Insert new network
 	$new_network_id = insert_network( $r['domain'], $r['path'] );
 
-	// If network was created, create a blog for it too
-	if ( ! empty( $new_network_id ) ) {
-
-		if ( ! defined( 'WP_INSTALLING' ) ) {
-			define( 'WP_INSTALLING', true );
-		}
-
-		// Switch to the new network so counts are properly bumped
-		switch_to_network( $new_network_id );
-
-		// Ensure upload constants are envoked
-		ms_upload_constants();
-
-		// Create the site for the root of this network
-		$new_blog_id = wpmu_create_blog(
-			$r['domain'],
-			$r['path'],
-			$r['site_name'],
-			$r['user_id'],
-			$r['meta'],
-			$new_network_id
-		);
-
-		// Switch back to the current network, to avoid any issues
-		restore_current_network();
-
-		// Bail if blog could not be created
-		if ( is_wp_error( $new_blog_id ) ) {
-			return $new_blog_id;
-		}
-
-		/**
-		 * Fix upload_path for main sites on secondary networks
-		 * This applies only to new installs (WP 3.5+)
-		 */
-
-		// Switch to network (if set & exists)
-		if ( defined( 'SITE_ID_CURRENT_SITE' ) && get_network( SITE_ID_CURRENT_SITE ) ) {
-			$use_files_rewriting = get_network_option( SITE_ID_CURRENT_SITE, 'ms_files_rewriting' );
-		} else {
-			$use_files_rewriting = get_site_option( 'ms_files_rewriting' );
-		}
-
-		global $wp_version;
-
-		// Create the upload_path and upload_url_path values
-		if ( empty( $use_files_rewriting ) && version_compare( $wp_version, '3.7', '<' ) ) {
-
-			// WP_CONTENT_URL is locked to the current site and can't be overridden,
-			//  so we have to replace the hostname the hard way
-			$current_siteurl = get_option( 'siteurl' );
-			$new_siteurl     = untrailingslashit( get_blogaddress_by_id( $new_blog_id ) );
-			$upload_url      = str_replace( $current_siteurl, $new_siteurl, WP_CONTENT_URL );
-			$upload_url      = $upload_url . '/uploads';
-
-			$upload_dir = WP_CONTENT_DIR;
-			if ( 0 === strpos( $upload_dir, ABSPATH ) ) {
-				$upload_dir = substr( $upload_dir, strlen( ABSPATH ) );
-			}
-			$upload_dir .= '/uploads';
-
-			if ( defined( 'MULTISITE' ) ) {
-				$ms_dir = '/sites/' . $new_blog_id;
-			} else {
-				$ms_dir = '/' . $new_blog_id;
-			}
-
-			$upload_dir .= $ms_dir;
-			$upload_url .= $ms_dir;
-
-			update_blog_option( $new_blog_id, 'upload_path',     $upload_dir );
-			update_blog_option( $new_blog_id, 'upload_url_path', $upload_url );
-		}
+	// Bail if no network was inserted
+	if ( empty( $new_network_id ) ) {
+		return false;
 	}
 
-	// Clone network meta from an existing network.
-	//
-	// We currently use the _options() API to get cache integration for free,
-	// but it may be better to read & write directly to $wpdb->sitemeta.
+	// Set the installing constant
+	if ( ! defined( 'WP_INSTALLING' ) ) {
+		define( 'WP_INSTALLING', true );
+	}
+
+	// Switch to the new network so counts are properly bumped
+	switch_to_network( $new_network_id );
+
+	// Ensure upload constants are envoked
+	ms_upload_constants();
+
+	// Create the site for the root of this network
+	$new_blog_id = wpmu_create_blog(
+		$r['domain'],
+		$r['path'],
+		$r['site_name'],
+		$r['user_id'],
+		$r['meta'],
+		$new_network_id
+	);
+
+	// Maybe add user as network admin
+	grant_super_admin( $r['network_admin_id'] );
+
+	// Switch back to the current network, to avoid any issues
+	restore_current_network();
+
+	// Bail if blog could not be created
+	if ( is_wp_error( $new_blog_id ) ) {
+		return $new_blog_id;
+	}
+
+	// Make sure network has a name
+	$network_name =! empty( $r['network_name'] )
+		? $r['network_name']
+		: $r['site_name'];
+	update_network_option( $new_network_id, 'site_name', $network_name );
+
+	/**
+	 * Fix upload_path for main sites on secondary networks
+	 * This applies only to new installs (WP 3.5+)
+	 */
+
+	// Switch to network (if set & exists)
+	if ( defined( 'SITE_ID_CURRENT_SITE' ) && get_network( SITE_ID_CURRENT_SITE ) ) {
+		$use_files_rewriting = get_network_option( SITE_ID_CURRENT_SITE, 'ms_files_rewriting' );
+	} else {
+		$use_files_rewriting = get_site_option( 'ms_files_rewriting' );
+	}
+
+	global $wp_version;
+
+	// Create the upload_path and upload_url_path values
+	if ( empty( $use_files_rewriting ) && version_compare( $wp_version, '3.7', '<' ) ) {
+
+		// WP_CONTENT_URL is locked to the current site and can't be overridden,
+		//  so we have to replace the hostname the hard way
+		$current_siteurl = get_option( 'siteurl' );
+		$new_siteurl     = untrailingslashit( get_blogaddress_by_id( $new_blog_id ) );
+		$upload_url      = str_replace( $current_siteurl, $new_siteurl, WP_CONTENT_URL );
+		$upload_url      = $upload_url . '/uploads';
+
+		$upload_dir = WP_CONTENT_DIR;
+		if ( 0 === strpos( $upload_dir, ABSPATH ) ) {
+			$upload_dir = substr( $upload_dir, strlen( ABSPATH ) );
+		}
+		$upload_dir .= '/uploads';
+
+		if ( defined( 'MULTISITE' ) ) {
+			$ms_dir = '/sites/' . $new_blog_id;
+		} else {
+			$ms_dir = '/' . $new_blog_id;
+		}
+
+		$upload_dir .= $ms_dir;
+		$upload_url .= $ms_dir;
+
+		update_blog_option( $new_blog_id, 'upload_path',     $upload_dir );
+		update_blog_option( $new_blog_id, 'upload_url_path', $upload_url );
+	}
+
+	/**
+	 * Clone network meta from an existing network.
+	 *
+	 * We currently use the _options() API to get cache integration for free,
+	 * but it may be better to read & write directly to $wpdb->sitemeta.
+	 */
 	if ( ! empty( $r['clone_network'] ) && get_network( $r['clone_network'] ) ) {
 
 		// Temporary array
@@ -577,7 +607,7 @@ if ( ! function_exists( 'update_network' ) ) :
  *
  * @since 1.3
  *
- * @param integer id ID of network to modify
+ * @param integer $id ID of network to modify
  * @param string $domain New domain for network
  * @param string $path New path for network
  */
