@@ -393,7 +393,7 @@ if ( ! function_exists( 'add_network' ) ) :
  * @return integer|WP_Error ID of newly created network
  */
 function add_network( $args = array() ) {
-	global $wpdb;
+	global $wpdb, $wp_version, $wp_db_version;
 
 	// Backward compatibility with old method of passing arguments
 	if ( ! is_array( $args ) || func_num_args() > 1 ) {
@@ -423,15 +423,33 @@ function add_network( $args = array() ) {
 	// Get current user ID to pass into args
 	$current_user_id = get_current_user_id();
 
+	// Default site meta
+	$default_site_meta = array(
+		'public' => get_option( 'blog_public', false )
+	);
+
+	// Default network meta
+	$default_network_meta = array(
+		'wpmu_upgrade_site'  => $wp_db_version,
+		'initial_db_version' => $wp_db_version
+	);
+
 	// Parse args
 	$r = wp_parse_args( $args, array(
+
+		// Site & Network
 		'domain'           => '',
 		'path'             => '/',
+
+		// Site
 		'site_name'        => __( 'New Network Site', 'wp-multi-network' ),
-		'network_name'     => __( 'New Network',      'wp-multi-network' ),
 		'user_id'          => $current_user_id,
+		'meta'             => $default_site_meta,
+
+		// Network
+		'network_name'     => __( 'New Network', 'wp-multi-network' ),
 		'network_admin_id' => $current_user_id,
-		'meta'             => array( 'public' => get_option( 'blog_public', false ) ),
+		'network_meta'     => $default_network_meta,
 		'clone_network'    => false,
 		'options_to_clone' => array_keys( network_options_to_copy() )
 	) );
@@ -503,10 +521,16 @@ function add_network( $args = array() ) {
 	}
 
 	// Make sure network has a name
-	$network_name =! empty( $r['network_name'] )
-		? $r['network_name']
-		: $r['site_name'];
-	update_network_option( $new_network_id, 'site_name', $network_name );
+	if ( empty( $r['network_meta']['site_name'] ) ) {
+		$r['network_meta']['site_name'] = ! empty( $r['network_name'] )
+			? $r['network_name']
+			: $r['site_name'];
+	}
+
+	// Additional new network meta
+	foreach ( $r['network_meta'] as $key => $value ) {
+		update_network_option( $new_network_id, $key, $value );
+	}
 
 	/**
 	 * Fix upload_path for main sites on secondary networks
@@ -514,19 +538,15 @@ function add_network( $args = array() ) {
 	 */
 
 	// Switch to network (if set & exists)
-	if ( defined( 'SITE_ID_CURRENT_SITE' ) && get_network( SITE_ID_CURRENT_SITE ) ) {
-		$use_files_rewriting = get_network_option( SITE_ID_CURRENT_SITE, 'ms_files_rewriting' );
-	} else {
-		$use_files_rewriting = get_site_option( 'ms_files_rewriting' );
-	}
-
-	global $wp_version;
+	$use_files_rewriting = defined( 'SITE_ID_CURRENT_SITE' ) && get_network( SITE_ID_CURRENT_SITE )
+		? get_network_option( SITE_ID_CURRENT_SITE, 'ms_files_rewriting' )
+		: get_site_option( 'ms_files_rewriting' );
 
 	// Create the upload_path and upload_url_path values
 	if ( empty( $use_files_rewriting ) && version_compare( $wp_version, '3.7', '<' ) ) {
 
 		// WP_CONTENT_URL is locked to the current site and can't be overridden,
-		//  so we have to replace the hostname the hard way
+		// so we have to replace the hostname the hard way
 		$current_siteurl = get_option( 'siteurl' );
 		$new_siteurl     = untrailingslashit( get_blogaddress_by_id( $new_blog_id ) );
 		$upload_url      = str_replace( $current_siteurl, $new_siteurl, WP_CONTENT_URL );
