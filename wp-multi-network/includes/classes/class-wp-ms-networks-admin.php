@@ -38,7 +38,6 @@ class WP_MS_Networks_Admin {
 		add_action( 'admin_menu',         array( $this, 'admin_menu'                   ) );
 		add_action( 'network_admin_menu', array( $this, 'network_admin_menu'           ) );
 		add_action( 'network_admin_menu', array( $this, 'network_admin_menu_separator' ) );
-        add_action( 'admin_bar_menu', array( $this, 'admin_bar' ), 20 );
 
 		// Page save handers
 		add_action( 'admin_init',         array( $this, 'route_save_handlers' ) );
@@ -51,22 +50,7 @@ class WP_MS_Networks_Admin {
 
 		// Styling & Scripting
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
-        add_action( 'admin_print_styles', array( $this , 'admin_print_styles'));
-        add_action( 'wp_print_styles', array( $this , 'admin_print_styles'));
 	}
-
-    /**
-     * Adds networking icon to admin bar network menu item.
-     */
-    public function admin_print_styles() { ?>
-        <style type="text/css">
-            #wpadminbar #wp-admin-bar-my-networks > .ab-item:first-child:before {
-                content: "\f325";
-                top: 3px;
-            }
-        </style>
-        <?php
-    }
 
     /**
      * Add the Move action to Sites page on WP >= 3.1
@@ -117,84 +101,6 @@ class WP_MS_Networks_Admin {
 		// Add the dashboard page
 		add_dashboard_page( esc_html__( 'My Networks', 'wp-multi-network' ), esc_html__( 'My Networks', 'wp-multi-network' ), 'read', 'my-networks', array( $this, 'page_my_networks' ) );
 	}
-
-    /**
-     * @param WP_Admin_Bar $wp_admin_bar
-     */
-    public function admin_bar( $wp_admin_bar ) {
-        // Don't show for logged out users or single site mode.
-
-        if ( ! is_user_logged_in() || ! is_multisite() ) {
-            return;
-        }
-        $networks = user_has_networks();
-
-        // Show only when the user has at least one site, or they're a super admin.
-        if ( ! $networks || ! is_super_admin() ) {
-            return;
-        }
-        $wp_admin_bar->add_menu( array(
-            'id'    => 'my-networks',
-            'title' => __( 'My Networks' ),
-            'href'  => network_admin_url( 'admin.php?page=networks' ),
-            'meta'  => array( 'class' => 'networks-parent' ),
-        ) );
-
-        foreach ( $networks as $network_id ) {
-            $network = get_network( $network_id );
-            switch_to_network( $network_id );
-            $wp_admin_bar->add_group( array(
-                'parent' => 'my-networks',
-                'id'     => 'group-network-admin-' . $network_id,
-            ) );
-
-            $wp_admin_bar->add_menu( array(
-                'parent' => 'group-network-admin-' . $network_id,
-                'id'     => 'network-admin-' . $network_id,
-                'title'  => $network->site_name,
-                'href'   => network_admin_url()
-            ) );
-
-            $wp_admin_bar->add_menu( array(
-                'parent' => 'network-admin-' . $network_id,
-                'id'     => 'network-admin-d',
-                'title'  => __( 'Dashboard' ),
-                'href'   => network_admin_url(),
-            ) );
-            $wp_admin_bar->add_menu( array(
-                'parent' => 'network-admin-' . $network_id,
-                'id'     => 'network-admin-s' . $network_id,
-                'title'  => __( 'Sites' ),
-                'href'   => network_admin_url( 'sites.php' ),
-            ) );
-            $wp_admin_bar->add_menu( array(
-                'parent' => 'network-admin-' . $network_id,
-                'id'     => 'network-admin-u' . $network_id,
-                'title'  => __( 'Users' ),
-                'href'   => network_admin_url( 'users.php' ),
-            ) );
-            $wp_admin_bar->add_menu( array(
-                'parent' => 'network-admin-' . $network_id,
-                'id'     => 'network-admin-t' . $network_id,
-                'title'  => __( 'Themes' ),
-                'href'   => network_admin_url( 'themes.php' ),
-            ) );
-            $wp_admin_bar->add_menu( array(
-                'parent' => 'network-admin-' . $network_id,
-                'id'     => 'network-admin-p' . $network_id,
-                'title'  => __( 'Plugins' ),
-                'href'   => network_admin_url( 'plugins.php' ),
-            ) );
-            $wp_admin_bar->add_menu( array(
-                'parent' => 'network-admin-' . $network_id,
-                'id'     => 'network-admin-o' . $network_id,
-                'title'  => __( 'Settings' ),
-                'href'   => network_admin_url( 'settings.php' ),
-            ) );
-
-            restore_current_network();
-        }
-    }
 
     /**
 	 * Add Networks menu and entries to the Network-level dashboard
