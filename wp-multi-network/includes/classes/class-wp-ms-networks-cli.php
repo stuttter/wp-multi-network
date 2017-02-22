@@ -200,6 +200,84 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 		$formatter = $this->get_formatter( $assoc_args );
 		$formatter->display_items( $items );
 	}
+	
+    /**
+     * Network activate or deactivate a plugin
+     *
+     * <activate|deactivate>
+     * : Action to perform
+     *
+     * <plugin_name>
+     * : Plugin to activate for the network
+     *
+     * --network_id=<network_id>
+     * : Id of the network to activate on
+     *
+     * [--network]
+     * : If set, the plugin will be activated for the entire multisite network.
+     *
+     * [--all]
+     * : If set, all plugins will be activated.
+     *
+     * @param array $args
+     * @param array $assoc_args
+     */
+    public function plugin( $args, $assoc_args ) {
+        $this->fetcher = new \WP_CLI\Fetchers\Plugin;
+        $action        = array_shift( $args );
+        if ( ! in_array( $action, array( 'activate', 'deactivate' ) ) ) {
+            WP_CLI::error( sprintf( __( "%s is not a supported action.", 'wp-multi-network' ), $action ) );
+        }
+        $network_wide = \WP_CLI\Utils\get_flag_value( $assoc_args, 'network' );
+        $all          = \WP_CLI\Utils\get_flag_value( $assoc_args, 'all', false );
+
+
+        $needing_activation = count( $args );
+        $assoc_args         = wp_parse_args( $assoc_args, array(
+            'network_id' => false,
+        ) );
+        $network_id         = $assoc_args['network_id'];
+        if ( get_network( $network_id ) ) {
+            switch_to_network( $network_id );
+            if ( $all ) {
+                $args = array_map( function ( $file ) {
+                    return \WP_CLI\Utils\get_plugin_name( $file );
+                }, array_keys( get_plugins() ) );
+            }
+            foreach ( $this->fetcher->get_many( $args ) as $plugin ) {
+                $status = $this->get_status( $plugin->file );
+                if ( $all && in_array( $status, array( 'active', 'active-network' ) ) ) {
+                    $needing_activation --;
+                    continue;
+                }
+                // Network-active is the highest level of activation status
+                if ( 'active-network' === $status ) {
+                    WP_CLI::warning( "Plugin '{$plugin->name}' is already network active." );
+                    continue;
+                }
+                // Don't reactivate active plugins, but do let them become network-active
+                if ( ! $network_wide && 'active' === $status ) {
+                    WP_CLI::warning( "Plugin '{$plugin->name}' is already active." );
+                    continue;
+                }
+
+                // Plugins need to be deactivated before being network activated
+                if ( $network_wide && 'active' === $status ) {
+                    deactivate_plugins( $plugin->file, false, false );
+                }
+                if ( 'activate' === $action ) {
+                    activate_plugins( $plugin->file, '', $network_wide );
+                } else {
+                    deactivate_plugins( $plugin->file, '', $network_wide );
+                }
+
+                $this->active_output( $plugin->name, $plugin->file, $network_wide, "activate" );
+            }
+            restore_current_network();
+        } else {
+            WP_CLI::error( sprintf( __( "Network %s doesn't exist.", 'wp-multi-network' ), $network_id ) );
+        }
+    }
 
 	/**
 	 * Get Formatter object based on supplied parameters.
@@ -211,6 +289,30 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 	protected function get_formatter( &$assoc_args ) {
 		return new WP_CLI\Formatter( $assoc_args, $this->obj_fields, 'wp-multi-network' );
 	}
+
+    /* PRIVATES */
+
+    private function check_active( $file, $network_wide ) {
+        $required = $network_wide ? 'active-network' : 'active';
+
+        return $required == $this->get_status( $file );
+    }
+
+    private function active_output( $name, $file, $network_wide, $action ) {
+        $network_wide = $network_wide || ( is_multisite() && is_network_only_plugin( $file ) );
+
+        $check = $this->check_active( $file, $network_wide );
+
+        if ( ( $action === 'activate') ? $check : ! $check ) {
+            if ( $network_wide ) {
+                WP_CLI::success( "Plugin '{$name}' network {$action}d." );
+            } else {
+                WP_CLI::success( "Plugin '{$name}' {$action}d." );
+            }
+        } else {
+            WP_CLI::warning( "Could not {$action} the '{$name}' plugin." );
+        }
+    }
 }
 
 WP_CLI::add_command( 'wp-multi-network', 'WP_MS_Network_Command' );
