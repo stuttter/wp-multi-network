@@ -225,8 +225,8 @@ class WP_MS_Network_Command extends WP_CLI_Command {
     public function plugin( $args, $assoc_args ) {
         $this->fetcher = new \WP_CLI\Fetchers\Plugin;
         $action        = array_shift( $args );
-        if ( ! in_array( $action, array( 'activate', 'deactivate' ) ) ) {
-            WP_CLI::error( sprintf( __( "%s is not a supported action.", 'wp-multi-network' ), $action ) );
+        if ( ! in_array( $action, array( 'activate', 'deactivate' ), true ) ) {
+            WP_CLI::error( sprintf( __( '%s is not a supported action.', 'wp-multi-network' ), $action ) );
         }
         $network_wide = \WP_CLI\Utils\get_flag_value( $assoc_args, 'network' );
         $all          = \WP_CLI\Utils\get_flag_value( $assoc_args, 'all', false );
@@ -246,7 +246,7 @@ class WP_MS_Network_Command extends WP_CLI_Command {
             }
             foreach ( $this->fetcher->get_many( $args ) as $plugin ) {
                 $status = $this->get_status( $plugin->file );
-                if ( $all && in_array( $status, array( 'active', 'active-network' ) ) ) {
+                if ( $all && in_array( $status, array( 'active', 'active-network' ), true ) ) {
                     $needing_activation --;
                     continue;
                 }
@@ -295,7 +295,19 @@ class WP_MS_Network_Command extends WP_CLI_Command {
     private function check_active( $file, $network_wide ) {
         $required = $network_wide ? 'active-network' : 'active';
 
-        return $required == $this->get_status( $file );
+        return $required === $this->get_status( $file );
+    }
+
+    protected function get_status( $file ) {
+        if ( is_plugin_active_for_network( $file ) ) {
+            return 'active-network';
+        }
+
+        if ( is_plugin_active( $file ) ) {
+            return 'active';
+        }
+
+        return 'inactive';
     }
 
     private function active_output( $name, $file, $network_wide, $action ) {
