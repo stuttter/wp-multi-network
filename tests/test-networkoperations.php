@@ -41,6 +41,37 @@ class WPMN_Tests_NetworkOperations extends WP_UnitTestCase {
 		$this->assertEquals( 1, $site->site_id, 'Site should be back in main network' );
 	}
 
+	public function test_switch_site() {
+		// Site first site and network
+		$network_id = $this->factory->network->create( array( 'domain' => 'wordpress.com', 'path' => '/', ) );
+		$site_id = $this->factory->blog->create( array( 'site_id' => $network_id ) );
+
+		// Site second site and network
+		$other_network_id = $this->factory->network->create( array( 'domain' => 'example.com', 'path' => '/', ) );
+		$site_id_diffent_network = $this->factory->blog->create( array( 'site_id' => $other_network_id ) );
+
+		// Assert default network is 1
+		$this->assertEquals( 1, get_current_network_id(), 'Network should start as 1' );
+
+		// Switch to first site
+		switch_to_blog( $site_id );
+		$this->assertEquals( $network_id, get_current_network_id(), 'Network should change to '. $network_id );
+		
+		// Switch to second site
+		switch_to_blog( $site_id_diffent_network );
+		$this->assertEquals( $other_network_id, get_current_network_id(), 'Network should change to '. $other_network_id );
+		// Switch to first site
+		restore_current_blog();
+
+		$this->assertEquals( $network_id, get_current_network_id(), 'Network should change to '. $network_id );
+
+		// Restore default site / network
+		restore_current_blog();
+
+		$this->assertEquals( 1, get_current_network_id(), 'Network should end as 1' );
+
+	}
+
 	public function test_switch_to_network() {
 		global $current_site;
 

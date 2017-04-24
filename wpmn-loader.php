@@ -119,6 +119,7 @@ class WPMN_Loader {
 		// Functions & Core Compatibility
 		require $this->plugin_dir . 'includes/compat.php';
 		require $this->plugin_dir . 'includes/functions.php';
+		require $this->plugin_dir . 'includes/actions.php';
 
 		// WordPress Admin
 		if ( is_blog_admin() || is_network_admin() ) {
