@@ -366,21 +366,22 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 	}
 
 	/**
-	 * Output network admins
+	 * Output administrators for a network
 	 *
 	 * @since 2.0.0
 	 *
 	 * @param WP_Network $network
 	 */
 	public function column_admins( $network ) {
-		$network_admins = get_network_option( $network->id, 'site_admins' );
 
-		if ( ! empty( $network_admins ) ) {
-			$network_admins = array_filter( maybe_unserialize( $network_admins ) );
-			if ( ! empty( $network_admins ) ) {
-				echo join( ', ', $network_admins );
-			}
-		}
+		// Get network administrators
+		$network_admins = get_network_option( $network->id, 'site_admins', array() );
+		$network_admins = array_filter( $network_admins );
+
+		// Admins or nothing
+		echo empty( $network_admins )
+			? join( ', ', $network_admins )
+			: '&mdash;';
 	}
 
 	/**
