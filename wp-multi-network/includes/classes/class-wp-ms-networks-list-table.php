@@ -303,22 +303,30 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 		// Get states
 		$network_states = $this->get_states( $network );
 
-		// Edit
+		// Title, with edit link if available.
+		$link = esc_html( $network->site_name );
 		if ( current_user_can( 'edit_network', $network->id ) ) {
-			$network_admin_url = add_query_arg( array(
-				'page'   => 'networks',
-				'action' => 'edit_network',
-				'id'     => $network->id
-			), network_admin_url( 'admin.php' ) );
-
-		// Manage
-		} elseif ( current_user_can( 'manage_networks' ) ) {
-			$network_admin_url = network_admin_url( '/' );
+			$link = sprintf(
+				'<a href="%1$s" class="edit" aria-label="%2$s">%3$s</a>',
+				esc_url( add_query_arg( array(
+					'page'   => 'networks',
+					'action' => 'edit_network',
+					'id'     => $network->id
+				) ) ),
+				/* translators: %s: network title */
+				esc_attr( sprintf( __( '&#8220;%s&#8221; (Edit)', 'wp-multi-network' ), $link ) ),
+				$link
+			);
 		}
 
 		?>
 
-		<strong><a href="<?php echo esc_url( $network_admin_url ); ?>" class="edit"><?php echo esc_html( $network->site_name ); ?></a><?php echo $network_states; ?></strong>
+		<strong>
+			<?php
+			echo $link;
+			echo $network_states;
+			?>
+		</strong>
 
 		<?php
 	}
