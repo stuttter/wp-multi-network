@@ -12,7 +12,6 @@
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Version:     2.1.0
  * Text Domain: wp-multi-network
- * Domain Path: /languages
  */
 
 // Exit if accessed directly
@@ -131,7 +130,7 @@ class WPMN_Loader {
 			require $this->plugin_dir . 'includes/classes/class-wp-ms-networks-admin.php';
 
 			// Localization
-			load_plugin_textdomain( 'wp-multi-network', false, dirname( $this->basename ) . '/languages/' );
+			load_plugin_textdomain( 'wp-multi-network' );
 
 			// Setup the network admin
 			$this->admin = new WP_MS_Networks_Admin();
