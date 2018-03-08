@@ -339,12 +339,24 @@ if ( ! function_exists( 'insert_network' ) ) :
  * @param string $domain  The domain of the new network.
  * @param string $path    The path of the new network.
 
- * @return int|false The ID of the new row
+ * @return int|false|WP_Error The ID of the new row
  */
 function insert_network( $domain, $path = '/' ) {
 	global $wpdb;
 
 	$path   = trailingslashit( $path );
+	// Check for existing network
+	$networks = get_networks( array(
+		'domain' => $domain,
+		'path'   => $path,
+		'number' => '1'
+	) );
+
+	// Bail if network already exists
+	if ( ! empty( $networks ) ) {
+		return new WP_Error( 'network_exists', __( 'Network already exists.', 'wp-multi-network' ), array( 'status' => 500 ) );
+	}
+
 	$result = $wpdb->insert( $wpdb->site, array( 'domain' => $domain, 'path' => $path ) );
 	if ( empty( $result ) || is_wp_error( $result ) ) {
 		return false;
@@ -456,32 +468,24 @@ function add_network( $args = array() ) {
 
 	// Bail if no user with this ID for site
 	if ( empty( $r['user_id'] ) || ! get_userdata( $r['user_id'] ) ) {
-		return new WP_Error( 'network_user', __( 'User does not exist.', 'wp-multi-network' ) );
+		return new WP_Error( 'network_user', __( 'User does not exist.', 'wp-multi-network' ), array( 'status' => 403 ) );
 	}
 
 	// Bail if no user with this ID for network
 	if ( empty( $r['network_admin_id'] ) || ! get_userdata( $r['network_admin_id'] ) ) {
-		return new WP_Error( 'network_super_admin', __( 'User does not exist.', 'wp-multi-network' ) );
+		return new WP_Error( 'network_super_admin', __( 'User does not exist.', 'wp-multi-network' ), array( 'status' => 403 ) );
 	}
 
 	// Permissive sanitization for super admin usage
 	$r['domain'] = str_replace( ' ', '', strtolower( $r['domain'] ) );
 	$r['path']   = str_replace( ' ', '', strtolower( $r['path']   ) );
 
-	// Check for existing network
-	$networks = get_networks( array(
-		'domain' => $r['domain'],
-		'path'   => $r['path'],
-		'number' => '1'
-	) );
-
-	// Bail if network already exists
-	if ( ! empty( $networks ) ) {
-		return new WP_Error( 'network_exists', __( 'Network already exists.', 'wp-multi-network' ) );
-	}
-
 	// Insert new network
 	$new_network_id = insert_network( $r['domain'], $r['path'] );
+
+	if ( is_wp_error( $new_network_id ) ) {
+		return $new_network_id;
+	}
 
 	// Bail if no network was inserted
 	if ( empty( $new_network_id ) ) {
@@ -800,6 +804,8 @@ function delete_network( $network_id, $delete_blogs = false ) {
 
 	// Network deleted
 	do_action( 'delete_network', $network );
+
+	return true;
 }
 endif;
 

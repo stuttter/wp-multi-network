@@ -4,13 +4,13 @@
  * Plugin Name: WP Multi-Network
  * Plugin URI:  https://wordpress.org/plugins/wp-multi-network/
  * Description: A Network Management UI for global administrators in WordPress Multisite
- * Author:      johnjamesjacoby, ddean, BrianLayman, rmccue
+ * Author:      johnjamesjacoby, ddean, BrianLayman, rmccue, spacedmonkey
  * Author URI:  https://jjj.blog
  * Tags:        blog, domain, mapping, multisite, network, networks, path, site, subdomain
  * Network:     true
  * License:     GPL v2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
- * Version:     2.1.0
+ * Version:     2.2.0
  * Text Domain: wp-multi-network
  */
 
@@ -145,6 +145,9 @@ class WPMN_Loader {
 		if ( defined( 'WP_CLI' ) && WP_CLI ) {
 			require $this->plugin_dir . 'includes/classes/class-wp-ms-networks-cli.php';
 		}
+
+		// REST endpoint class
+		require $this->plugin_dir . 'includes/classes/class-wp-ms-networks-api.php';
 	}
 }
 
@@ -157,6 +160,17 @@ function setup_multi_network() {
 	wpmn();
 }
 add_action( 'muplugins_loaded', 'setup_multi_network' );
+
+/**
+ * Hook REST endpoints on rest_api_init
+ *
+ * @since 2.2.0
+ */
+function setup_multi_network_endpoints() {
+	$controller = new WP_REST_Networks_Controller;
+	$controller->register_routes();
+}
+add_action( 'rest_api_init', 'setup_multi_network_endpoints', 99 );
 
 /**
  * Return the main WP Multi Network object
