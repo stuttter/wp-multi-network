@@ -163,9 +163,13 @@ class WP_MS_Networks_Admin {
 			return;
 		}
 
-		// Enqueue assets
-		wp_enqueue_style( 'wp-multi-network',  wpmn()->plugin_url . 'assets/css/wp-multi-network.css', array(),           wpmn()->asset_version, false );
-		wp_enqueue_script( 'wp-multi-network', wpmn()->plugin_url . 'assets/js/wp-multi-network.js',   array( 'jquery', 'post' ), wpmn()->asset_version, true  );
+		// Register assets
+		wp_register_style( 'wp-multi-network',  wpmn()->plugin_url . 'assets/css/wp-multi-network.css', array(),                   wpmn()->asset_version, false );
+		wp_register_script( 'wp-multi-network', wpmn()->plugin_url . 'assets/js/wp-multi-network.js',   array( 'jquery', 'post' ), wpmn()->asset_version, true  );
+
+		// Enqueue them
+		wp_enqueue_style( 'wp-multi-network' );
+		wp_enqueue_script( 'wp-multi-network' );
 	}
 
 	/** Notices ***************************************************************/
@@ -245,7 +249,7 @@ class WP_MS_Networks_Admin {
 	public function route_pages() {
 
 		// Bail if not Super Admin
-		if ( ! is_super_admin() ) {
+		if ( ! is_global_admin() ) {
 			wp_die( esc_html__( 'You do not have permission to access this page.', 'wp-multi-network' ) );
 		}
 
