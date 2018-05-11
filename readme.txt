@@ -44,7 +44,52 @@ You can activate it, but it won't do anything. You need to have the multisite fu
 
 The WordPress support forums: https://wordpress.org/support/plugin/wp-multi-network/
 
-= What's up with uploads? =
+= What about multisite constants? =
+
+For maximum flexibility, use something like...
+
+`
+// Multisite
+define( 'MULTISITE',           true                  );
+define( 'SUBDOMAIN_INSTALL',   false                 );
+define( 'PATH_CURRENT_SITE',   '/'                   );
+define( 'DOMAIN_CURRENT_SITE', $_SERVER['HTTP_HOST'] );
+
+// Likely not needed anymore (your config may vary)
+//define( 'SITE_ID_CURRENT_SITE', 1 );
+//define( 'BLOG_ID_CURRENT_SITE', 1 );
+
+// Uncomment and change to a URL to funnel no-site-found requests to
+//define( 'NOBLOGREDIRECT', '/404/' );
+
+/**
+ * These are purposely set for maximum compliance with multisite and
+ * multinetwork. Your config may vary.
+ */
+define( 'WP_HOME',    'http://' . $_SERVER['HTTP_HOST'] );
+define( 'WP_SITEURL', 'http://' . $_SERVER['HTTP_HOST'] );
+`
+
+= What about cookies? =
+
+Use something like this to allow cookies to work across networks...
+
+`
+// Cookies
+define( 'COOKIEHASH',         md5( 'yourrootdomain.com' ) );
+define( 'COOKIE_DOMAIN',      'yourrootdomain.com'        );
+define( 'ADMIN_COOKIE_PATH',  '/' );
+define( 'COOKIEPATH',         '/' );
+define( 'SITECOOKIEPATH',     '/' );
+define( 'TEST_COOKIE',        'thing_test_cookie' );
+define( 'AUTH_COOKIE',        'thing_'          . COOKIEHASH );
+define( 'USER_COOKIE',        'thing_user_'     . COOKIEHASH );
+define( 'PASS_COOKIE',        'thing_pass_'     . COOKIEHASH );
+define( 'SECURE_AUTH_COOKIE', 'thing_sec_'      . COOKIEHASH );
+define( 'LOGGED_IN_COOKIE',   'thing_logged_in' . COOKIEHASH );
+`
+
+= Uploads? =
 
 As of version 3.5, new WordPress multisite installs use a more efficient way to serve uploaded files.
 Unfortunately, this doesn't play well with multiple networks (yet). Installs that upgraded from 3.4 or below are not affected.
@@ -66,6 +111,7 @@ Not much to talk about really. Check the code for details!
 == Changelog ==
 
 = 2.2.0 =
+* WordPress 4.9 minimum version bump
 * Fix bug preventing sites from being moved
 * Tweak some CSS styling
 * Use more WordPress core functions for sites & networks
