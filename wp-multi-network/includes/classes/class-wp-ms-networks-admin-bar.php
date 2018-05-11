@@ -15,23 +15,29 @@ defined( 'ABSPATH' ) || exit;
  * @since 2.2
  */
 class WP_MS_Networks_Admin_Bar {
+
     /**
      * Hook methods in
      *
-     * @since 1.3.0
+     * @since 2.2.0
      */
     public function __construct() {
+
         // Menus
         add_action( 'admin_bar_menu', array( $this, 'admin_bar' ), 20 );
 
         // Styling & Scripting
-        add_action( 'admin_print_styles', array( $this , 'admin_print_styles'));
-        add_action( 'wp_print_styles', array( $this , 'admin_print_styles'));
+        add_action( 'admin_print_styles', array( $this , 'admin_print_styles' ) );
+        add_action( 'wp_print_styles',    array( $this , 'admin_print_styles' ) );
     }
-
 
     /**
      * Adds networking icon to admin bar network menu item.
+	 *
+	 * This is done inline to avoid registering a separate CSS file for just an
+	 * icon in the menu bar.
+	 *
+	 * @since 2.2.0
      */
     public function admin_print_styles() { ?>
         <style type="text/css">
@@ -43,22 +49,29 @@ class WP_MS_Networks_Admin_Bar {
         <?php
     }
 
-
     /**
+	 * Output the admin bar menu items
+	 *
+	 * @since 2.2.0
+	 *
      * @param WP_Admin_Bar $wp_admin_bar
      */
     public function admin_bar( $wp_admin_bar ) {
-        // Don't show for logged out users or single site mode.
 
+        // Don't show for logged out users or single site mode.
         if ( ! is_user_logged_in() || ! is_multisite() ) {
             return;
         }
+
+		// Get user networks
         $networks = user_has_networks();
 
-        // Show only when the user has at least one site, or they're a super admin.
-        if ( ! $networks || ! is_super_admin() ) {
+        // Bail if user does not have networks or they're not a global admin.
+        if ( empty( $networks ) || ! is_global_admin() ) {
             return;
         }
+
+		// Add the root menu
         $wp_admin_bar->add_menu( array(
             'id'    => 'my-networks',
             'title' => __( 'My Networks' ),
@@ -66,9 +79,14 @@ class WP_MS_Networks_Admin_Bar {
             'meta'  => array( 'class' => 'networks-parent' ),
         ) );
 
+		// Loop through all networks
         foreach ( $networks as $network_id ) {
+
+			// Get the network and switch to it
             $network = get_network( $network_id );
             switch_to_network( $network_id );
+
+			// Add the root group
             $wp_admin_bar->add_group( array(
                 'parent' => 'my-networks',
                 'id'     => 'group-network-admin-' . $network_id,
@@ -118,6 +136,7 @@ class WP_MS_Networks_Admin_Bar {
                 'href'   => network_admin_url( 'settings.php' ),
             ) );
 
+			// Restore the current network
             restore_current_network();
         }
     }
