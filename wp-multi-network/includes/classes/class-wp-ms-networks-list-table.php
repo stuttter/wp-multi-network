@@ -459,7 +459,7 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 
 		// Edit
 		if ( current_user_can( 'edit_network', $network->id ) ) {
-			$actions['edit'] = '<span class="edit"><a href="' . esc_url( $edit_network_url  ) . '">' . esc_html__( 'Edit',      'wp-multi-network' ) . '</a></span>';
+			$actions['edit'] = '<span class="edit"><a href="' . esc_url( $edit_network_url  ) . '">' . esc_html__( 'Edit', 'wp-multi-network' ) . '</a></span>';
 		}
 
 		// Dashboard
