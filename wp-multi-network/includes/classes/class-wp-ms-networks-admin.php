@@ -52,14 +52,15 @@ class WP_MS_Networks_Admin {
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 	}
 
-	/**
-	 * Add the Move action to Sites page on WP >= 3.1
-	 *
-	 * @since 1.3.0
-	 *
-	 * @param array $actions Array of action links
-	 * @param int   $blog_id Blog ID in list table
-	 */
+    /**
+     * Add the Move action to Sites page on WP >= 3.1
+     *
+     * @since 1.3.0
+     *
+     * @param array $actions Array of action links
+     * @param int   $blog_id Blog ID in list table
+     * @return array
+     */
 	public function add_move_blog_link( $actions = array(), $blog_id = 0 ) {
 
 		// Bail if main site for network
@@ -101,7 +102,7 @@ class WP_MS_Networks_Admin {
 		add_dashboard_page( esc_html__( 'My Networks', 'wp-multi-network' ), esc_html__( 'My Networks', 'wp-multi-network' ), 'read', 'my-networks', array( $this, 'page_my_networks' ) );
 	}
 
-	/**
+    /**
 	 * Add Networks menu and entries to the Network-level dashboard
 	 *
 	 * This method puts the cart before the horse, and could maybe live in the

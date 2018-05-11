@@ -49,7 +49,12 @@ class WPMN_Loader {
 	 */
 	public $admin = null;
 
-	/**
+    /**
+     * @var WP_MS_Networks_Admin_Bar|null Admin Bar class instance
+     */
+    private $admin_bar;
+
+    /**
 	 * Load WP Multi Network
 	 *
 	 * @since 1.3.0
@@ -135,6 +140,15 @@ class WPMN_Loader {
 			// Setup the network admin
 			$this->admin = new WP_MS_Networks_Admin();
 		}
+
+        // Admin Bar class
+        require $this->plugin_dir . 'includes/classes/class-wp-ms-networks-admin-bar.php';
+
+        // Localization
+        load_plugin_textdomain( 'wp-multi-network', false, dirname( $this->basename ) . '/languages/' );
+
+        // Setup the network admin bar
+        $this->admin_bar = new WP_MS_Networks_Admin_bar();
 
 		// Deprecated functions & classes
 		if ( defined( 'WPMN_DEPRECATED' ) && ( true === WPMN_DEPRECATED ) ) {
