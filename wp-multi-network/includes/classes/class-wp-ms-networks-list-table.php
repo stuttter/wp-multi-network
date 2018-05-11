@@ -383,8 +383,10 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 	public function column_admins( $network ) {
 
 		// Get network administrators
-		$network_admins = get_network_option( $network->id, 'site_admins', array() );
-		$network_admins = array_filter( $network_admins );
+		$network_admins = (array) get_network_option( $network->id, 'site_admins', array() );
+		$network_admins = ! empty( $network_admins )
+			? array_filter( $network_admins )
+			: array();
 
 		// Admins or nothing
 		echo empty( $network_admins )
