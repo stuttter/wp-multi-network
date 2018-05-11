@@ -23,7 +23,7 @@ function wpmn_move_site_list_metabox( $site = null ) {
 
 	<table class="move-site widefat">
 		<tr>
-			<th><?php echo esc_html( get_blog_option( $site->id, 'blogname' ) ); ?></th>
+			<th><?php esc_html_e( 'New Network', 'wp-multi-network' ); ?></th>
 			<td>
 				<select name="to" id="to">
 					<option value="0"><?php

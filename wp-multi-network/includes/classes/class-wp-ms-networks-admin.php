@@ -108,10 +108,12 @@ class WP_MS_Networks_Admin {
 	 * WP_MS_Networks_List_Table class also.
 	 */
 	public function network_admin_menu() {
-		add_menu_page( esc_html__( 'Networks', 'wp-multi-network' ), esc_html__( 'Networks', 'wp-multi-network' ), 'manage_networks', 'networks', array( $this, 'route_pages' ), 'dashicons-networking', -1 );
+		$page = add_menu_page( esc_html__( 'Networks', 'wp-multi-network' ), esc_html__( 'Networks', 'wp-multi-network' ), 'manage_networks', 'networks', array( $this, 'route_pages' ), 'dashicons-networking', -1 );
 
 		add_submenu_page( 'networks', esc_html__( 'All Networks', 'wp-multi-network' ), esc_html__( 'All Networks', 'wp-multi-network' ), 'list_networks',   'networks',        array( $this, 'route_pages'       ) );
 		add_submenu_page( 'networks', esc_html__( 'Add New',      'wp-multi-network' ), esc_html__( 'Add New',      'wp-multi-network' ), 'create_networks', 'add-new-network', array( $this, 'page_edit_network' ) );
+
+		add_action( "admin_head-{$page}", array( $this, 'fix_menu_highlight_for_move_page' ) );
 
 		require_once wpmn()->plugin_dir . '/includes/classes/class-wp-ms-networks-list-table.php' ;
 	}
@@ -124,6 +126,26 @@ class WP_MS_Networks_Admin {
 	 */
 	public function network_admin_menu_separator() {
 		$GLOBALS['menu']['-2'] = array( '', 'read', 'separator', '', 'wp-menu-separator' );
+	}
+
+	/**
+	 * Maybe fix the menu highlight for the "Move" page, which is technically
+	 * under the "Sites" menu.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @global string $plugin_page
+	 * @global string $submenu_file
+	 */
+	public function fix_menu_highlight_for_move_page() {
+		global $plugin_page, $submenu_file;
+
+		// This tweaks the Tools subnav menu to only show one bbPress menu item
+		if ( 'networks' === $plugin_page ) {
+			if ( ! empty( $_GET['action'] ) && ( 'move' === $_GET['action'] ) ) {
+				$submenu_file = 'sites.php';
+			}
+		}
 	}
 
 	/** Assets ****************************************************************/
@@ -606,8 +628,8 @@ class WP_MS_Networks_Admin {
 
 						// Messaging
 						wp_should_rescue_orphaned_sites()
-							? esc_html_e( 'One or more of these networks has existing sites. Deleting these networks will orphan these sites.',             'wp-multi-network' )
-							: esc_html_e( 'One or more of these networks has existing sites. Deleting these networks will permanently delete these sites.', 'wp-multi-network' );
+							? esc_html_e( 'One or more of these networks have sites. Deleting these networks will orphan their sites.',             'wp-multi-network' )
+							: esc_html_e( 'One or more of these networks have sites. Deleting these networks will permanently delete their sites.', 'wp-multi-network' );
 
 						?></p>
 						<p>
@@ -881,7 +903,7 @@ class WP_MS_Networks_Admin {
 			: 0;
 
 		// Bail if site or network are empty
-		if ( empty( $site_id ) || empty( $new_network ) ) {
+		if ( empty( $site_id ) ) {
 			wp_safe_redirect( add_query_arg( array(
 				'site_moved' => 0,
 			), network_admin_url( 'sites.php' ) ) );
@@ -900,7 +922,7 @@ class WP_MS_Networks_Admin {
 		}
 
 		// Try to move site
-		$moved   = move_site( $_GET['blog_id'], $_POST['to'] );
+		$moved   = move_site( $site_id, $new_network );
 		$success = is_wp_error( $moved )
 			? '0'
 			: '1';
@@ -1053,8 +1075,13 @@ class WP_MS_Networks_Admin {
 			'page' => 'networks'
 		) );
 
+		// Which admin page?
+		$page = ! empty( $r['action'] ) && ( 'move' === $r['action'] )
+			? 'sites.php'
+			: 'admin.php';
+
 		// Combine
-		$result = add_query_arg( $r, network_admin_url( 'admin.php' ) );
+		$result = add_query_arg( $r, network_admin_url( $page ) );
 
 		// Filter & return
 		return apply_filters( 'edit_networks_screen_url', $result, $r, $args );
