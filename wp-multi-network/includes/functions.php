@@ -38,8 +38,7 @@ endif;
 
 if ( ! function_exists( 'user_has_networks' ) ) :
 /**
- *
- * Return array of networks for which user is super admin, or FALSE if none
+ * Return array of networks for which user is an admin, or FALSE if none
  *
  * @since 1.3
  * @return array | FALSE
@@ -159,8 +158,8 @@ if ( ! function_exists( 'is_main_site_for_network' ) ) :
 function is_main_site_for_network( $site_id ) {
 
 	// Get main site for network
-	$site = get_blog_details( $site_id );
-	$main = get_main_site_for_network( $site->site_id );
+	$site = get_site( $site_id );
+	$main = get_main_site_for_network( $site->network_id );
 
 	// Bail if no site or network was found
 	if ( empty( $main ) ) {
@@ -701,11 +700,11 @@ function update_network( $id, $domain, $path = '' ) {
 			}
 
 			// Update blogs table
-			$where = array( 'blog_id' => (int) $site->blog_id );
+			$where = array( 'blog_id' => (int) $site->id );
 			$wpdb->update( $wpdb->blogs, $update, $where );
 
 			// Fix options table values
-			$option_table = $wpdb->get_blog_prefix( $site->blog_id ) . 'options';
+			$option_table = $wpdb->get_blog_prefix( $site->id ) . 'options';
 
 			// Loop through options and correct a few of them
 			foreach ( network_options_list() as $option_name ) {
@@ -718,12 +717,12 @@ function update_network( $id, $domain, $path = '' ) {
 				// Update if value exists
 				if ( ! empty( $value ) && ( false !== strpos( $value->option_value, $old_path ) ) ) {
 					$new_value = str_replace( $old_path, $full_path, $value->option_value );
-					update_blog_option( $site->blog_id, $option_name, $new_value );
+					update_blog_option( $site->id, $option_name, $new_value );
 				}
 			}
 
 			// Refresh blog details
-			refresh_blog_details( $site->blog_id );
+			refresh_blog_details( $site->id );
 		}
 	}
 
@@ -779,8 +778,8 @@ function delete_network( $network_id, $delete_blogs = false ) {
 		} elseif ( true === $delete_blogs ) {
 			foreach ( $sites as $site ) {
 				wp_should_rescue_orphaned_sites()
-					? move_site( $site->blog_id, 0 )
-					: wpmu_delete_blog( $site->blog_id, true );
+					? move_site( $site->id, 0 )
+					: wpmu_delete_blog( $site->id, true );
 			}
 		}
 	}
@@ -816,7 +815,7 @@ function move_site( $site_id = 0, $new_network_id = 0 ) {
 	global $wpdb;
 
 	// Get the site
-	$site = get_blog_details( $site_id );
+	$site = get_site( $site_id );
 
 	// Bail if site does not exist
 	if ( empty( $site ) ) {
@@ -824,7 +823,7 @@ function move_site( $site_id = 0, $new_network_id = 0 ) {
 	}
 
 	// Main sites cannot be moved, to prevent breakage
-	if ( is_main_site_for_network( $site->blog_id ) ) {
+	if ( is_main_site( $site->id, $site->network_id ) ) {
 		return true;
 	}
 
@@ -832,12 +831,12 @@ function move_site( $site_id = 0, $new_network_id = 0 ) {
 	$new_network_id = (int) $new_network_id;
 
 	// Return early if site does not need to be moved
-	if ( $new_network_id === (int) $site->site_id ) {
+	if ( $new_network_id === (int) $site->network_id ) {
 		return true;
 	}
 
 	// Move the site is the blogs table
-	$where  = array( 'blog_id' => $site->blog_id  );
+	$where  = array( 'blog_id' => $site->id       );
 	$update = array( 'site_id' => $new_network_id );
 	$result = $wpdb->update( $wpdb->blogs, $update, $where );
 
@@ -847,8 +846,8 @@ function move_site( $site_id = 0, $new_network_id = 0 ) {
 	}
 
 	// Update old network count
-	if ( 0 !== $site->site_id ) {
-		_wp_update_network_counts( $site->site_id );
+	if ( 0 !== $site->network_id ) {
+		_wp_update_network_counts( $site->network_id );
 	}
 
 	// Update new network count
@@ -861,12 +860,12 @@ function move_site( $site_id = 0, $new_network_id = 0 ) {
 
 	// Clean network caches
 	clean_network_cache( array_filter( array(
-		$site->site_id,
+		$site->network_id,
 		$new_network_id
 	) ) );
 
 	// Site moved
-	do_action( 'move_site', $site_id, $site->site_id, $new_network_id );
+	do_action( 'move_site', $site_id, $site->network_id, $new_network_id );
 
 	// Return the new network ID as confirmation
 	return $new_network_id;

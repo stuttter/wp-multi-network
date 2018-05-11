@@ -16,10 +16,10 @@ class WPMN_Tests_NetworkOperations extends WP_UnitTestCase {
 		$site = $this->factory->blog->get_object_by_id( $site_id );
 
 		$other_network_id = $this->factory->network->create( array( 'domain' => 'example.com', 'path' => '/', ) );
-		$other_network = $this->factory->network->get_object_by_id( $other_network_id );
+		$other_network    = $this->factory->network->get_object_by_id( $other_network_id );
 
 		// Check we start out in the main network
-		$this->assertEquals( 1, $site->site_id, 'Site should be created in main network by default' );
+		$this->assertEquals( 1, $site->network_id, 'Site should be created in main network by default' );
 
 		// Move the site to the other network
 		$result = move_site( $site_id, $other_network_id );
@@ -29,7 +29,7 @@ class WPMN_Tests_NetworkOperations extends WP_UnitTestCase {
 		// Reload site data
 		$site = $this->factory->blog->get_object_by_id( $site_id );
 
-		$this->assertEquals( $other_network_id, $site->site_id, 'Site should be in other network after move' );
+		$this->assertEquals( $other_network_id, $site->network_id, 'Site should be in other network after move' );
 
 		// Move it back
 		$result = move_site( $site_id, 1 );
@@ -38,7 +38,7 @@ class WPMN_Tests_NetworkOperations extends WP_UnitTestCase {
 
 		// Reload site data again
 		$site = $this->factory->blog->get_object_by_id( $site_id );
-		$this->assertEquals( 1, $site->site_id, 'Site should be back in main network' );
+		$this->assertEquals( 1, $site->network_id, 'Site should be back in main network' );
 	}
 
 	public function test_switch_to_network() {

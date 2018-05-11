@@ -433,7 +433,7 @@ class WP_MS_Networks_Admin {
 	private function page_move_site() {
 
 		// Get network by id
-		$site = get_blog_details( (int) $_GET['blog_id'] );
+		$site = get_site( (int) $_GET['blog_id'] );
 
 		add_meta_box( 'wpmn-move-site-list',    esc_html__( 'Assign Network', 'wp-multi-network' ), 'wpmn_move_site_list_metabox',   get_current_screen()->id, 'normal', 'high', array( $site ) );
 		add_meta_box( 'wpmn-move-site-publish', esc_html__( 'Site',           'wp-multi-network' ), 'wpmn_move_site_assign_metabox', get_current_screen()->id, 'side',   'high', array( $site ) ); ?>
@@ -869,6 +869,37 @@ class WP_MS_Networks_Admin {
 	 * @since 2.0.0
 	 */
 	private function handle_move_site() {
+
+		// Get blog ID
+		$site_id = ! empty( $_GET['blog_id'] )
+			? absint( $_GET['blog_id'] )
+			: 0;
+
+		// New network ID
+		$new_network = ! empty( $_POST['to'] )
+			? absint( $_POST['to'] )
+			: 0;
+
+		// Bail if site or network are empty
+		if ( empty( $site_id ) || empty( $new_network ) ) {
+			wp_safe_redirect( add_query_arg( array(
+				'site_moved' => 0,
+			), network_admin_url( 'sites.php' ) ) );
+			exit;
+		}
+
+		// Try to get site
+		$site = get_site( $site_id );
+
+		// Bail if site cannot be found or new network is the same as existing
+		if ( empty( $site ) || ( $site->network_id === $new_network ) ) {
+			wp_safe_redirect( add_query_arg( array(
+				'site_moved' => 0,
+			), network_admin_url( 'sites.php' ) ) );
+			exit;
+		}
+
+		// Try to move site
 		$moved   = move_site( $_GET['blog_id'], $_POST['to'] );
 		$success = is_wp_error( $moved )
 			? '0'
@@ -935,8 +966,11 @@ class WP_MS_Networks_Admin {
 		// Loop through and move sites
 		foreach ( $moving as $site_id ) {
 
-			// Skip the main site of this network
-			if ( is_main_site_for_network( $site_id ) ) {
+			// Get the site to move
+			$site = get_site( $site_id );
+
+			// Skip missing or main sites networks
+			if ( empty( $site ) || is_main_site( $site->id, $site->network_id ) ) {
 				continue;
 			}
 

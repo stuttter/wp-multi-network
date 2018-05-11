@@ -14,7 +14,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @since 1.7.0
  *
- * @param WP_Site $site Results of get_blog_details()
+ * @param WP_Site $site Results of get_site()
  */
 function wpmn_move_site_list_metabox( $site = null ) {
 
@@ -23,7 +23,7 @@ function wpmn_move_site_list_metabox( $site = null ) {
 
 	<table class="move-site widefat">
 		<tr>
-			<th><?php echo esc_html( get_blog_option( $site->blog_id, 'blogname' ) ); ?></th>
+			<th><?php echo esc_html( get_blog_option( $site->id, 'blogname' ) ); ?></th>
 			<td>
 				<select name="to" id="to">
 					<option value="0"><?php
@@ -36,7 +36,7 @@ function wpmn_move_site_list_metabox( $site = null ) {
 					foreach ( $networks as $new_network ) :
 
 						// Option value is network ID
-						?><option value="<?php echo esc_attr( $new_network->id ); ?>" <?php selected( $site->site_id, $new_network->id ); ?>><?php
+						?><option value="<?php echo esc_attr( $new_network->id ); ?>" <?php selected( $site->network_id, $new_network->id ); ?>><?php
 
 						// Include scheme, domain, & path
 						echo wp_get_scheme() . esc_html( $new_network->domain . '/' . ltrim( $new_network->path, '/' ) );
@@ -83,9 +83,15 @@ function wpmn_move_site_assign_metabox( $site = null ) {
 		<div id="major-publishing-actions">
 			<a class="button" href="./sites.php"><?php esc_html_e( 'Cancel', 'wp-multi-network' ); ?></a>
 			<div id="publishing-action">
-				<?php submit_button( esc_attr__( 'Move', 'wp-multi-network' ), 'primary', 'move', false ); ?>
+				<?php
+
+				wp_nonce_field( 'edit_network', 'network_edit' );
+
+				submit_button( esc_attr__( 'Move', 'wp-multi-network' ), 'primary', 'move', false );
+
+				?>
 				<input type="hidden" name="action" value="update">
-				<input type="hidden" name="from" value="<?php echo esc_attr( $site->site_id ); ?>">
+				<input type="hidden" name="from" value="<?php echo esc_attr( $site->network_id ); ?>">
 			</div>
 			<div class="clear"></div>
 		</div>

@@ -10,7 +10,7 @@
  * Network:     true
  * License:     GPL v2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
- * Version:     2.1.0
+ * Version:     2.2.0
  * Text Domain: wp-multi-network
  */
 
@@ -42,7 +42,7 @@ class WPMN_Loader {
 	/**
 	 * @var string Asset version
 	 */
-	public $asset_version = 201610310001;
+	public $asset_version = 201805110004;
 
 	/**
 	 * @var WP_MS_Networks_Admin|null Admin class instance

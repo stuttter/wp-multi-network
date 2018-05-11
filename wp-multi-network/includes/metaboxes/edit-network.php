@@ -14,7 +14,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @since 1.7.0
  *
- * @param WP_Network $network Results of get_blog_details()
+ * @param WP_Network $network Results of get_network()
  */
 function wpmn_edit_network_details_metabox( $network = null ) {
 
@@ -88,7 +88,8 @@ function wpmn_edit_network_assign_sites_metabox( $network = null ) {
 
 	// To
 	$to = get_sites( array(
-		'network_id' => $network->id
+		'site__not_in' => get_main_site_id( $network->id ),
+		'network_id'   => $network->id
 	) );
 
 	// From
@@ -101,21 +102,20 @@ function wpmn_edit_network_assign_sites_metabox( $network = null ) {
 	<table class="assign-sites widefat">
 		<thead>
 			<tr>
-				<th><?php esc_html_e( 'Available Sites', 'wp-multi-network' ); ?></th>
+				<th><?php esc_html_e( 'Available Subsites', 'wp-multi-network' ); ?></th>
 				<th>&nbsp;</th>
-				<th><?php esc_html_e( 'Network Sites', 'wp-multi-network' ); ?></th>
+				<th><?php esc_html_e( 'Network Subsites',   'wp-multi-network' ); ?></th>
 			</tr>
 		</thead>
 		<tr>
 			<td class="column-available">
-				<p class="description"><?php esc_html_e( 'Subsites in other networks & orphaned sites without networks.', 'wp-multi-network' ); ?></p>
 				<select name="from[]" id="from" multiple>
 
 					<?php foreach ( $from as $site ) : ?>
 
-						<?php if ( ( (int) $site->site_id !== (int) $network->id ) && ! is_main_site_for_network( $site->blog_id ) ) : ?>
+						<?php if ( ( (int) $site->network_id !== (int) $network->id ) && ! is_main_site_for_network( $site->id ) ) : ?>
 
-							<option value="<?php echo esc_attr( $site->blog_id ); ?>">
+							<option value="<?php echo esc_attr( $site->id ); ?>">
 								<?php echo esc_html( sprintf( '%1$s (%2$s%3$s)', $site->name, $site->domain, $site->path ) ); ?>
 							</option>
 
@@ -126,18 +126,17 @@ function wpmn_edit_network_assign_sites_metabox( $network = null ) {
 				</select>
 			</td>
 			<td class="column-actions">
-				<input type="button" name="unassign" id="unassign" class="button" value="&larr;">
-				<input type="button" name="assign" id="assign" class="button" value="&rarr;">
+				<input type="button" name="assign" id="assign" class="button assign" value="&rarr;">
+				<input type="button" name="unassign" id="unassign" class="button unassign" value="&larr;">
 			</td>
 			<td class="column-assigned">
-				<p class="description"><?php esc_html_e( 'Only subsites of this network can be reassigned.', 'wp-multi-network' ); ?></p>
 				<select name="to[]" id="to" multiple>
 
 					<?php foreach ( $to as $site ) : ?>
 
-						<?php if ( (int) $site->site_id === (int) $network->id ) : ?>
+						<?php if ( (int) $site->network_id === (int) $network->id ) : ?>
 
-							<option value="<?php echo esc_attr( $site->blog_id ); ?>" <?php disabled( is_main_site_for_network( $site->blog_id ) ); ?>>
+							<option value="<?php echo esc_attr( $site->id ); ?>" <?php disabled( is_main_site_for_network( $site->id ) ); ?>>
 								<?php echo esc_html( sprintf( '%1$s (%2$s%3$s)', $site->name, $site->domain, $site->path ) ); ?>
 							</option>
 
