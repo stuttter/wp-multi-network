@@ -85,7 +85,7 @@ function wp_validate_site_url( $domain, $path, $site_id = 0 ) {
 	}
 
 	// Bail if user is a super admin
-	if ( is_super_admin() ) {
+	if ( current_user_can( 'manage_network' ) ) {
 		return true;
 	}
 
