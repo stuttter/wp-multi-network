@@ -67,6 +67,7 @@ class WP_MS_Networks_Capabilities {
 	private function get_global_capabilities() {
 		$global_capabilities = array(
 			'manage_networks',
+			'list_networks',
 			'create_networks',
 			'delete_networks',
 		);
