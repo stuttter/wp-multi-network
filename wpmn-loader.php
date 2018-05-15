@@ -160,7 +160,7 @@ class WPMN_Loader {
         $this->capabilities->add_hooks();
 
         // Setup the network admin bar
-        $this->admin_bar = new WP_MS_Networks_Admin_bar();
+        $this->admin_bar = new WP_MS_Networks_Admin_Bar();
 
 		// Deprecated functions & classes
 		if ( defined( 'WPMN_DEPRECATED' ) && ( true === WPMN_DEPRECATED ) ) {
