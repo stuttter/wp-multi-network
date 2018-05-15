@@ -106,7 +106,7 @@ class WP_MS_Networks_Admin_Bar {
 
             $wp_admin_bar->add_menu( array(
                 'parent' => 'network-admin-' . $network_id,
-                'id'     => 'network-admin-d',
+                'id'     => 'network-admin-d' . $network_id,
                 'title'  => __( 'Dashboard' ),
                 'href'   => network_admin_url(),
             ) );
