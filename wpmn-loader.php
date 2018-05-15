@@ -49,6 +49,11 @@ class WPMN_Loader {
 	 */
 	public $admin = null;
 
+	/**
+	 * @var WP_MS_Networks_Capabilities|null Capabilities class instance
+	 */
+	private $capabilities;
+
     /**
      * @var WP_MS_Networks_Admin_Bar|null Admin Bar class instance
      */
@@ -124,6 +129,9 @@ class WPMN_Loader {
 		require $this->plugin_dir . 'includes/compat.php';
 		require $this->plugin_dir . 'includes/functions.php';
 
+        // Capabilities class
+        require $this->plugin_dir . 'includes/classes/class-wp-ms-networks-capabilities.php';
+
 		// WordPress Admin
 		if ( is_blog_admin() || is_network_admin() ) {
 
@@ -146,6 +154,10 @@ class WPMN_Loader {
 
         // Localization
         load_plugin_textdomain( 'wp-multi-network', false, dirname( $this->basename ) . '/languages/' );
+
+        // Setup the network capabilities
+        $this->capabilities = new WP_MS_Networks_Capabilities();
+        $this->capabilities->add_hooks();
 
         // Setup the network admin bar
         $this->admin_bar = new WP_MS_Networks_Admin_bar();

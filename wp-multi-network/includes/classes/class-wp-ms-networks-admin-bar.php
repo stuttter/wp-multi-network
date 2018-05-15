@@ -67,7 +67,7 @@ class WP_MS_Networks_Admin_Bar {
         $networks = user_has_networks();
 
         // Bail if user does not have networks or they're not a global admin.
-        if ( empty( $networks ) || ! is_global_admin() ) {
+        if ( empty( $networks ) || ! current_user_can( 'manage_networks' ) ) {
             return;
         }
 
