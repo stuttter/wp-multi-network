@@ -120,6 +120,11 @@ class WPMN_Loader {
 	 */
 	private function includes() {
 
+		// Manual localization loading is no longer necessary since WP 4.6
+		if ( version_compare( $GLOBALS['wp_version'], '4.6', '<' ) ) {
+			load_plugin_textdomain( 'wp-multi-network' );
+		}
+
 		// Functions & Core Compatibility
 		require $this->plugin_dir . 'includes/compat.php';
 		require $this->plugin_dir . 'includes/functions.php';
@@ -134,18 +139,12 @@ class WPMN_Loader {
 			// Admin class
 			require $this->plugin_dir . 'includes/classes/class-wp-ms-networks-admin.php';
 
-			// Localization
-			load_plugin_textdomain( 'wp-multi-network' );
-
 			// Setup the network admin
 			$this->admin = new WP_MS_Networks_Admin();
 		}
 
         // Admin Bar class
         require $this->plugin_dir . 'includes/classes/class-wp-ms-networks-admin-bar.php';
-
-        // Localization
-        load_plugin_textdomain( 'wp-multi-network', false, dirname( $this->basename ) . '/languages/' );
 
         // Setup the network admin bar
         $this->admin_bar = new WP_MS_Networks_Admin_bar();
