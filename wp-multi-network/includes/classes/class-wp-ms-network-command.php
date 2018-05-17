@@ -40,7 +40,6 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 	 *
 	 * [--options_to_clone=<options_to_clone>]
 	 * : Options to clone to new network
-	 *
 	 */
 	public function create( $args, $assoc_args ) {
 
@@ -110,7 +109,6 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 	 *
 	 * [--path=<path>]
 	 * : Path for network
-	 *
 	 */
 	public function update( $args, $assoc_args ) {
 
@@ -139,7 +137,6 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 	 *
 	 * [--delete_blogs=<delete_blogs>]
 	 * : Delete blogs in this network
-	 *
 	 */
 	public function delete( $args, $assoc_args ) {
 
@@ -185,7 +182,6 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 
 	/**
 	 * List all networks.
-	 *
 	 *
 	 * [--fields=<fields>]
 	 * : Limit the output to specific row fields.

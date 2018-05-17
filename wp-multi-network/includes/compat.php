@@ -24,12 +24,12 @@ endif;
 
 if ( ! function_exists( 'wp_get_scheme' ) ) :
 	/**
- * Return the scheme in use based on is_ssl()
- *
- * @since 1.7.0
- *
- * @return string
- */
+	 * Return the scheme in use based on is_ssl()
+	 *
+	 * @since 1.7.0
+	 *
+	 * @return string
+	 */
 	function wp_get_scheme() {
 		return is_ssl()
 		? 'https://'
@@ -39,17 +39,17 @@ endif;
 
 if ( ! function_exists( 'wp_sanitize_site_path' ) ) :
 	/**
- * Sanitize a site path
- *
- * This function exists to prevent slashing issues while updating networks and
- * moving sites between networks.
- *
- * @since 1.8.0
- *
- * @param string $path
- *
- * @return string
- */
+	 * Sanitize a site path
+	 *
+	 * This function exists to prevent slashing issues while updating networks and
+	 * moving sites between networks.
+	 *
+	 * @since 1.8.0
+	 *
+	 * @param string $path
+	 *
+	 * @return string
+	 */
 	function wp_sanitize_site_path( $path = '' ) {
 		$parts       = explode( '/', $path );
 		$no_empties  = array_filter( $parts );
@@ -63,18 +63,18 @@ endif;
 
 if ( ! function_exists( 'wp_validate_site_url' ) ) :
 	/**
- * Is a site URL okay to save?
- *
- * @since 1.8.0
- *
- * @global wpdb $wpdb
- *
- * @param string $domain
- * @param string $path
- * @param string $slug
- *
- * @return boolean
- */
+	 * Is a site URL okay to save?
+	 *
+	 * @since 1.8.0
+	 *
+	 * @global wpdb $wpdb
+	 *
+	 * @param string $domain
+	 * @param string $path
+	 * @param string $slug
+	 *
+	 * @return boolean
+	 */
 	function wp_validate_site_url( $domain, $path, $site_id = 0 ) {
 		global $wpdb;
 
@@ -168,13 +168,13 @@ endif;
 
 if ( ! function_exists( 'wp_get_main_network' ) ) :
 	/**
- * Get the main network
- *
- * Uses the same logic as {@see is_main_network}, but returns the network object
- * instead.
- *
- * @return stdClass|null
- */
+	 * Get the main network
+	 *
+	 * Uses the same logic as {@see is_main_network}, but returns the network object
+	 * instead.
+	 *
+	 * @return stdClass|null
+	 */
 	function wp_get_main_network() {
 
 		// Bail if not multisite

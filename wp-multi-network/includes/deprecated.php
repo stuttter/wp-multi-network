@@ -42,15 +42,15 @@ if ( ! function_exists( 'wpmn_fix_subsite_upload_path' ) ) {
 
 if ( ! function_exists( 'get_network_option' ) ) :
 	/**
- * Get an option from a given network
- *
- * Switches to the specified network internally to operate on it.
- *
- * @param int $network_id ID of network.
- * @param string $key Option key
- * @param mixed $default Default value if option doesn't exist
- * @return mixed Value set for the option if it exists, `$default` if it doesn't. `WP_Error` instance if invalid network ID is passed.
- */
+	 * Get an option from a given network
+	 *
+	 * Switches to the specified network internally to operate on it.
+	 *
+	 * @param int    $network_id ID of network.
+	 * @param string $key Option key
+	 * @param mixed  $default Default value if option doesn't exist
+	 * @return mixed Value set for the option if it exists, `$default` if it doesn't. `WP_Error` instance if invalid network ID is passed.
+	 */
 	function get_network_option( $network_id, $key, $default = false ) {
 		if ( ! switch_to_network( $network_id, true ) ) {
 			return new WP_Error(
@@ -70,15 +70,15 @@ endif;
 
 if ( ! function_exists( 'add_network_option' ) ) :
 	/**
- * Add an option from a given network
- *
- * Switches to the specified network internally to operate on it.
- *
- * @param int $network_id ID of network.
- * @param string $key Option key.
- * @param mixed $value Option value, can be anything.
- * @return boolean|WP_Error True if the option is added, false if not addedd. `WP_Error` instance if invalid network ID is passed.
- */
+	 * Add an option from a given network
+	 *
+	 * Switches to the specified network internally to operate on it.
+	 *
+	 * @param int    $network_id ID of network.
+	 * @param string $key Option key.
+	 * @param mixed  $value Option value, can be anything.
+	 * @return boolean|WP_Error True if the option is added, false if not addedd. `WP_Error` instance if invalid network ID is passed.
+	 */
 	function add_network_option( $network_id, $key, $value ) {
 		if ( ! switch_to_network( $network_id, true ) ) {
 			return new WP_Error(
@@ -98,15 +98,15 @@ endif;
 
 if ( ! function_exists( 'update_network_option' ) ) :
 	/**
- * Update an option from a given network
- *
- * Switches to the specified network internally to operate on it.
- *
- * @param int $network_id ID of network.
- * @param string $key Option key.
- * @param mixed $value Option value, can be anything.
- * @return boolean|WP_Error True if the option is updated, false if not updated. `WP_Error` instance if invalid network ID is passed.
- */
+	 * Update an option from a given network
+	 *
+	 * Switches to the specified network internally to operate on it.
+	 *
+	 * @param int    $network_id ID of network.
+	 * @param string $key Option key.
+	 * @param mixed  $value Option value, can be anything.
+	 * @return boolean|WP_Error True if the option is updated, false if not updated. `WP_Error` instance if invalid network ID is passed.
+	 */
 	function update_network_option( $network_id, $key, $value ) {
 		if ( ! switch_to_network( $network_id, true ) ) {
 			return new WP_Error(
@@ -126,14 +126,14 @@ endif;
 
 if ( ! function_exists( 'delete_network_option' ) ) :
 	/**
- * Delete an option from a given network
- *
- * Switches to the specified network internally to operate on it.
- *
- * @param int $network_id ID of network.
- * @param string $key Option key.
- * @return boolean|WP_Error True if the option is deleted, false if not deleted. `WP_Error` instance if invalid network ID is passed.
- */
+	 * Delete an option from a given network
+	 *
+	 * Switches to the specified network internally to operate on it.
+	 *
+	 * @param int    $network_id ID of network.
+	 * @param string $key Option key.
+	 * @return boolean|WP_Error True if the option is deleted, false if not deleted. `WP_Error` instance if invalid network ID is passed.
+	 */
 	function delete_network_option( $network_id, $key ) {
 		if ( ! switch_to_network( $network_id, true ) ) {
 			return new WP_Error(
@@ -153,13 +153,13 @@ endif;
 
 if ( ! function_exists( 'get_networks' ) ) :
 	/**
- * Get all networks
- *
- * @since 1.0.0
- * @deprecated since version 4.6.0 WordPress
- *
- * @return array Networks available on the installation
- */
+	 * Get all networks
+	 *
+	 * @since 1.0.0
+	 * @deprecated since version 4.6.0 WordPress
+	 *
+	 * @return array Networks available on the installation
+	 */
 	function get_networks( $args = array() ) {
 
 		// Support for WordPress 4.6.0, if you're doing something really weird

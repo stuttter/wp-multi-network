@@ -11,12 +11,12 @@ defined( 'ABSPATH' ) || exit;
 
 if ( ! function_exists( 'wp_should_rescue_orphaned_sites' ) ) :
 	/**
- * Should sites from deleted networks be assigned to network 0?
- *
- * @since 2.0.0
- *
- * @return bool
- */
+	 * Should sites from deleted networks be assigned to network 0?
+	 *
+	 * @since 2.0.0
+	 *
+	 * @return bool
+	 */
 	function wp_should_rescue_orphaned_sites() {
 		$should = defined( 'RESCUE_ORPHANED_BLOGS' ) && ( true === RESCUE_ORPHANED_BLOGS );
 		return (bool) apply_filters( 'wp_should_rescue_orphaned_sites', $should );
@@ -25,12 +25,12 @@ endif;
 
 if ( ! function_exists( 'network_exists' ) ) :
 	/**
- * Check to see if a network exists.
- *
- * @since 1.3
- *
- * @param integer $network_id ID of network to verify
- */
+	 * Check to see if a network exists.
+	 *
+	 * @since 1.3
+	 *
+	 * @param integer $network_id ID of network to verify
+	 */
 	function network_exists( $network_id ) {
 		return ( null !== get_network( $network_id ) );
 	}
@@ -38,11 +38,11 @@ endif;
 
 if ( ! function_exists( 'user_has_networks' ) ) :
 	/**
- * Return array of networks for which user is an admin, or FALSE if none
- *
- * @since 1.3
- * @return array | FALSE
- */
+	 * Return array of networks for which user is an admin, or FALSE if none
+	 *
+	 * @since 1.3
+	 * @return array | FALSE
+	 */
 	function user_has_networks( $user_id = 0 ) {
 		global $wpdb;
 
@@ -92,11 +92,11 @@ endif;
 
 if ( ! function_exists( 'get_main_site_for_network' ) ) :
 	/**
- * Get main site for a network
- *
- * @param int|WP_Network $network Network ID or object, null for current network
- * @return int Main site ("blog" in old terminology) ID
- */
+	 * Get main site for a network
+	 *
+	 * @param int|WP_Network $network Network ID or object, null for current network
+	 * @return int Main site ("blog" in old terminology) ID
+	 */
 	function get_main_site_for_network( $network = null ) {
 
 		// Get network
@@ -149,14 +149,14 @@ endif;
 
 if ( ! function_exists( 'is_main_site_for_network' ) ) :
 	/**
- * Is a site the main site for it's network?
- *
- * @since 1.7.0
- *
- * @param  int  $site_id
- *
- * @return boolean
- */
+	 * Is a site the main site for it's network?
+	 *
+	 * @since 1.7.0
+	 *
+	 * @param  int $site_id
+	 *
+	 * @return boolean
+	 */
 	function is_main_site_for_network( $site_id ) {
 
 		// Get main site for network
@@ -175,10 +175,10 @@ endif;
 
 if ( ! function_exists( 'get_network_name' ) ) :
 	/**
- * Get name of the current network
- *
- * @return string
- */
+	 * Get name of the current network
+	 *
+	 * @return string
+	 */
 	function get_network_name() {
 		global $current_site;
 
@@ -193,12 +193,12 @@ endif;
 
 if ( ! function_exists( 'switch_to_network' ) ) :
 	/**
- * Problem: the various *_site_options() functions operate only on the current network
- * Workaround: change the current network
- *
- * @since 1.3
- * @param integer $new_network ID of network to manipulate
- */
+	 * Problem: the various *_site_options() functions operate only on the current network
+	 * Workaround: change the current network
+	 *
+	 * @since 1.3
+	 * @param integer $new_network ID of network to manipulate
+	 */
 	function switch_to_network( $new_network = 0, $validate = false ) {
 		global $wpdb, $switched_network, $switched_network_stack, $current_site;
 
@@ -260,10 +260,10 @@ endif;
 
 if ( ! function_exists( 'restore_current_network' ) ) :
 	/**
- * Return to the current network
- *
- * @since 1.3
- */
+	 * Return to the current network
+	 *
+	 * @since 1.3
+	 */
 	function restore_current_network() {
 		global $wpdb, $switched_network, $switched_network_stack, $current_site;
 
@@ -310,14 +310,14 @@ endif;
 
 if ( ! function_exists( '_wp_update_network_counts' ) ) :
 	/**
- * Do not use directly.
- *
- * This will go away once wp_update_network_counts() no longer sucks.
- *
- * @since 2.2.0
- *
- * @param int $network_id
- */
+	 * Do not use directly.
+	 *
+	 * This will go away once wp_update_network_counts() no longer sucks.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param int $network_id
+	 */
 	function _wp_update_network_counts( $network_id ) {
 		switch_to_network( $network_id );
 		wp_update_network_site_counts();
@@ -328,20 +328,20 @@ endif;
 
 if ( ! function_exists( 'insert_network' ) ) :
 	/**
- * Store basic network info in the sites table.
- *
- * This function creates a row in the wp_site table and returns
- * the new network ID. It is the first step in creating a new network.
- *
- * @since 2.2.0
- *
- * @global wpdb $wpdb WordPress database abstraction object.
- *
- * @param string $domain  The domain of the new network.
- * @param string $path    The path of the new network.
+	 * Store basic network info in the sites table.
+	 *
+	 * This function creates a row in the wp_site table and returns
+	 * the new network ID. It is the first step in creating a new network.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @global wpdb $wpdb WordPress database abstraction object.
+	 *
+	 * @param string $domain  The domain of the new network.
+	 * @param string $path    The path of the new network.
 
- * @return int|false The ID of the new row
- */
+	 * @return int|false The ID of the new row
+	 */
 	function insert_network( $domain, $path = '/' ) {
 		global $wpdb;
 
@@ -366,38 +366,38 @@ endif;
 
 if ( ! function_exists( 'add_network' ) ) :
 	/**
- * Add a new network
- *
- * @since 1.3
- *
- * @param array $args  {
- *     Array of arguments.
- *     @type string  $domain           Domain name for new network - for VHOST=no,
- *                                     this should be FQDN, otherwise domain only.
- *     @type string  $path             Path to root of network hierarchy - should
- *                                     be '/' unless WP is cohabiting with another
- *                                     product on a domain.
- *     @type string  $site_name        Name of the root blog to be created on
- *                                     the new network.
- *
- *     @type string  $network_name     Name of the new network.
- *
- *     @type integer $user_id          ID of the user to add as the site owner.
- *                                     Defaults to current user ID.
- *
- *     @type integer $network_admin_id    ID of the user to add as the network administrator.
- *                                     Defaults to current user ID.
- *
- *     @type array   $meta             Array of metadata to save to this network.
- *                                     Defaults to array( 'public' => false ).
- *     @type integer $clone_network    ID of network whose networkmeta values are
- *                                     to be copied - default NULL.
- *     @type array   $options_to_clone Override default network meta options to copy
- *                                     when cloning - default NULL.
- * }
- *
- * @return integer|WP_Error ID of newly created network
- */
+	 * Add a new network
+	 *
+	 * @since 1.3
+	 *
+	 * @param array $args  {
+	 *     Array of arguments.
+	 *     @type string  $domain           Domain name for new network - for VHOST=no,
+	 *                                     this should be FQDN, otherwise domain only.
+	 *     @type string  $path             Path to root of network hierarchy - should
+	 *                                     be '/' unless WP is cohabiting with another
+	 *                                     product on a domain.
+	 *     @type string  $site_name        Name of the root blog to be created on
+	 *                                     the new network.
+	 *
+	 *     @type string  $network_name     Name of the new network.
+	 *
+	 *     @type integer $user_id          ID of the user to add as the site owner.
+	 *                                     Defaults to current user ID.
+	 *
+	 *     @type integer $network_admin_id    ID of the user to add as the network administrator.
+	 *                                     Defaults to current user ID.
+	 *
+	 *     @type array   $meta             Array of metadata to save to this network.
+	 *                                     Defaults to array( 'public' => false ).
+	 *     @type integer $clone_network    ID of network whose networkmeta values are
+	 *                                     to be copied - default NULL.
+	 *     @type array   $options_to_clone Override default network meta options to copy
+	 *                                     when cloning - default NULL.
+	 * }
+	 *
+	 * @return integer|WP_Error ID of newly created network
+	 */
 	function add_network( $args = array() ) {
 		global $wpdb, $wp_version, $wp_db_version;
 
@@ -635,14 +635,14 @@ endif;
 
 if ( ! function_exists( 'update_network' ) ) :
 	/**
- * Modify the domain/path of a network, and update all of its blogs
- *
- * @since 1.3
- *
- * @param integer $id ID of network to modify
- * @param string $domain New domain for network
- * @param string $path New path for network
- */
+	 * Modify the domain/path of a network, and update all of its blogs
+	 *
+	 * @since 1.3
+	 *
+	 * @param integer $id ID of network to modify
+	 * @param string  $domain New domain for network
+	 * @param string  $path New path for network
+	 */
 	function update_network( $id, $domain, $path = '' ) {
 		global $wpdb;
 
@@ -766,12 +766,12 @@ endif;
 
 if ( ! function_exists( 'delete_network' ) ) :
 	/**
- * Delete a network and all its blogs
- *
- * @param int  $network_id   ID of network to delete
- * @param bool $delete_blogs Flag to permit blog deletion - default setting
- *                           of false will prevent deletion of occupied networks
- */
+	 * Delete a network and all its blogs
+	 *
+	 * @param int  $network_id   ID of network to delete
+	 * @param bool $delete_blogs Flag to permit blog deletion - default setting
+	 *                           of false will prevent deletion of occupied networks
+	 */
 	function delete_network( $network_id, $delete_blogs = false ) {
 		global $wpdb;
 
@@ -827,13 +827,13 @@ endif;
 
 if ( ! function_exists( 'move_site' ) ) :
 	/**
- * Move a site to a new network
- *
- * @since 1.3
- *
- * @param  integer  $site_id         ID of site to move
- * @param  integer  $new_network_id  ID of destination network
- */
+	 * Move a site to a new network
+	 *
+	 * @since 1.3
+	 *
+	 * @param  integer $site_id         ID of site to move
+	 * @param  integer $new_network_id  ID of destination network
+	 */
 	function move_site( $site_id = 0, $new_network_id = 0 ) {
 		global $wpdb;
 
@@ -905,11 +905,11 @@ endif;
 
 if ( ! function_exists( 'network_options_list' ) ) :
 	/**
- * Return list of URL-dependent options
- *
- * @since 1.3
- * @return array
- */
+	 * Return list of URL-dependent options
+	 *
+	 * @since 1.3
+	 * @return array
+	 */
 	function network_options_list() {
 		return apply_filters(
 			'network_options_list', array(
@@ -922,11 +922,11 @@ endif;
 
 if ( ! function_exists( 'network_options_to_copy' ) ) :
 	/**
- * Return list of default options to copy
- *
- * @since 1.3
- * @return array
- */
+	 * Return list of default options to copy
+	 *
+	 * @since 1.3
+	 * @return array
+	 */
 	function network_options_to_copy() {
 		return apply_filters(
 			'network_options_to_copy', array(
