@@ -4,6 +4,14 @@
 
 	<rule ref="WordPress-Core" />
 
+	<rule ref="WordPress.WP.PreparedSQL.NotPrepared">
+			<type>warning</type>
+  </rule>
+
+	<rule ref="WordPress.Files.FileName.InvalidClassFileName">
+			<type>warning</type>
+  </rule>
+
 	<!-- Check all PHP files in directory tree by default. -->
 	<arg name="extensions" value="php"/>
 	<file>.</file>
