@@ -146,8 +146,10 @@ class WPMN_Loader {
 			require $this->plugin_dir . 'includes/classes/class-wp-ms-networks-cli.php';
 		}
 
-		// REST endpoint class
-		require $this->plugin_dir . 'includes/classes/class-wp-ms-rest-networks-controller.php';
+		// REST endpoint class only load 4.7+
+		if ( version_compare( $GLOBALS['wp_version'], '4.7', '>=' ) ) {
+			require $this->plugin_dir . 'includes/classes/class-wp-ms-rest-networks-controller.php';
+		}
 	}
 }
 
