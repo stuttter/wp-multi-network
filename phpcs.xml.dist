@@ -12,6 +12,10 @@
 			<type>warning</type>
   </rule>
 
+	<rule ref="Generic.Functions.FunctionCallArgumentSpacing.SpaceBeforeComma">
+			<type>warning</type>
+	</rule>
+	
 	<rule ref="Generic.Functions.FunctionCallArgumentSpacing.TooMuchSpaceAfterComma">
 			<type>warning</type>
 	</rule>
