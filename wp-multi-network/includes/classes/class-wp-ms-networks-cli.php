@@ -11,7 +11,7 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 	protected $obj_fields = array(
 		'id',
 		'domain',
-		'path'
+		'path',
 	);
 
 	/**
@@ -46,13 +46,15 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 
 		list( $domain, $path ) = $args;
 
-		$assoc_args = wp_parse_args( $assoc_args, array(
-			'network_admin'    => false,
-			'site_name'        => false,
-			'network_name'     => false,
-			'clone_network'    => false,
-			'options_to_clone' => false
-		) );
+		$assoc_args = wp_parse_args(
+			$assoc_args, array(
+				'network_admin'    => false,
+				'site_name'        => false,
+				'network_name'     => false,
+				'clone_network'    => false,
+				'options_to_clone' => false,
+			)
+		);
 
 		if ( $assoc_args['network_admin'] ) {
 			$users = new \WP_CLI\Fetchers\User();
@@ -72,21 +74,23 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 			WP_CLI::error( sprintf( __( "Clone network %s doesn't exist.", 'wp-multi-network' ), $clone_network ) );
 
 			if ( ! empty( $assoc_args['options_to_clone'] ) ) {
-				$options_to_clone = explode( ",", $assoc_args['options_to_clone'] );
+				$options_to_clone = explode( ',', $assoc_args['options_to_clone'] );
 			}
 		}
 
 		// Add the network
-		$network_id = add_network( array(
-			'domain'           => $domain,
-			'path'             => $path,
-			'site_name'        => $assoc_args['site_name'],
-			'network_name'     => $assoc_args['network_name'],
-			'user_id'          => get_current_user_id(),
-			'network_admin_id'    => $network_admin_id,
-			'clone_network'    => $clone_network,
-			'options_to_clone' => $options_to_clone
-		) );
+		$network_id = add_network(
+			array(
+				'domain'           => $domain,
+				'path'             => $path,
+				'site_name'        => $assoc_args['site_name'],
+				'network_name'     => $assoc_args['network_name'],
+				'user_id'          => get_current_user_id(),
+				'network_admin_id'    => $network_admin_id,
+				'clone_network'    => $clone_network,
+				'options_to_clone' => $options_to_clone,
+			)
+		);
 
 		if ( is_wp_error( $network_id ) ) {
 			WP_CLI::error( $network_id );
@@ -112,7 +116,9 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 
 		list( $id, $domain ) = $args;
 
-		$defaults   = array( 'path' => '' );
+		$defaults   = array(
+			'path' => '',
+		);
 		$assoc_args = wp_parse_args( $assoc_args, $defaults );
 
 		$network_id = update_network( $id, $domain, $assoc_args['path'] );
@@ -139,7 +145,9 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 
 		list( $id ) = $args;
 
-		$defaults   = array( 'delete_blogs' => false );
+		$defaults   = array(
+			'delete_blogs' => false,
+		);
 		$assoc_args = wp_parse_args( $assoc_args, $defaults );
 
 		$network_id = delete_network( $id, $assoc_args['delete_blogs'] );
@@ -172,7 +180,7 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 			WP_CLI::error( $network_id );
 		}
 
-		WP_CLI::success( sprintf( __( 'Blog %d has moved to network %d.', 'wp-multi-network' ), $site_id, $new_network_id ) );
+		WP_CLI::success( sprintf( __( 'Blog %1$d has moved to network %2$d.', 'wp-multi-network' ), $site_id, $new_network_id ) );
 	}
 
 	/**
@@ -200,84 +208,87 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 		$formatter = $this->get_formatter( $assoc_args );
 		$formatter->display_items( $items );
 	}
-	
-    /**
-     * Network activate or deactivate a plugin
-     *
-     * <activate|deactivate>
-     * : Action to perform
-     *
-     * <plugin_name>
-     * : Plugin to activate for the network
-     *
-     * --network_id=<network_id>
-     * : Id of the network to activate on
-     *
-     * [--network]
-     * : If set, the plugin will be activated for the entire multisite network.
-     *
-     * [--all]
-     * : If set, all plugins will be activated.
-     *
-     * @param array $args
-     * @param array $assoc_args
-     */
-    public function plugin( $args, $assoc_args ) {
-        $this->fetcher = new \WP_CLI\Fetchers\Plugin;
-        $action        = array_shift( $args );
-        if ( ! in_array( $action, array( 'activate', 'deactivate' ), true ) ) {
-            WP_CLI::error( sprintf( __( '%s is not a supported action.', 'wp-multi-network' ), $action ) );
-        }
-        $network_wide = \WP_CLI\Utils\get_flag_value( $assoc_args, 'network' );
-        $all          = \WP_CLI\Utils\get_flag_value( $assoc_args, 'all', false );
 
+	/**
+	 * Network activate or deactivate a plugin
+	 *
+	 * <activate|deactivate>
+	 * : Action to perform
+	 *
+	 * <plugin_name>
+	 * : Plugin to activate for the network
+	 *
+	 * --network_id=<network_id>
+	 * : Id of the network to activate on
+	 *
+	 * [--network]
+	 * : If set, the plugin will be activated for the entire multisite network.
+	 *
+	 * [--all]
+	 * : If set, all plugins will be activated.
+	 *
+	 * @param array $args
+	 * @param array $assoc_args
+	 */
+	public function plugin( $args, $assoc_args ) {
+		$this->fetcher = new \WP_CLI\Fetchers\Plugin;
+		$action        = array_shift( $args );
+		if ( ! in_array( $action, array( 'activate', 'deactivate' ), true ) ) {
+			WP_CLI::error( sprintf( __( '%s is not a supported action.', 'wp-multi-network' ), $action ) );
+		}
+		$network_wide = \WP_CLI\Utils\get_flag_value( $assoc_args, 'network' );
+		$all          = \WP_CLI\Utils\get_flag_value( $assoc_args, 'all', false );
 
-        $needing_activation = count( $args );
-        $assoc_args         = wp_parse_args( $assoc_args, array(
-            'network_id' => false,
-        ) );
-        $network_id         = $assoc_args['network_id'];
-        if ( get_network( $network_id ) ) {
-            switch_to_network( $network_id );
-            if ( $all ) {
-                $args = array_map( function ( $file ) {
-                    return \WP_CLI\Utils\get_plugin_name( $file );
-                }, array_keys( get_plugins() ) );
-            }
-            foreach ( $this->fetcher->get_many( $args ) as $plugin ) {
-                $status = $this->get_status( $plugin->file );
-                if ( $all && in_array( $status, array( 'active', 'active-network' ), true ) ) {
-                    $needing_activation --;
-                    continue;
-                }
-                // Network-active is the highest level of activation status
-                if ( 'active-network' === $status ) {
-                    WP_CLI::warning( "Plugin '{$plugin->name}' is already network active." );
-                    continue;
-                }
-                // Don't reactivate active plugins, but do let them become network-active
-                if ( ! $network_wide && 'active' === $status ) {
-                    WP_CLI::warning( "Plugin '{$plugin->name}' is already active." );
-                    continue;
-                }
+		$needing_activation = count( $args );
+		$assoc_args         = wp_parse_args(
+			$assoc_args, array(
+				'network_id' => false,
+			)
+		);
+		$network_id         = $assoc_args['network_id'];
+		if ( get_network( $network_id ) ) {
+			switch_to_network( $network_id );
+			if ( $all ) {
+				$args = array_map(
+					function ( $file ) {
+							return \WP_CLI\Utils\get_plugin_name( $file );
+					}, array_keys( get_plugins() )
+				);
+			}
+			foreach ( $this->fetcher->get_many( $args ) as $plugin ) {
+				$status = $this->get_status( $plugin->file );
+				if ( $all && in_array( $status, array( 'active', 'active-network' ), true ) ) {
+					$needing_activation --;
+					continue;
+				}
+				// Network-active is the highest level of activation status
+				if ( 'active-network' === $status ) {
+					WP_CLI::warning( "Plugin '{$plugin->name}' is already network active." );
+					continue;
+				}
+				// Don't reactivate active plugins, but do let them become network-active
+				if ( ! $network_wide && 'active' === $status ) {
+					WP_CLI::warning( "Plugin '{$plugin->name}' is already active." );
+					continue;
+				}
 
-                // Plugins need to be deactivated before being network activated
-                if ( $network_wide && 'active' === $status ) {
-                    deactivate_plugins( $plugin->file, false, false );
-                }
-                if ( 'activate' === $action ) {
-                    activate_plugins( $plugin->file, '', $network_wide );
-                } else {
-                    deactivate_plugins( $plugin->file, '', $network_wide );
-                }
+				// Plugins need to be deactivated before being network activated
+				if ( $network_wide && 'active' === $status ) {
+					deactivate_plugins( $plugin->file, false, false );
+				}
+				if ( 'activate' === $action ) {
+					activate_plugins( $plugin->file, '', $network_wide );
+				} else {
+					deactivate_plugins( $plugin->file, '', $network_wide );
+				}
 
-                $this->active_output( $plugin->name, $plugin->file, $network_wide, "activate" );
-            }
-            restore_current_network();
-        } else {
-            WP_CLI::error( sprintf( __( "Network %s doesn't exist.", 'wp-multi-network' ), $network_id ) );
-        }
-    }
+				$this->active_output( $plugin->name, $plugin->file, $network_wide, 'activate' );
+			}
+			restore_current_network();
+		} else {
+			WP_CLI::error( sprintf( __( "Network %s doesn't exist.", 'wp-multi-network' ), $network_id ) );
+		}
+	}
 
 	/**
 	 * Get Formatter object based on supplied parameters.
@@ -290,41 +301,41 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 		return new WP_CLI\Formatter( $assoc_args, $this->obj_fields, 'wp-multi-network' );
 	}
 
-    /* PRIVATES */
+	/* PRIVATES */
 
-    private function check_active( $file, $network_wide ) {
-        $required = $network_wide ? 'active-network' : 'active';
+	private function check_active( $file, $network_wide ) {
+		$required = $network_wide ? 'active-network' : 'active';
 
-        return $required === $this->get_status( $file );
-    }
+		return $required === $this->get_status( $file );
+	}
 
-    protected function get_status( $file ) {
-        if ( is_plugin_active_for_network( $file ) ) {
-            return 'active-network';
-        }
+	protected function get_status( $file ) {
+		if ( is_plugin_active_for_network( $file ) ) {
+			return 'active-network';
+		}
 
-        if ( is_plugin_active( $file ) ) {
-            return 'active';
-        }
+		if ( is_plugin_active( $file ) ) {
+			return 'active';
+		}
 
-        return 'inactive';
-    }
+		return 'inactive';
+	}
 
-    private function active_output( $name, $file, $network_wide, $action ) {
-        $network_wide = $network_wide || ( is_multisite() && is_network_only_plugin( $file ) );
+	private function active_output( $name, $file, $network_wide, $action ) {
+		$network_wide = $network_wide || ( is_multisite() && is_network_only_plugin( $file ) );
 
-        $check = $this->check_active( $file, $network_wide );
+		$check = $this->check_active( $file, $network_wide );
 
-        if ( ( $action === 'activate') ? $check : ! $check ) {
-            if ( $network_wide ) {
-                WP_CLI::success( "Plugin '{$name}' network {$action}d." );
-            } else {
-                WP_CLI::success( "Plugin '{$name}' {$action}d." );
-            }
-        } else {
-            WP_CLI::warning( "Could not {$action} the '{$name}' plugin." );
-        }
-    }
+		if ( ( $action === 'activate') ? $check : ! $check ) {
+			if ( $network_wide ) {
+				WP_CLI::success( "Plugin '{$name}' network {$action}d." );
+			} else {
+				WP_CLI::success( "Plugin '{$name}' {$action}d." );
+			}
+		} else {
+			WP_CLI::warning( "Could not {$action} the '{$name}' plugin." );
+		}
+	}
 }
 
 WP_CLI::add_command( 'wp-multi-network', 'WP_MS_Network_Command' );
