@@ -326,7 +326,7 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 
 		$check = $this->check_active( $file, $network_wide );
 
-		if ( ( $action === 'activate') ? $check : ! $check ) {
+		if ( ( 'activate' === $action ) ? $check : ! $check ) {
 			if ( $network_wide ) {
 				WP_CLI::success( "Plugin '{$name}' network {$action}d." );
 			} else {

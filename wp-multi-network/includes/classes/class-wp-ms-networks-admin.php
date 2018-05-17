@@ -280,7 +280,7 @@ class WP_MS_Networks_Admin {
 			// View all networks
 			case 'all_networks':
 				// Doing action?
-				$doaction = isset( $_POST['action'] ) && ( $_POST['action'] != -1 )
+				$doaction = isset( $_POST['action'] ) && ( -1 != $_POST['action'] )
 					? sanitize_key( $_POST['action'] )
 					: sanitize_key( $_POST['action2'] );
 
@@ -825,11 +825,11 @@ class WP_MS_Networks_Admin {
 
 			$c = '';
 			foreach ( $rows as $row ) {
-				$c = $c == 'alternate' ? '' : 'alternate';
+				$c = ('alternate' === $c) ? '' : 'alternate';
 				echo "<tr class='$c'>";
 				$i = 0;
 				foreach ( $row as $network ) {
-					$s = $i == 3 ? '' : 'border-right: 1px solid #ccc;';
+					$s = (3 === $i) ? '' : 'border-right: 1px solid #ccc;';
 					switch_to_network( $network->id );
 					?>
 
@@ -1104,7 +1104,8 @@ class WP_MS_Networks_Admin {
 		$network_id = (int) $_GET['id'];
 
 		// Setup sites arrays
-		$moving_to = $moving_from = array();
+		$moving_to = array();
+		$moving_from = array();
 
 		// Query for sites in this network
 		$sites_list = get_sites(

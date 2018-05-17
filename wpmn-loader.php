@@ -157,7 +157,7 @@ class WPMN_Loader {
 
 		// Command line
 		if ( defined( 'WP_CLI' ) && WP_CLI ) {
-			require $this->plugin_dir . 'includes/classes/class-wp-ms-networks-cli.php';
+			require $this->plugin_dir . 'includes/classes/class-wp-ms-network-command.php';
 		}
 	}
 }
