@@ -354,7 +354,7 @@ function insert_network( $domain, $path = '/' ) {
 
 	// Bail if network already exists
 	if ( ! empty( $networks ) ) {
-		return new WP_Error( 'network_exists', __( 'Network already exists.', 'wp-multi-network' ), array( 'status' => 500 ) );
+		return new WP_Error( 'network_exists', __( 'Network already exists.', 'wp-multi-network' ) );
 	}
 
 	$result = $wpdb->insert( $wpdb->site, array( 'domain' => $domain, 'path' => $path ) );
@@ -468,17 +468,23 @@ function add_network( $args = array() ) {
 
 	// Bail if no user with this ID for site
 	if ( empty( $r['user_id'] ) || ! get_userdata( $r['user_id'] ) ) {
-		return new WP_Error( 'network_user', __( 'User does not exist.', 'wp-multi-network' ), array( 'status' => 403 ) );
+		return new WP_Error( 'network_user', __( 'User does not exist.', 'wp-multi-network' ) );
 	}
 
 	// Bail if no user with this ID for network
 	if ( empty( $r['network_admin_id'] ) || ! get_userdata( $r['network_admin_id'] ) ) {
-		return new WP_Error( 'network_super_admin', __( 'User does not exist.', 'wp-multi-network' ), array( 'status' => 403 ) );
+		return new WP_Error( 'network_super_admin', __( 'User does not exist.', 'wp-multi-network' ) );
 	}
 
 	// Permissive sanitization for super admin usage
 	$r['domain'] = str_replace( ' ', '', strtolower( $r['domain'] ) );
 	$r['path']   = str_replace( ' ', '', strtolower( $r['path']   ) );
+
+	// Bail if no domain is not set
+	if ( empty( $r['domain'] ) ) {
+		return new WP_Error( 'network_empty_domain', __( 'Unable to create network with empty domain', 'wp-multi-network' ) );
+	}
+
 
 	// Insert new network
 	$new_network_id = insert_network( $r['domain'], $r['path'] );

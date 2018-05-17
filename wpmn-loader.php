@@ -10,7 +10,7 @@
  * Network:     true
  * License:     GPL v2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
- * Version:     2.2.0
+ * Version:     2.3.0
  * Text Domain: wp-multi-network
  */
 
@@ -147,7 +147,7 @@ class WPMN_Loader {
 		}
 
 		// REST endpoint class
-		require $this->plugin_dir . 'includes/classes/class-wp-ms-networks-api.php';
+		require $this->plugin_dir . 'includes/classes/class-wp-ms-rest-networks-controller.php';
 	}
 }
 
@@ -164,10 +164,10 @@ add_action( 'muplugins_loaded', 'setup_multi_network' );
 /**
  * Hook REST endpoints on rest_api_init
  *
- * @since 2.2.0
+ * @since 2.3.0
  */
 function setup_multi_network_endpoints() {
-	$controller = new WP_REST_Networks_Controller;
+	$controller = new WP_MS_REST_Networks_Controller;
 	$controller->register_routes();
 }
 add_action( 'rest_api_init', 'setup_multi_network_endpoints', 99 );

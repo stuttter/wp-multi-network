@@ -4,22 +4,22 @@
  *
  * @package WPMN
  * @subpackage REST_API
- * @since 2.2.0
+ * @since 2.3.0
  */
 
 /**
  * Core controller used to access networks via the REST API.
  *
- * @since 2.2.0
+ * @since 2.3.0
  *
  * @see WP_REST_Controller
  */
-class WP_REST_Networks_Controller extends WP_REST_Controller {
+class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 
 	/**
 	 * Constructor.
 	 *
-	 * @since 2.2.0
+	 * @since 2.3.0
 	 */
 	public function __construct() {
 		$this->namespace = 'wpmn/v1';
@@ -29,23 +29,23 @@ class WP_REST_Networks_Controller extends WP_REST_Controller {
 	/**
 	 * Registers the routes for the objects of the controller.
 	 *
-	 * @since 2.2.0
+	 * @since 2.3.0
 	 */
 	public function register_routes() {
 
 		register_rest_route(
 			$this->namespace, '/' . $this->rest_base, array(
 				array(
-					'methods'   => WP_REST_Server::READABLE,
-					'callback'  => array( $this, 'get_items' ),
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_items' ),
 					'permission_callback' => array( $this, 'get_items_permissions_check' ),
-					'args'      => $this->get_collection_params(),
+					'args'                => $this->get_collection_params(),
 				),
 				array(
-					'methods'  => WP_REST_Server::CREATABLE,
-					'callback' => array( $this, 'create_item' ),
+					'methods'             => WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'create_item' ),
 					'permission_callback' => array( $this, 'create_item_permissions_check' ),
-					'args'     => $this->get_endpoint_args_for_item_schema( WP_REST_Server::CREATABLE ),
+					'args'                => $this->get_endpoint_args_for_item_schema( WP_REST_Server::CREATABLE ),
 				),
 				'schema' => array( $this, 'get_public_item_schema' ),
 			)
@@ -53,15 +53,15 @@ class WP_REST_Networks_Controller extends WP_REST_Controller {
 
 		register_rest_route(
 			$this->namespace, '/' . $this->rest_base . '/(?P<id>[\d]+)', array(
-				'args' => array(
+				'args'   => array(
 					'id' => array(
 						'description' => __( 'Unique identifier for the object.', 'wp-multi-network' ),
 						'type'        => 'integer',
 					),
 				),
 				array(
-					'methods'  => WP_REST_Server::READABLE,
-					'callback' => array( $this, 'get_item' ),
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_item' ),
 					'permission_callback' => array( $this, 'get_item_permissions_check' ),
 					'args'                => array(
 						'context' => $this->get_context_param(
@@ -72,10 +72,10 @@ class WP_REST_Networks_Controller extends WP_REST_Controller {
 					),
 				),
 				array(
-					'methods'  => WP_REST_Server::EDITABLE,
-					'callback' => array( $this, 'update_item' ),
+					'methods'             => WP_REST_Server::EDITABLE,
+					'callback'            => array( $this, 'update_item' ),
 					'permission_callback' => array( $this, 'update_item_permissions_check' ),
-					'args'     => $this->get_endpoint_args_for_item_schema( WP_REST_Server::EDITABLE ),
+					'args'                => $this->get_endpoint_args_for_item_schema( WP_REST_Server::EDITABLE ),
 				),
 				array(
 					'methods'             => WP_REST_Server::DELETABLE,
@@ -97,26 +97,23 @@ class WP_REST_Networks_Controller extends WP_REST_Controller {
 	/**
 	 * Checks if a given request has access to read networks.
 	 *
-	 * @since 2.2.0
+	 * @since 2.3.0
 	 *
 	 * @param WP_REST_Request $request Full details about the request.
+	 *
 	 * @return WP_Error|bool True if the request has read access, error object otherwise.
 	 */
 	public function get_items_permissions_check( $request ) {
-
-		if ( 0 === (int) get_current_user_id() ) {
-			return false;
-		}
-
-		return current_user_can( 'manage_network' );
+		return current_user_can( 'list_networks' );
 	}
 
 	/**
 	 * Retrieves a list of network items.
 	 *
-	 * @since 2.2.0
+	 * @since 2.3.0
 	 *
 	 * @param WP_REST_Request $request Full details about the request.
+	 *
 	 * @return WP_Error|WP_REST_Response Response object on success, or error object on failure.
 	 */
 	public function get_items( $request ) {
@@ -175,24 +172,24 @@ class WP_REST_Networks_Controller extends WP_REST_Controller {
 		/**
 		 * Filters arguments, before passing to WP_Network_Query, when querying networks via the REST API.
 		 *
-		 * @since 2.2.0
+		 * @since 2.3.0
 		 *
 		 * @link https://developer.wordpress.org/reference/classes/wp_network_query/
 		 *
-		 * @param array           $prepared_args Array of arguments for WP_Network_Query.
-		 * @param WP_REST_Request $request       The current request.
+		 * @param array $prepared_args Array of arguments for WP_Network_Query.
+		 * @param WP_REST_Request $request The current request.
 		 */
 		$prepared_args = apply_filters( 'rest_network_query', $prepared_args, $request );
 
-		$query = new WP_Network_Query;
+		$query        = new WP_Network_Query;
 		$query_result = $query->query( $prepared_args );
-		$networks = array();
+		$networks     = array();
 		foreach ( $query_result as $network ) {
 			if ( ! $this->check_read_permission( $network, $request ) ) {
 				continue;
 			}
 
-			$data = $this->prepare_item_for_response( $network, $request );
+			$data       = $this->prepare_item_for_response( $network, $request );
 			$networks[] = $this->prepare_response_for_collection( $data );
 		}
 
@@ -203,11 +200,11 @@ class WP_REST_Networks_Controller extends WP_REST_Controller {
 			// Out-of-bounds, run the query again without LIMIT for total count.
 			unset( $prepared_args['number'], $prepared_args['offset'] );
 
-			$query = new WP_Network_Query;
+			$query                  = new WP_Network_Query;
 			$prepared_args['count'] = true;
 
 			$total_networks = $query->query( $prepared_args );
-			$max_pages = ceil( $total_networks / $request['per_page'] );
+			$max_pages      = ceil( $total_networks / $request['per_page'] );
 		}
 
 		$response = rest_ensure_response( $networks );
@@ -240,9 +237,10 @@ class WP_REST_Networks_Controller extends WP_REST_Controller {
 	/**
 	 * Get the network, if the ID is valid.
 	 *
-	 * @since 2.2.0
+	 * @since 2.3.0
 	 *
 	 * @param int $id Supplied ID.
+	 *
 	 * @return WP_Network|WP_Error Network object if ID is valid, WP_Error otherwise.
 	 */
 	protected function get_network( $id ) {
@@ -255,7 +253,7 @@ class WP_REST_Networks_Controller extends WP_REST_Controller {
 			return $error;
 		}
 
-		$id = (int) $id;
+		$id      = (int) $id;
 		$network = get_network( $id );
 		if ( empty( $network ) ) {
 			return $error;
@@ -267,9 +265,10 @@ class WP_REST_Networks_Controller extends WP_REST_Controller {
 	/**
 	 * Checks if a given request has access to read the network.
 	 *
-	 * @since 2.2.0
+	 * @since 2.3.0
 	 *
 	 * @param WP_REST_Request $request Full details about the request.
+	 *
 	 * @return WP_Error|bool True if the request has read access for the item, error object otherwise.
 	 */
 	public function get_item_permissions_check( $request ) {
@@ -284,9 +283,10 @@ class WP_REST_Networks_Controller extends WP_REST_Controller {
 	/**
 	 * Retrieves a network.
 	 *
-	 * @since 2.2.0
+	 * @since 2.3.0
 	 *
 	 * @param WP_REST_Request $request Full details about the request.
+	 *
 	 * @return WP_Error|WP_REST_Response Response object on success, or error object on failure.
 	 */
 	public function get_item( $request ) {
@@ -295,7 +295,7 @@ class WP_REST_Networks_Controller extends WP_REST_Controller {
 			return $network;
 		}
 
-		$data = $this->prepare_item_for_response( $network, $request );
+		$data     = $this->prepare_item_for_response( $network, $request );
 		$response = rest_ensure_response( $data );
 
 		return $response;
@@ -304,25 +304,23 @@ class WP_REST_Networks_Controller extends WP_REST_Controller {
 	/**
 	 * Checks if a given request has access to create a network.
 	 *
-	 * @since 2.2.0
+	 * @since 2.3.0
 	 *
 	 * @param WP_REST_Request $request Full details about the request.
+	 *
 	 * @return WP_Error|bool True if the request has access to create items, error object otherwise.
 	 */
 	public function create_item_permissions_check( $request ) {
-		if ( 0 === (int) get_current_user_id() ) {
-			return false;
-		}
-
 		return current_user_can( 'create_networks' );
 	}
 
 	/**
 	 * Creates a network.
 	 *
-	 * @since 2.2.0
+	 * @since 2.3.0
 	 *
 	 * @param WP_REST_Request $request Full details about the request.
+	 *
 	 * @return WP_Error|WP_REST_Response Response object on success, or error object on failure.
 	 */
 	public function create_item( $request ) {
@@ -346,10 +344,10 @@ class WP_REST_Networks_Controller extends WP_REST_Controller {
 		 * Returning a WP_Error value from the filter will shortcircuit insertion and allow
 		 * skipping further processing.
 		 *
-		 * @since 2.2.0
+		 * @since 2.3.0
 		 *
-		 * @param array|WP_Error  $prepared_network The prepared network data for insert_network().
-		 * @param WP_REST_Request $request          Request used to insert the network.
+		 * @param array|WP_Error $prepared_network The prepared network data for insert_network().
+		 * @param WP_REST_Request $request Request used to insert the network.
 		 */
 		$prepared_network = apply_filters( 'rest_pre_insert_network', $prepared_network, $request );
 		if ( is_wp_error( $prepared_network ) ) {
@@ -359,7 +357,7 @@ class WP_REST_Networks_Controller extends WP_REST_Controller {
 		$network_id = add_network( wp_slash( (array) $prepared_network ) );
 
 		if ( is_wp_error( $network_id ) ) {
-			return $network_id;
+			return $this->get_wp_error( $network_id );
 		} elseif ( ! $network_id ) {
 			return new WP_Error(
 				'rest_network_failed_create', __( 'Creating network failed.', 'wp-multi-network' ), array(
@@ -368,16 +366,16 @@ class WP_REST_Networks_Controller extends WP_REST_Controller {
 			);
 		}
 
-		$network = get_network( $network_id );
+		$network = $this->get_network( $network_id );
 
 		/**
 		 * Fires after a network is created or updated via the REST API.
 		 *
-		 * @since 2.2.0
+		 * @since 2.3.0
 		 *
-		 * @param WP_Network      $network  Inserted or updated network object.
-		 * @param WP_REST_Request $request  Request object.
-		 * @param bool            $creating True when creating a network, false
+		 * @param WP_Network $network Inserted or updated network object.
+		 * @param WP_REST_Request $request Request object.
+		 * @param bool $creating True when creating a network, false
 		 *                                  when updating.
 		 */
 		do_action( 'rest_insert_network', $network, $request, true );
@@ -404,9 +402,10 @@ class WP_REST_Networks_Controller extends WP_REST_Controller {
 	/**
 	 * Checks if a given REST request has access to update a network.
 	 *
-	 * @since 2.2.0
+	 * @since 2.3.0
 	 *
 	 * @param WP_REST_Request $request Full details about the request.
+	 *
 	 * @return WP_Error|bool True if the request has access to update the item, error object otherwise.
 	 */
 	public function update_item_permissions_check( $request ) {
@@ -418,7 +417,7 @@ class WP_REST_Networks_Controller extends WP_REST_Controller {
 		if ( ! $this->check_edit_permission( $network ) ) {
 			return new WP_Error(
 				'rest_cannot_edit', __( 'Sorry, you are not allowed to edit this network.', 'wp-multi-network' ), array(
-					'status' => rest_authorization_required_code()(),
+					'status' => rest_authorization_required_code(),
 				)
 			);
 		}
@@ -429,9 +428,10 @@ class WP_REST_Networks_Controller extends WP_REST_Controller {
 	/**
 	 * Updates a network.
 	 *
-	 * @since 2.2.0
+	 * @since 2.3.0
 	 *
 	 * @param WP_REST_Request $request Full details about the request.
+	 *
 	 * @return WP_Error|WP_REST_Response Response object on success, or error object on failure.
 	 */
 	public function update_item( $request ) {
@@ -459,7 +459,7 @@ class WP_REST_Networks_Controller extends WP_REST_Controller {
 			$updated = update_network( $id, $domain, $path );
 
 			if ( is_wp_error( $updated ) ) {
-				return $updated;
+				return $this->get_wp_error( $updated );
 			} elseif ( false === $updated ) {
 				return new WP_Error(
 					'rest_network_failed_edit', __( 'Updating network failed.', 'wp-multi-network' ), array(
@@ -469,7 +469,7 @@ class WP_REST_Networks_Controller extends WP_REST_Controller {
 			}
 		}
 
-		$network = get_network( $id );
+		$network = $this->get_network( $id );
 
 		/** This action is documented in class-wp-rest-networks-api.php */
 		do_action( 'rest_insert_network', $network, $request, false );
@@ -490,16 +490,13 @@ class WP_REST_Networks_Controller extends WP_REST_Controller {
 	/**
 	 * Checks if a given request has access to delete a network.
 	 *
-	 * @since 2.2.0
+	 * @since 2.3.0
 	 *
 	 * @param WP_REST_Request $request Full details about the request.
+	 *
 	 * @return WP_Error|bool True if the request has access to delete the item, error object otherwise.
 	 */
 	public function delete_item_permissions_check( $request ) {
-		if ( 0 === get_current_user_id() ) {
-			return false;
-		}
-
 		$network = $this->get_network( $request['id'] );
 		if ( is_wp_error( $network ) ) {
 			return $network;
@@ -511,9 +508,10 @@ class WP_REST_Networks_Controller extends WP_REST_Controller {
 	/**
 	 * Deletes a network.
 	 *
-	 * @since 2.2.0
+	 * @since 2.3.0
 	 *
 	 * @param WP_REST_Request $request Full details about the request.
+	 *
 	 * @return WP_Error|WP_REST_Response Response object on success, or error object on failure.
 	 */
 	public function delete_item( $request ) {
@@ -527,17 +525,17 @@ class WP_REST_Networks_Controller extends WP_REST_Controller {
 		$request->set_param( 'context', 'edit' );
 
 		$previous = $this->prepare_item_for_response( $network, $request );
-		$result = delete_network( $network->id, $force );
+		$result   = delete_network( $network->id, $force );
 		$response = new WP_REST_Response();
 		$response->set_data(
 			array(
-				'deleted' => true,
+				'deleted'  => true,
 				'previous' => $previous->get_data(),
 			)
 		);
 
-		if( is_wp_error( $result ) ){
-			return $result;
+		if ( is_wp_error( $result ) ) {
+			return $this->get_wp_error( $result );
 		} elseif ( ! $result ) {
 			return new WP_Error(
 				'rest_cannot_delete', __( 'The network cannot be deleted.', 'wp-multi-network' ), array(
@@ -549,11 +547,11 @@ class WP_REST_Networks_Controller extends WP_REST_Controller {
 		/**
 		 * Fires after a network is deleted via the REST API.
 		 *
-		 * @since 2.2.0
+		 * @since 2.3.0
 		 *
-		 * @param WP_Network       $network  The deleted network data.
+		 * @param WP_Network $network The deleted network data.
 		 * @param WP_REST_Response $response The response returned from the API.
-		 * @param WP_REST_Request  $request  The request sent to the API.
+		 * @param WP_REST_Request $request The request sent to the API.
 		 */
 		do_action( 'rest_delete_network', $network, $response, $request );
 
@@ -563,20 +561,21 @@ class WP_REST_Networks_Controller extends WP_REST_Controller {
 	/**
 	 * Prepares a single network output for response.
 	 *
-	 * @since 2.2.0
+	 * @since 2.3.0
 	 *
-	 * @param WP_Network      $network Network object.
+	 * @param WP_Network $network Network object.
 	 * @param WP_REST_Request $request Request object.
+	 *
 	 * @return WP_REST_Response Response object.
 	 */
 	public function prepare_item_for_response( $network, $request ) {
 		$data = array(
-			'id'                 => (int) $network->id,
-			'path'               => $network->path,
-			'domain'             => $network->domain,
-			'cookie_domain'      => $network->cookie_domain,
-			'site_name'          => $network->site_name,
-			'blog_id'            => (int) $network->blog_id,
+			'id'            => (int) $network->id,
+			'path'          => $network->path,
+			'domain'        => $network->domain,
+			'cookie_domain' => $network->cookie_domain,
+			'site_name'     => $network->site_name,
+			'site_id'       => (int) $network->site_id,
 		);
 
 		$context = ! empty( $request['context'] ) ? $request['context'] : 'view';
@@ -593,11 +592,11 @@ class WP_REST_Networks_Controller extends WP_REST_Controller {
 		 *
 		 * Allows modification of the network right before it is returned.
 		 *
-		 * @since 2.2.0
+		 * @since 2.3.0
 		 *
-		 * @param WP_REST_Response  $response The response object.
-		 * @param WP_Network        $network  The original network object.
-		 * @param WP_REST_Request   $request  Request used to generate the response.
+		 * @param WP_REST_Response $response The response object.
+		 * @param WP_Network $network The original network object.
+		 * @param WP_REST_Request $request Request used to generate the response.
 		 */
 		return apply_filters( 'rest_prepare_network', $response, $network, $request );
 	}
@@ -605,14 +604,15 @@ class WP_REST_Networks_Controller extends WP_REST_Controller {
 	/**
 	 * Prepares links for the request.
 	 *
-	 * @since 2.2.0
+	 * @since 2.3.0
 	 *
 	 * @param WP_Network $network Network object.
+	 *
 	 * @return array Links for the given network.
 	 */
 	protected function prepare_links( $network ) {
 		$links = array(
-			'self' => array(
+			'self'       => array(
 				'href' => rest_url( sprintf( '%s/%s/%d', $this->namespace, $this->rest_base, $network->id ) ),
 			),
 			'collection' => array(
@@ -625,9 +625,10 @@ class WP_REST_Networks_Controller extends WP_REST_Controller {
 
 	/**
 	 *
-	 * @since 2.2.0
+	 * @since 2.3.0
 	 *
 	 * @param string $query_param Query parameter.
+	 *
 	 * @return string The normalized query parameter.
 	 */
 	protected function normalize_query_param( $query_param ) {
@@ -646,9 +647,10 @@ class WP_REST_Networks_Controller extends WP_REST_Controller {
 	/**
 	 * Prepares a single network to be inserted into the database.
 	 *
-	 * @since 2.2.0
+	 * @since 2.3.0
 	 *
 	 * @param WP_REST_Request $request Request object.
+	 *
 	 * @return array|WP_Error Prepared network, otherwise WP_Error object.
 	 */
 	protected function prepare_item_for_database( $request ) {
@@ -667,10 +669,10 @@ class WP_REST_Networks_Controller extends WP_REST_Controller {
 		 *
 		 * Allows modification of the network right after it is prepared for the database.
 		 *
-		 * @since 2.2.0
+		 * @since 2.3.0
 		 *
-		 * @param array           $prepared_network The prepared network data for `insert_network`.
-		 * @param WP_REST_Request $request          The current request.
+		 * @param array $prepared_network The prepared network data for `insert_network`.
+		 * @param WP_REST_Request $request The current request.
 		 */
 		return apply_filters( 'rest_preprocess_network', $prepared_network, $request );
 	}
@@ -678,38 +680,44 @@ class WP_REST_Networks_Controller extends WP_REST_Controller {
 	/**
 	 * Retrieves the network's schema, conforming to JSON Schema.
 	 *
-	 * @since 2.2.0
+	 * @since 2.3.0
 	 *
 	 * @return array
 	 */
 	public function get_item_schema() {
 		$schema = array(
-			'$schema'              => 'http://json-schema.org/draft-04/schema#',
-			'title'                => 'network',
-			'type'                 => 'object',
-			'properties'           => array(
-				'id'               => array(
-					'description'  => __( 'Unique identifier for the object.', 'wp-multi-network' ),
-					'type'         => 'integer',
-					'context'      => array( 'view', 'edit', 'embed' ),
-					'readonly'     => true,
+			'$schema'    => 'http://json-schema.org/draft-04/schema#',
+			'title'      => 'network',
+			'type'       => 'object',
+			'properties' => array(
+				'id'      => array(
+					'description' => __( 'Unique identifier for the object.', 'wp-multi-network' ),
+					'type'        => 'integer',
+					'context'     => array( 'view', 'edit', 'embed' ),
+					'readonly'    => true,
 				),
-				'domain'           => array(
-					'description'  => __( 'The domain of the network object.', 'wp-multi-network' ),
-					'type'         => 'string',
-					'context'      => array( 'view', 'edit', 'embed' ),
+				'domain'  => array(
+					'description' => __( 'The domain of the network object.', 'wp-multi-network' ),
+					'type'        => 'string',
+					'context'     => array( 'view', 'edit', 'embed' ),
 				),
-				'path'           => array(
-					'description'  => __( 'The path of the network object', 'wp-multi-network' ),
-					'type'         => 'string',
-					'context'      => array( 'view', 'edit', 'embed' ),
+				'path'    => array(
+					'description' => __( 'The path of the network object', 'wp-multi-network' ),
+					'type'        => 'string',
+					'context'     => array( 'view', 'edit', 'embed' ),
 				),
-				'link'             => array(
-					'description'  => __( 'URL to the object.', 'wp-multi-network' ),
-					'type'         => 'string',
-					'format'       => 'uri',
-					'context'      => array( 'view', 'edit', 'embed' ),
-					'readonly'     => true,
+				'site_id' => array(
+					'description' => __( 'The id of the main site on the network object.', 'wp-multi-network' ),
+					'type'        => 'integer',
+					'context'     => array( 'view', 'edit', 'embed' ),
+					'readonly'    => true,
+				),
+				'link'    => array(
+					'description' => __( 'URL to the object.', 'wp-multi-network' ),
+					'type'        => 'string',
+					'format'      => 'uri',
+					'context'     => array( 'view', 'edit', 'embed' ),
+					'readonly'    => true,
 				),
 			),
 		);
@@ -720,7 +728,7 @@ class WP_REST_Networks_Controller extends WP_REST_Controller {
 	/**
 	 * Retrieves the query params for collections.
 	 *
-	 * @since 2.2.0
+	 * @since 2.3.0
 	 *
 	 * @return array Networks collection parameters.
 	 */
@@ -730,81 +738,81 @@ class WP_REST_Networks_Controller extends WP_REST_Controller {
 		$query_params['context']['default'] = 'view';
 
 		$query_params['domain'] = array(
-			'description'       => __( 'Limit result set to networks assigned to specific domains.', 'wp-multi-network' ),
-			'type'              => 'array',
-			'items'             => array(
-				'type'          => 'string',
+			'description' => __( 'Limit result set to networks assigned to specific domains.', 'wp-multi-network' ),
+			'type'        => 'array',
+			'items'       => array(
+				'type' => 'string',
 			),
 		);
 
 		$query_params['domain_exclude'] = array(
-			'description'       => __( 'Ensure result set excludes networks assigned to specific domain.', 'wp-multi-network' ),
-			'type'              => 'array',
-			'items'             => array(
-				'type'          => 'string',
+			'description' => __( 'Ensure result set excludes networks assigned to specific domain.', 'wp-multi-network' ),
+			'type'        => 'array',
+			'items'       => array(
+				'type' => 'string',
 			),
 		);
 
 		$query_params['exclude'] = array(
-			'description'        => __( 'Ensure result set excludes specific IDs.', 'wp-multi-network' ),
-			'type'               => 'array',
-			'items'              => array(
-				'type'           => 'integer',
+			'description' => __( 'Ensure result set excludes specific IDs.', 'wp-multi-network' ),
+			'type'        => 'array',
+			'items'       => array(
+				'type' => 'integer',
 			),
-			'default'            => array(),
+			'default'     => array(),
 		);
 
 		$query_params['include'] = array(
-			'description'        => __( 'Limit result set to specific IDs.', 'wp-multi-network' ),
-			'type'               => 'array',
-			'items'              => array(
-				'type'           => 'integer',
+			'description' => __( 'Limit result set to specific IDs.', 'wp-multi-network' ),
+			'type'        => 'array',
+			'items'       => array(
+				'type' => 'integer',
 			),
-			'default'            => array(),
+			'default'     => array(),
 		);
 
 		$query_params['offset'] = array(
-			'description'        => __( 'Offset the result set by a specific number of items.', 'wp-multi-network' ),
-			'type'               => 'integer',
+			'description' => __( 'Offset the result set by a specific number of items.', 'wp-multi-network' ),
+			'type'        => 'integer',
 		);
 
-		$query_params['order']      = array(
-			'description'           => __( 'Order sort attribute ascending or descending.', 'wp-multi-network' ),
-			'type'                  => 'string',
-			'default'               => 'desc',
-			'enum'                  => array(
+		$query_params['order'] = array(
+			'description' => __( 'Order sort attribute ascending or descending.', 'wp-multi-network' ),
+			'type'        => 'string',
+			'default'     => 'desc',
+			'enum'        => array(
 				'asc',
 				'desc',
 			),
 		);
 
-		$query_params['orderby']    = array(
-			'description'           => __( 'Sort collection by object attribute.', 'wp-multi-network' ),
-			'type'                  => 'string',
-			'default'               => 'id',
-			'enum'                  => array(
+		$query_params['orderby'] = array(
+			'description' => __( 'Sort collection by object attribute.', 'wp-multi-network' ),
+			'type'        => 'string',
+			'default'     => 'id',
+			'enum'        => array(
 				'id',
 				'domain',
 				'path',
 				'domain_length',
 				'path_length',
-				'network__in',
+				'include',
 			),
 		);
 
 		$query_params['path'] = array(
-			'description'       => __( 'Limit result set to networks of specific path.', 'wp-multi-network' ),
-			'type'              => 'array',
-			'items'             => array(
-				'type'          => 'string',
+			'description' => __( 'Limit result set to networks of specific path.', 'wp-multi-network' ),
+			'type'        => 'array',
+			'items'       => array(
+				'type' => 'string',
 			),
 		);
 
 		$query_params['path_exclude'] = array(
-			'description'       => __( 'Ensure result set excludes specific path.', 'wp-multi-network' ),
-			'type'              => 'array',
-			'items'             => array(
-				'type'          => 'string',
+			'description' => __( 'Ensure result set excludes specific path.', 'wp-multi-network' ),
+			'type'        => 'array',
+			'items'       => array(
+				'type' => 'string',
 			),
 		);
 
@@ -815,7 +823,7 @@ class WP_REST_Networks_Controller extends WP_REST_Controller {
 		 * collection parameter to an internal WP_Network_Query parameter. Use the
 		 * `rest_network_query` filter to set WP_Network_Query parameters.
 		 *
-		 * @since 2.2.0
+		 * @since 2.3.0
 		 *
 		 * @param array $query_params JSON Schema-formatted collection parameters.
 		 */
@@ -826,34 +834,65 @@ class WP_REST_Networks_Controller extends WP_REST_Controller {
 	/**
 	 * Checks if the network can be read.
 	 *
-	 * @since 2.2.0
+	 * @since 2.3.0
 	 *
-	 * @param WP_Network      $network Network object.
+	 * @param WP_Network $network Network object.
 	 * @param WP_REST_Request $request Request data to check.
+	 *
 	 * @return bool Whether the network can be read.
 	 */
 	protected function check_read_permission( $network, $request ) {
+		switch_to_network( $network->id );
+		$allowed = current_user_can( 'manage_network' );
+		restore_current_network();
 
-		if ( 0 === get_current_user_id() ) {
-			return false;
-		}
-
-		return current_user_can( 'manage_network' );
+		return $allowed;
 	}
 
 	/**
 	 * Checks if a network can be edited or deleted.
 	 *
-	 * @since 2.2.0
+	 * @since 2.3.0
 	 *
 	 * @param object $network Network object.
+	 *
 	 * @return bool Whether the network can be edited or deleted.
 	 */
 	protected function check_edit_permission( $network ) {
-		if ( 0 === (int) get_current_user_id() ) {
-			return false;
-		}
-
 		return current_user_can( 'edit_network', $network->id );
+	}
+
+	/**
+	 * Helper method to add status code to returned WP_error objects
+	 *
+	 * @param WP_Error $error
+	 *
+	 * @return WP_Error $error
+	 */
+	protected function get_wp_error( $error ) {
+		$code = $error->get_error_code();
+		switch ( $code ) {
+			case 'network_not_exist':
+				$status = 404;
+				break;
+			case 'network_exists':
+				$status = 500;
+				break;
+			case 'network_not_empty':
+			case 'network_empty_domain':
+			case 'network_not_exist':
+			case 'network_not_updated':
+			case 'blog_bad':
+				$status = 400;
+				break;
+			case 'network_super_admin':
+			case 'network_user':
+			default:
+				$status = 403;
+				break;
+		}
+		$error->add_data( array( 'status' => $status ), $code );
+
+		return $error;
 	}
 }
