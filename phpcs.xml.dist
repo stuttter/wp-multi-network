@@ -12,6 +12,11 @@
 			<type>warning</type>
   </rule>
 
+	<rule ref="Generic.Functions.FunctionCallArgumentSpacing.TooMuchSpaceAfterComma">
+			<type>warning</type>
+	</rule>
+
+
 	<!-- Check all PHP files in directory tree by default. -->
 	<arg name="extensions" value="php"/>
 	<file>.</file>
