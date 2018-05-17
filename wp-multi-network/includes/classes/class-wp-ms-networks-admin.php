@@ -118,7 +118,7 @@ class WP_MS_Networks_Admin {
 
 		add_action( "admin_head-{$page}", array( $this, 'fix_menu_highlight_for_move_page' ) );
 
-		require_once wpmn()->plugin_dir . '/includes/classes/class-wp-ms-networks-list-table.php' ;
+		require_once wpmn()->plugin_dir . '/includes/classes/class-wp-ms-networks-list-table.php';
 	}
 
 	/**
@@ -825,11 +825,11 @@ class WP_MS_Networks_Admin {
 
 			$c = '';
 			foreach ( $rows as $row ) {
-				$c = ('alternate' === $c) ? '' : 'alternate';
+				$c = ( 'alternate' === $c ) ? '' : 'alternate';
 				echo "<tr class='$c'>";
 				$i = 0;
 				foreach ( $row as $network ) {
-					$s = (3 === $i) ? '' : 'border-right: 1px solid #ccc;';
+					$s = ( 3 === $i ) ? '' : 'border-right: 1px solid #ccc;';
 					switch_to_network( $network->id );
 					?>
 
