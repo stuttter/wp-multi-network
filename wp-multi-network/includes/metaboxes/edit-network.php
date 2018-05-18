@@ -87,15 +87,19 @@ function wpmn_edit_network_new_site_metabox() {
 function wpmn_edit_network_assign_sites_metabox( $network = null ) {
 
 	// To
-	$to = get_sites( array(
-		'site__not_in' => get_main_site_id( $network->id ),
-		'network_id'   => $network->id
-	) );
+	$to = get_sites(
+		array(
+			'site__not_in' => get_main_site_id( $network->id ),
+			'network_id'   => $network->id,
+		)
+	);
 
 	// From
-	$from = get_sites( array(
-		'network__not_in' => array( $network->id )
-	) );
+	$from = get_sites(
+		array(
+			'network__not_in' => array( $network->id ),
+		)
+	);
 
 	?>
 
@@ -177,9 +181,12 @@ function wpmn_edit_network_publish_metabox( $network = null ) {
 		: 'update';
 
 	// Cancel URL
-	$cancel_url = add_query_arg( array(
-		'page' => 'networks'
-	), network_admin_url( 'admin.php' ) ); ?>
+	$cancel_url = add_query_arg(
+		array(
+			'page' => 'networks',
+		), network_admin_url( 'admin.php' )
+	);
+	?>
 
 	<div class="submitbox">
 		<div id="minor-publishing">

@@ -26,26 +26,34 @@ function wpmn_move_site_list_metabox( $site = null ) {
 			<th><?php esc_html_e( 'New Network', 'wp-multi-network' ); ?></th>
 			<td>
 				<select name="to" id="to">
-					<option value="0"><?php
+					<option value="0">
+					<?php
 
 						esc_html_e( '&mdash; No Network &mdash;', 'wp-multi-network' );
 
-					?></option><?php
+					?>
+					</option>
+					<?php
 
 					// Loop through networks
 					foreach ( $networks as $new_network ) :
 
 						// Option value is network ID
-						?><option value="<?php echo esc_attr( $new_network->id ); ?>" <?php selected( $site->network_id, $new_network->id ); ?>><?php
+						?>
+						<option value="<?php echo esc_attr( $new_network->id ); ?>" <?php selected( $site->network_id, $new_network->id ); ?>>
+						<?php
 
 						// Include scheme, domain, & path
 						echo wp_get_scheme() . esc_html( $new_network->domain . '/' . ltrim( $new_network->path, '/' ) );
 
-						?></option><?php
+	?>
+						</option>
+						<?php
 
 					endforeach;
 
-				?></select>
+				?>
+				</select>
 			</td>
 		</tr>
 	</table>
