@@ -149,9 +149,6 @@ class WPMN_Loader {
 		// Setup the network admin bar
 		$this->admin_bar = new WP_MS_Networks_Admin_bar();
 
-		// Localization
-		load_plugin_textdomain( 'wp-multi-network', false, dirname( $this->basename ) . '/languages/' );
-
 		// Deprecated functions & classes
 		if ( defined( 'WPMN_DEPRECATED' ) && ( true === WPMN_DEPRECATED ) ) {
 			require $this->plugin_dir . 'includes/deprecated.php';
