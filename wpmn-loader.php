@@ -59,7 +59,7 @@ class WPMN_Loader {
      */
     private $admin_bar;
 
-    /**
+	/**
 	 * Load WP Multi Network
 	 *
 	 * @since 1.3.0
@@ -112,7 +112,7 @@ class WPMN_Loader {
 		$this->file       = __FILE__;
 		$this->basename   = plugin_basename( $this->file );
 		$this->plugin_dir = plugin_dir_path( $this->file ) . 'wp-multi-network/';
-		$this->plugin_url = plugin_dir_url ( $this->file ) . 'wp-multi-network/';
+		$this->plugin_url = plugin_dir_url( $this->file ) . 'wp-multi-network/';
 	}
 
 	/**
@@ -124,6 +124,11 @@ class WPMN_Loader {
 	 * @uses is_network_admin() To only include admin code when needed
 	 */
 	private function includes() {
+
+		// Manual localization loading is no longer necessary since WP 4.6
+		if ( version_compare( $GLOBALS['wp_version'], '4.6', '<' ) ) {
+			load_plugin_textdomain( 'wp-multi-network' );
+		}
 
 		// Functions & Core Compatibility
 		require $this->plugin_dir . 'includes/compat.php';
@@ -142,18 +147,12 @@ class WPMN_Loader {
 			// Admin class
 			require $this->plugin_dir . 'includes/classes/class-wp-ms-networks-admin.php';
 
-			// Localization
-			load_plugin_textdomain( 'wp-multi-network' );
-
 			// Setup the network admin
 			$this->admin = new WP_MS_Networks_Admin();
 		}
 
-        // Admin Bar class
-        require $this->plugin_dir . 'includes/classes/class-wp-ms-networks-admin-bar.php';
-
-        // Localization
-        load_plugin_textdomain( 'wp-multi-network', false, dirname( $this->basename ) . '/languages/' );
+		// Admin Bar class
+		require $this->plugin_dir . 'includes/classes/class-wp-ms-networks-admin-bar.php';
 
         // Setup the network capabilities
         $this->capabilities = new WP_MS_Networks_Capabilities();
@@ -169,7 +168,7 @@ class WPMN_Loader {
 
 		// Command line
 		if ( defined( 'WP_CLI' ) && WP_CLI ) {
-			require $this->plugin_dir . 'includes/classes/class-wp-ms-networks-cli.php';
+			require $this->plugin_dir . 'includes/classes/class-wp-ms-network-command.php';
 		}
 	}
 }
