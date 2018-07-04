@@ -40,7 +40,7 @@ class WP_MS_Networks_Admin_Bar {
 	 * @since 2.2.0
 	 */
 	public function admin_print_styles() {
-	?>
+		?>
 		<style type="text/css">
 			#wpadminbar #wp-admin-bar-my-networks > .ab-item:first-child:before {
 				content: "\f325";

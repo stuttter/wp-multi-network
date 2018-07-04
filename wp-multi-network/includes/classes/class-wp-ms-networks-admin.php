@@ -365,39 +365,24 @@ class WP_MS_Networks_Admin {
 
 			add_meta_box( 'wpmn-edit-network-assign-sites', esc_html__( 'Site Assignment', 'wp-multi-network' ), 'wpmn_edit_network_assign_sites_metabox', get_current_screen()->id, 'advanced', 'high', array( $network ) );
 		}
+
+		$add_network_url = $this->admin_url( array( 'page' => 'add-new-network' ) );
 		?>
 
 		<div class="wrap">
 			<h1>
-			<?php
+				<?php
+				if ( ! empty( $network ) ) {
+					esc_html_e( 'Edit Network', 'wp-multi-network' );
 
-				// Edit
-			if ( ! empty( $network ) ) :
-				esc_html_e( 'Edit Network', 'wp-multi-network' );
-
-				// Add new network link
-				if ( current_user_can( 'create_networks' ) ) :
-
-					?>
-						<a href="
+					if ( current_user_can( 'create_networks' ) ) {
+						?>
+						<a href="<?php echo esc_url( $add_network_url ); ?>" class="add-new-h2"><?php echo esc_html_x( 'Add New', 'network', 'wp-multi-network' ); ?></a>
 						<?php
-						echo esc_url(
-							$this->admin_url(
-								array(
-									'page' => 'add-new-network',
-								)
-							)
-						);
-?>
-" class="add-new-h2"><?php echo esc_html_x( 'Add New', 'network', 'wp-multi-network' ); ?></a>
-						<?php
-
-				endif;
-
-				// Add New
-				else :
+					}
+				} else {
 					esc_html_e( 'Add New Network', 'wp-multi-network' );
-				endif;
+				}
 				?>
 			</h1>
 
@@ -439,65 +424,35 @@ class WP_MS_Networks_Admin {
 	private function page_all_networks() {
 		$wp_list_table = new WP_MS_Networks_List_Table();
 		$wp_list_table->prepare_items();
+
+		$add_network_url  = $this->admin_url( array( 'page' => 'add-new-network' ) );
+		$all_networks_url = $this->admin_url( array( 'action' => 'all_networks' ) );
+		$search_url       = $this->admin_url( array( 'action' => 'domains' ) );
 		?>
 
 		<div class="wrap">
 			<h1>
-			<?php
-			esc_html_e( 'Networks', 'wp-multi-network' );
+				<?php
+				esc_html_e( 'Networks', 'wp-multi-network' );
 
-				// Add New link
-			if ( current_user_can( 'create_networks' ) ) :
-
-				?>
-					<a href="
+				if ( current_user_can( 'create_networks' ) ) {
+					?>
+					<a href="<?php echo esc_url( $add_network_url ); ?>" class="add-new-h2"><?php echo esc_html_x( 'Add New', 'network', 'wp-multi-network' ); ?></a>
 					<?php
-					echo esc_url(
-						$this->admin_url(
-							array(
-								'page' => 'add-new-network',
-							)
-						)
-					);
-?>
-" class="add-new-h2"><?php echo esc_html_x( 'Add New', 'network', 'wp-multi-network' ); ?></a>
-					<?php
+				}
 
-				endif;
-
-				// Search results
-			if ( isset( $_REQUEST['s'] ) && $_REQUEST['s'] ) :
-				printf( '<span class="subtitle">' . __( 'Search results for &#8220;%s&#8221;', 'wp-multi-network' ) . '</span>', esc_html( $_REQUEST['s'] ) );
-				endif;
+				if ( isset( $_REQUEST['s'] ) && $_REQUEST['s'] ) {
+					printf( '<span class="subtitle">' . __( 'Search results for &#8220;%s&#8221;', 'wp-multi-network' ) . '</span>', esc_html( $_REQUEST['s'] ) );
+				}
 				?>
-				</h1>
+			</h1>
 
-			<form method="post" action="
-			<?php
-			echo esc_url(
-				$this->admin_url(
-					array(
-						'action' => 'domains',
-					)
-				)
-			);
-?>
-" id="domain-search">
+			<form method="post" action="<?php echo esc_url( $search_url ); ?>" id="domain-search">
 				<?php $wp_list_table->search_box( esc_html__( 'Search Networks', 'wp-multi-network' ), 'networks' ); ?>
 				<input type="hidden" name="action" value="domains">
 			</form>
 
-			<form method="post" id="form-domain-list" action="
-			<?php
-			echo esc_url(
-				$this->admin_url(
-					array(
-						'action' => 'all_networks',
-					)
-				)
-			);
-?>
-">
+			<form method="post" id="form-domain-list" action="<?php echo esc_url( $all_networks_url ); ?>">
 				<?php $wp_list_table->display(); ?>
 			</form>
 		</div>
@@ -517,34 +472,21 @@ class WP_MS_Networks_Admin {
 
 		add_meta_box( 'wpmn-move-site-list',    esc_html__( 'Assign Network', 'wp-multi-network' ), 'wpmn_move_site_list_metabox',   get_current_screen()->id, 'normal', 'high', array( $site ) );
 		add_meta_box( 'wpmn-move-site-publish', esc_html__( 'Site',           'wp-multi-network' ), 'wpmn_move_site_assign_metabox', get_current_screen()->id, 'side',   'high', array( $site ) );
+
+		$add_network_url = $this->admin_url( array( 'page' => 'add-new-network' ) );
 		?>
 
 		<div class="wrap">
 			<h1>
-			<?php
-
-				// Title
+				<?php
 				esc_html_e( 'Networks', 'wp-multi-network' );
 
-				// "Add New" link
-			if ( current_user_can( 'create_networks' ) ) :
-
+				if ( current_user_can( 'create_networks' ) ) {
+					?>
+					<a href="<?php echo esc_url( $add_network_url ); ?>" class="add-new-h2"><?php echo esc_html_x( 'Add New', 'network', 'wp-multi-network' ); ?></a>
+					<?php
+				}
 				?>
-					<a href="
-					<?php
-					echo esc_url(
-						$this->admin_url(
-							array(
-								'page' => 'add-new-network',
-							)
-						)
-					);
-?>
-" class="add-new-h2"><?php echo esc_html_x( 'Add New', 'network', 'wp-multi-network' ); ?></a>
-					<?php
-
-				endif;
-			?>
 			</h1>
 
 			<form method="post" action="<?php echo $_SERVER['REQUEST_URI']; ?>">
@@ -584,81 +526,61 @@ class WP_MS_Networks_Admin {
 		}
 
 		// Get sites to delete
-		$sites = get_sites(
-			array(
-				'network_id' => $network->id,
-			)
-		);
+		$sites = get_sites( array( 'network_id' => $network->id ) );
+
+		$add_network_url = $this->admin_url( array( 'page' => 'add-new-network' ) );
 		?>
 
 		<div class="wrap">
 			<h1>
-			<?php
-
+				<?php
 				esc_html_e( 'Delete Network', 'wp-multi-network' );
 
-				// Add link to create new network
-			if ( current_user_can( 'create_networks' ) ) :
-
+				if ( current_user_can( 'create_networks' ) ) {
+					?>
+					<a href="<?php echo esc_url( $add_network_url ); ?>" class="add-new-h2"><?php echo esc_html_x( 'Add New', 'network', 'wp-multi-network' ); ?></a>
+					<?php
+				}
 				?>
-					<a href="
-					<?php
-					echo esc_url(
-						$this->admin_url(
-							array(
-								'page' => 'add-new-network',
-							)
-						)
-					);
-?>
-" class="add-new-h2"><?php echo esc_html_x( 'Add New', 'network', 'wp-multi-network' ); ?></a>
-					<?php
-
-				endif;
-
-			?>
 			</h1>
 
 			<form method="post" action="<?php echo remove_query_arg( 'action' ); ?>">
 				<?php
 
-				// Network has sites
-				if ( ! empty( $sites ) ) :
-				?>
+				if ( ! empty( $sites ) ) {
+					?>
 
 					<div id="message" class="network-delete">
 						<p><?php esc_html_e( 'The following sites are associated with this network:', 'wp-multi-network' ); ?></p>
 						<ul class="delete-sites">
-						<?php
+							<?php
 
-						foreach ( $sites as $site ) :
-
-							?>
+							foreach ( $sites as $site ) {
+								?>
 								<li><?php echo esc_html( $site->domain . $site->path ); ?></li>
 								<?php
+							}
 
-							endforeach;
-
-						?>
+							?>
 						</ul>
 						<p>
 							<input type="checkbox" name="override" id="override">
 							<label for="override">
 							<?php
 
-								// Verbiage change
-								wp_should_rescue_orphaned_sites()
-									? esc_html_e( 'Rescue these sites', 'wp-multi-network' )
-									: esc_html_e( 'Delete these sites', 'wp-multi-network' );
+							// Verbiage change
+							wp_should_rescue_orphaned_sites()
+								? esc_html_e( 'Rescue these sites', 'wp-multi-network' )
+								: esc_html_e( 'Delete these sites', 'wp-multi-network' );
 
 							?>
 							</label>
 						</p>
 					</div>
 					<p><?php printf( esc_html__( 'Are you sure you want to delete the entire "%s" network?', 'wp-multi-network' ), esc_html( $network->domain . $network->path ) ); ?></p>
-										<?php
 
-				endif;
+					<?php
+				}
 
 				wp_nonce_field( 'edit_network', 'network_edit' );
 
@@ -719,14 +641,23 @@ class WP_MS_Networks_Admin {
 			<h1><?php esc_html_e( 'Networks', 'wp-multi-network' ); ?></h1>
 			<h3><?php esc_html_e( 'Delete Multiple Networks', 'wp-multi-network' ); ?></h3>
 			<form method="post" action="<?php echo esc_url( $this->admin_url() ); ?>">
-				<?php if ( ! empty( $sites ) ) : ?>
+				<?php
+
+				if ( ! empty( $sites ) ) {
+					?>
 
 					<div class="error inline">
 						<h3><?php esc_html_e( 'You have selected the following networks for deletion', 'wp-multi-network' ); ?>:</h3>
 						<ul>
-							<?php foreach ( $networks as $deleted_network ) : ?>
+							<?php
+
+							foreach ( $networks as $deleted_network ) {
+								?>
 								<li><input type="hidden" name="deleted_networks[]" value="<?php echo esc_attr( $deleted_network->id ); ?>"><?php echo esc_html( $deleted_network->domain . $deleted_network->path ); ?></li>
-							<?php endforeach; ?>
+								<?php
+							}
+
+							?>
 						</ul>
 						<p>
 						<?php
@@ -744,7 +675,9 @@ class WP_MS_Networks_Admin {
 						</p>
 					</div>
 
-				<?php else : ?>
+					<?php
+				} else {
+					?>
 
 					<div id="message inline">
 						<h3><?php esc_html_e( 'You have selected the following networks for deletion', 'wp-multi-network' ); ?>:</h3>
@@ -763,8 +696,10 @@ class WP_MS_Networks_Admin {
 						</ul>
 					</div>
 
-				<?php endif; ?>
+					<?php
+				}
 
+				?>
 				<p><?php esc_html_e( 'Are you sure you want to delete these networks?', 'wp-multi-network' ); ?></p>
 				<?php
 
@@ -808,43 +743,43 @@ class WP_MS_Networks_Admin {
 			// Shameless copy of My Sites
 			?>
 			<table class="widefat fixed">
-			<?php
-			$num = count( $my_networks );
-			$cols = 1;
-			if ( $num >= 20 ) {
-				$cols = 4;
-			} elseif ( $num >= 10 ) {
-				$cols = 2;
-			}
-			$num_rows = ceil( $num / $cols );
-			$split = 0;
-			for ( $i = 1; $i <= $num_rows; $i++ ) {
-				$rows[] = array_slice( $my_networks, $split, $cols );
-				$split = $split + $cols;
-			}
-
-			$c = '';
-			foreach ( $rows as $row ) {
-				$c = ( 'alternate' === $c ) ? '' : 'alternate';
-				echo "<tr class='$c'>";
-				$i = 0;
-				foreach ( $row as $network ) {
-					$s = ( 3 === $i ) ? '' : 'border-right: 1px solid #ccc;';
-					switch_to_network( $network->id );
-					?>
-
-					<td valign='top' style= <?php echo $s; ?>>
-						<h3><?php echo esc_html( $network->site_name ); ?></h3>
-						<p><?php echo apply_filters( 'mynetworks_network_actions', "<a href='" . network_home_url() . "'>" . esc_html__( 'Visit', 'wp-multi-network' ) . "</a> | <a href='" . network_admin_url() . "'>" . esc_html__( 'Dashboard', 'wp-multi-network' ) . '</a>', $network ); ?></p>
-					</td>
-
-					<?php
-					restore_current_network();
-					$i++;
+				<?php
+				$num = count( $my_networks );
+				$cols = 1;
+				if ( $num >= 20 ) {
+					$cols = 4;
+				} elseif ( $num >= 10 ) {
+					$cols = 2;
 				}
-				echo '</tr>';
-			}
-			?>
+				$num_rows = ceil( $num / $cols );
+				$split = 0;
+				for ( $i = 1; $i <= $num_rows; $i++ ) {
+					$rows[] = array_slice( $my_networks, $split, $cols );
+					$split = $split + $cols;
+				}
+
+				$c = '';
+				foreach ( $rows as $row ) {
+					$c = ( 'alternate' === $c ) ? '' : 'alternate';
+					echo "<tr class='$c'>";
+					$i = 0;
+					foreach ( $row as $network ) {
+						$s = ( 3 === $i ) ? '' : 'border-right: 1px solid #ccc;';
+						switch_to_network( $network->id );
+						?>
+
+						<td valign='top' style= <?php echo $s; ?>>
+							<h3><?php echo esc_html( $network->site_name ); ?></h3>
+							<p><?php echo apply_filters( 'mynetworks_network_actions', "<a href='" . network_home_url() . "'>" . esc_html__( 'Visit', 'wp-multi-network' ) . "</a> | <a href='" . network_admin_url() . "'>" . esc_html__( 'Dashboard', 'wp-multi-network' ) . '</a>', $network ); ?></p>
+						</td>
+
+						<?php
+						restore_current_network();
+						$i++;
+					}
+					echo '</tr>';
+				}
+				?>
 			</table>
 		</div>
 
