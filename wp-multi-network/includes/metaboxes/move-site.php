@@ -17,9 +17,8 @@ defined( 'ABSPATH' ) || exit;
  * @param WP_Site $site Results of get_site()
  */
 function wpmn_move_site_list_metabox( $site = null ) {
-
-	// Get all networks
-	$networks = get_networks(); ?>
+	$networks = get_networks();
+	?>
 
 	<table class="move-site widefat">
 		<tr>
@@ -45,7 +44,7 @@ function wpmn_move_site_list_metabox( $site = null ) {
 		</tr>
 	</table>
 
-<?php
+	<?php
 }
 
 /**
@@ -56,7 +55,7 @@ function wpmn_move_site_list_metabox( $site = null ) {
  * @param WP_Site $site
  */
 function wpmn_move_site_assign_metabox( $site = null ) {
-?>
+	?>
 
 	<div class="submitbox">
 		<div id="minor-publishing">
@@ -92,5 +91,5 @@ function wpmn_move_site_assign_metabox( $site = null ) {
 		</div>
 	</div>
 
-<?php
+	<?php
 }
