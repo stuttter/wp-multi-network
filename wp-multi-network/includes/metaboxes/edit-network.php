@@ -26,7 +26,9 @@ function wpmn_edit_network_details_metabox( $network = null ) {
 	// Path
 	$path = ! empty( $network->path )
 		? $network->path
-		: '/'; ?>
+		: '/';
+
+	?>
 
 	<table class="edit-network form-table">
 		<tr class="form-field form-required">
@@ -51,7 +53,7 @@ function wpmn_edit_network_details_metabox( $network = null ) {
 		</tr>
 	</table>
 
-<?php
+	<?php
 }
 
 /**
@@ -60,7 +62,7 @@ function wpmn_edit_network_details_metabox( $network = null ) {
  * @since 1.7.0
  */
 function wpmn_edit_network_new_site_metabox() {
-?>
+	?>
 
 	<table class="edit-network form-table">
 		<tr class="form-field form-required">
@@ -74,7 +76,7 @@ function wpmn_edit_network_new_site_metabox() {
 		</tr>
 	</table>
 
-<?php
+	<?php
 }
 
 /**
@@ -153,7 +155,7 @@ function wpmn_edit_network_assign_sites_metabox( $network = null ) {
 		</tr>
 	</table>
 
-<?php
+	<?php
 }
 
 /**
@@ -191,8 +193,10 @@ function wpmn_edit_network_publish_metabox( $network = null ) {
 	<div class="submitbox">
 		<div id="minor-publishing">
 			<div id="misc-publishing-actions">
+				<?php
 
-				<?php if ( ! empty( $network ) ) : ?>
+				if ( ! empty( $network ) ) {
+					?>
 
 					<div class="misc-pub-section misc-pub-section-first" id="network">
 						<span><?php printf( __( 'Name: <strong>%1$s</strong>',  'wp-multi-network' ), get_network_option( $network->id, 'site_name' ) ); ?></span>
@@ -201,14 +205,18 @@ function wpmn_edit_network_publish_metabox( $network = null ) {
 						<span><?php printf( __( 'Sites: <strong>%1$s</strong>', 'wp-multi-network' ), get_network_option( $network->id, 'blog_count' ) ); ?></span>
 					</div>
 
-				<?php else : ?>
+					<?php
+				} else {
+					?>
 
 					<div class="misc-pub-section misc-pub-section-first" id="sites">
 						<span><?php esc_html_e( 'Creating a network with 1 new site.', 'wp-multi-network' ); ?></span>
 					</div>
 
-				<?php endif; ?>
+					<?php
+				}
 
+				?>
 			</div>
 
 			<div class="clear"></div>
@@ -231,5 +239,5 @@ function wpmn_edit_network_publish_metabox( $network = null ) {
 		</div>
 	</div>
 
-<?php
+	<?php
 }

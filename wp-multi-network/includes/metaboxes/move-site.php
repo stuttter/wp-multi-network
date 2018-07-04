@@ -17,9 +17,8 @@ defined( 'ABSPATH' ) || exit;
  * @param WP_Site $site Results of get_site()
  */
 function wpmn_move_site_list_metabox( $site = null ) {
-
-	// Get all networks
-	$networks = get_networks(); ?>
+	$networks = get_networks();
+	?>
 
 	<table class="move-site widefat">
 		<tr>
@@ -27,38 +26,25 @@ function wpmn_move_site_list_metabox( $site = null ) {
 			<td>
 				<select name="to" id="to">
 					<option value="0">
-					<?php
-
-						esc_html_e( '&mdash; No Network &mdash;', 'wp-multi-network' );
-
-					?>
+						<?php esc_html_e( '&mdash; No Network &mdash;', 'wp-multi-network' ); ?>
 					</option>
 					<?php
 
-					// Loop through networks
-					foreach ( $networks as $new_network ) :
-
-						// Option value is network ID
+					foreach ( $networks as $new_network ) {
 						?>
 						<option value="<?php echo esc_attr( $new_network->id ); ?>" <?php selected( $site->network_id, $new_network->id ); ?>>
-						<?php
-
-						// Include scheme, domain, & path
-						echo wp_get_scheme() . esc_html( $new_network->domain . '/' . ltrim( $new_network->path, '/' ) );
-
-	?>
+							<?php echo wp_get_scheme() . esc_html( $new_network->domain . '/' . ltrim( $new_network->path, '/' ) ); ?>
 						</option>
 						<?php
+					}
 
-					endforeach;
-
-				?>
+					?>
 				</select>
 			</td>
 		</tr>
 	</table>
 
-<?php
+	<?php
 }
 
 /**
@@ -69,7 +55,7 @@ function wpmn_move_site_list_metabox( $site = null ) {
  * @param WP_Site $site
  */
 function wpmn_move_site_assign_metabox( $site = null ) {
-?>
+	?>
 
 	<div class="submitbox">
 		<div id="minor-publishing">
@@ -105,5 +91,5 @@ function wpmn_move_site_assign_metabox( $site = null ) {
 		</div>
 	</div>
 
-<?php
+	<?php
 }
