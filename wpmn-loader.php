@@ -54,10 +54,10 @@ class WPMN_Loader {
 	 */
 	private $capabilities;
 
-    /**
-     * @var WP_MS_Networks_Admin_Bar|null Admin Bar class instance
-     */
-    private $admin_bar;
+	/**
+	 * @var WP_MS_Networks_Admin_Bar|null Admin Bar class instance
+	 */
+	private $admin_bar;
 
 	/**
 	 * Load WP Multi Network
@@ -134,8 +134,8 @@ class WPMN_Loader {
 		require $this->plugin_dir . 'includes/compat.php';
 		require $this->plugin_dir . 'includes/functions.php';
 
-        // Capabilities class
-        require $this->plugin_dir . 'includes/classes/class-wp-ms-networks-capabilities.php';
+		// Capabilities class
+		require $this->plugin_dir . 'includes/classes/class-wp-ms-networks-capabilities.php';
 
 		// WordPress Admin
 		if ( is_blog_admin() || is_network_admin() ) {
@@ -154,12 +154,12 @@ class WPMN_Loader {
 		// Admin Bar class
 		require $this->plugin_dir . 'includes/classes/class-wp-ms-networks-admin-bar.php';
 
-        // Setup the network capabilities
-        $this->capabilities = new WP_MS_Networks_Capabilities();
-        $this->capabilities->add_hooks();
+		// Setup the network capabilities
+		$this->capabilities = new WP_MS_Networks_Capabilities();
+		$this->capabilities->add_hooks();
 
-        // Setup the network admin bar
-        $this->admin_bar = new WP_MS_Networks_Admin_Bar();
+		// Setup the network admin bar
+		$this->admin_bar = new WP_MS_Networks_Admin_Bar();
 
 		// Deprecated functions & classes
 		if ( defined( 'WPMN_DEPRECATED' ) && ( true === WPMN_DEPRECATED ) ) {

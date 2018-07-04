@@ -67,10 +67,10 @@ class WP_MS_Networks_Admin_Bar {
 		// Get user networks
 		$networks = user_has_networks();
 
-        // Bail if user does not have networks or they can't manage networks.
-        if ( empty( $networks ) || ! current_user_can( 'manage_networks' ) ) {
-            return;
-        }
+		// Bail if user does not have networks or they can't manage networks.
+		if ( empty( $networks ) || ! current_user_can( 'manage_networks' ) ) {
+			return;
+		}
 
 		// Add the root menu
 		$wp_admin_bar->add_menu(
@@ -91,75 +91,75 @@ class WP_MS_Networks_Admin_Bar {
 			$network = get_network( $network_id );
 			switch_to_network( $network_id );
 
-            if ( ! current_user_can( 'manage_network' ) ) {
-                restore_current_network();
-                continue;
-            }
+			if ( ! current_user_can( 'manage_network' ) ) {
+				restore_current_network();
+				continue;
+			}
 
 			// Add the root group
-            $wp_admin_bar->add_group( array(
-                'parent' => 'my-networks',
-                'id'     => 'group-network-admin-' . $network_id,
-            ) );
+			$wp_admin_bar->add_group( array(
+				'parent' => 'my-networks',
+				'id'     => 'group-network-admin-' . $network_id,
+			) );
 
-            $wp_admin_bar->add_menu( array(
-                'parent' => 'group-network-admin-' . $network_id,
-                'id'     => 'network-admin-' . $network_id,
-                'title'  => $network->site_name,
-                'href'   => network_admin_url()
-            ) );
+			$wp_admin_bar->add_menu( array(
+				'parent' => 'group-network-admin-' . $network_id,
+				'id'     => 'network-admin-' . $network_id,
+				'title'  => $network->site_name,
+				'href'   => network_admin_url()
+			) );
 
-            $wp_admin_bar->add_menu( array(
-                'parent' => 'network-admin-' . $network_id,
-                'id'     => 'network-admin-d' . $network_id,
-                'title'  => __( 'Dashboard' ),
-                'href'   => network_admin_url(),
-            ) );
+			$wp_admin_bar->add_menu( array(
+				'parent' => 'network-admin-' . $network_id,
+				'id'     => 'network-admin-d' . $network_id,
+				'title'  => __( 'Dashboard' ),
+				'href'   => network_admin_url(),
+			) );
 
-            if ( current_user_can( 'manage_sites' ) ) {
-                $wp_admin_bar->add_menu( array(
-                    'parent' => 'network-admin-' . $network_id,
-                    'id'     => 'network-admin-s' . $network_id,
-                    'title'  => __( 'Sites' ),
-                    'href'   => network_admin_url( 'sites.php' ),
-                ) );
-            }
+			if ( current_user_can( 'manage_sites' ) ) {
+				$wp_admin_bar->add_menu( array(
+					'parent' => 'network-admin-' . $network_id,
+					'id'     => 'network-admin-s' . $network_id,
+					'title'  => __( 'Sites' ),
+					'href'   => network_admin_url( 'sites.php' ),
+				) );
+			}
 
-            if ( current_user_can( 'manage_network_users' ) ) {
-                $wp_admin_bar->add_menu( array(
-                    'parent' => 'network-admin-' . $network_id,
-                    'id'     => 'network-admin-u' . $network_id,
-                    'title'  => __( 'Users' ),
-                    'href'   => network_admin_url( 'users.php' ),
-                ) );
-            }
+			if ( current_user_can( 'manage_network_users' ) ) {
+				$wp_admin_bar->add_menu( array(
+					'parent' => 'network-admin-' . $network_id,
+					'id'     => 'network-admin-u' . $network_id,
+					'title'  => __( 'Users' ),
+					'href'   => network_admin_url( 'users.php' ),
+				) );
+			}
 
-            if ( current_user_can( 'manage_network_themes' ) ) {
-                $wp_admin_bar->add_menu( array(
-                    'parent' => 'network-admin-' . $network_id,
-                    'id'     => 'network-admin-t' . $network_id,
-                    'title'  => __( 'Themes' ),
-                    'href'   => network_admin_url( 'themes.php' ),
-                ) );
-            }
+			if ( current_user_can( 'manage_network_themes' ) ) {
+				$wp_admin_bar->add_menu( array(
+					'parent' => 'network-admin-' . $network_id,
+					'id'     => 'network-admin-t' . $network_id,
+					'title'  => __( 'Themes' ),
+					'href'   => network_admin_url( 'themes.php' ),
+				) );
+			}
 
-            if ( current_user_can( 'manage_network_plugins' ) ) {
-                $wp_admin_bar->add_menu( array(
-                    'parent' => 'network-admin-' . $network_id,
-                    'id'     => 'network-admin-p' . $network_id,
-                    'title'  => __( 'Plugins' ),
-                    'href'   => network_admin_url( 'plugins.php' ),
-                ) );
-            }
+			if ( current_user_can( 'manage_network_plugins' ) ) {
+				$wp_admin_bar->add_menu( array(
+					'parent' => 'network-admin-' . $network_id,
+					'id'     => 'network-admin-p' . $network_id,
+					'title'  => __( 'Plugins' ),
+					'href'   => network_admin_url( 'plugins.php' ),
+				) );
+			}
 
-            if ( current_user_can( 'manage_network_options' ) ) {
-                $wp_admin_bar->add_menu( array(
-                    'parent' => 'network-admin-' . $network_id,
-                    'id'     => 'network-admin-o' . $network_id,
-                    'title'  => __( 'Settings' ),
-                    'href'   => network_admin_url( 'settings.php' ),
-                ) );
-            }
+			if ( current_user_can( 'manage_network_options' ) ) {
+				$wp_admin_bar->add_menu( array(
+					'parent' => 'network-admin-' . $network_id,
+					'id'     => 'network-admin-o' . $network_id,
+					'title'  => __( 'Settings' ),
+					'href'   => network_admin_url( 'settings.php' ),
+				) );
+			}
 
 			// Restore the current network
 			restore_current_network();
