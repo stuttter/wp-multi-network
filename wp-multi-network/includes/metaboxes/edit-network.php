@@ -6,7 +6,7 @@
  * @since 1.7.0
  */
 
-// Exit if accessed directly
+// Exit if accessed directly.
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -17,16 +17,8 @@ defined( 'ABSPATH' ) || exit;
  * @param WP_Network $network Optional. Network object. Default null.
  */
 function wpmn_edit_network_details_metabox( $network = null ) {
-
-	// Domain
-	$domain = ! empty( $network->domain )
-		? Requests_IDNAEncoder::encode( $network->domain )
-		: '';
-
-	// Path
-	$path = ! empty( $network->path )
-		? $network->path
-		: '/';
+	$domain = ! empty( $network->domain ) ? Requests_IDNAEncoder::encode( $network->domain ) : '';
+	$path   = ! empty( $network->path ) ? $network->path : '/';
 
 	?>
 
@@ -37,7 +29,7 @@ function wpmn_edit_network_details_metabox( $network = null ) {
 			</th>
 			<td>
 				<label for="domain">
-					<span class="scheme"><?php echo wp_get_scheme(); ?></span>
+					<span class="scheme"><?php echo esc_html( wp_get_scheme() ); ?></span>
 					<input type="text" name="domain" id="domain" class="regular-text" value="<?php echo esc_attr( $domain ); ?>">
 				</label>
 			</td>
@@ -87,21 +79,14 @@ function wpmn_edit_network_new_site_metabox() {
  * @param WP_Network $network Optional. Network object. Default null.
  */
 function wpmn_edit_network_assign_sites_metabox( $network = null ) {
+	$to = get_sites( array(
+		'site__not_in' => get_main_site_id( $network->id ),
+		'network_id'   => $network->id,
+	) );
 
-	// To
-	$to = get_sites(
-		array(
-			'site__not_in' => get_main_site_id( $network->id ),
-			'network_id'   => $network->id,
-		)
-	);
-
-	// From
-	$from = get_sites(
-		array(
-			'network__not_in' => array( $network->id ),
-		)
-	);
+	$from = get_sites( array(
+		'network__not_in' => array( $network->id ),
+	) );
 
 	?>
 
@@ -110,7 +95,7 @@ function wpmn_edit_network_assign_sites_metabox( $network = null ) {
 			<tr>
 				<th><?php esc_html_e( 'Available Subsites', 'wp-multi-network' ); ?></th>
 				<th>&nbsp;</th>
-				<th><?php esc_html_e( 'Network Subsites',   'wp-multi-network' ); ?></th>
+				<th><?php esc_html_e( 'Network Subsites', 'wp-multi-network' ); ?></th>
 			</tr>
 		</thead>
 		<tr>
@@ -166,28 +151,19 @@ function wpmn_edit_network_assign_sites_metabox( $network = null ) {
  * @param WP_Network $network Optional. Network object. Default null.
  */
 function wpmn_edit_network_publish_metabox( $network = null ) {
+	if ( empty( $network ) ) {
+		$network_id  = 0;
+		$button_text = esc_html__( 'Create', 'wp-multi-network' );
+		$action      = 'create';
+	} else {
+		$network_id  = $network->id;
+		$button_text = esc_html__( 'Update', 'wp-multi-network' );
+		$action      = 'update';
+	}
 
-	// Network ID
-	$network_id = empty( $network )
-		? 0
-		: $network->id;
-
-	// Button text
-	$button_text = empty( $network )
-		? esc_html__( 'Create', 'wp-multi-network' )
-		: esc_html__( 'Update', 'wp-multi-network' );
-
-	// Button action
-	$action = empty( $network )
-		? 'create'
-		: 'update';
-
-	// Cancel URL
-	$cancel_url = add_query_arg(
-		array(
-			'page' => 'networks',
-		), network_admin_url( 'admin.php' )
-	);
+	$cancel_url = add_query_arg( array(
+		'page' => 'networks',
+	), network_admin_url( 'admin.php' ) );
 	?>
 
 	<div class="submitbox">
@@ -199,10 +175,26 @@ function wpmn_edit_network_publish_metabox( $network = null ) {
 					?>
 
 					<div class="misc-pub-section misc-pub-section-first" id="network">
-						<span><?php printf( __( 'Name: <strong>%1$s</strong>',  'wp-multi-network' ), get_network_option( $network->id, 'site_name' ) ); ?></span>
+						<span>
+							<?php
+							printf(
+								/* translators: %s: network name */
+								esc_html__( 'Name: <strong>%s</strong>', 'wp-multi-network' ),
+								esc_html( get_network_option( $network->id, 'site_name' ) )
+							);
+							?>
+						</span>
 					</div>
 					<div class="misc-pub-section misc-pub-section-last" id="sites">
-						<span><?php printf( __( 'Sites: <strong>%1$s</strong>', 'wp-multi-network' ), get_network_option( $network->id, 'blog_count' ) ); ?></span>
+						<span>
+							<?php
+							printf(
+								/* translators: %s: network site count */
+								esc_html__( 'Sites: <strong>%s</strong>', 'wp-multi-network' ),
+								esc_html( get_network_option( $network->id, 'blog_count' ) )
+							);
+							?>
+						</span>
 					</div>
 
 					<?php

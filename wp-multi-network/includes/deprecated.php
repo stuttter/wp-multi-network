@@ -6,7 +6,7 @@
  * @since 1.0.0
  */
 
-// Exit if accessed directly
+// Exit if accessed directly.
 defined( 'ABSPATH' ) || exit;
 
 if ( ! function_exists( 'wpmn_fix_subsite_upload_path' ) ) {
@@ -175,6 +175,7 @@ if ( ! function_exists( 'get_networks' ) ) :
 	 * @since 1.0.0
 	 * @deprecated
 	 *
+	 * @param array $args Optional. Network query arguments. Default empty array.
 	 * @return array Networks available on the installation.
 	 */
 	function get_networks( $args = array() ) {
@@ -186,7 +187,7 @@ if ( ! function_exists( 'get_networks' ) ) :
 			return $query->query( $args );
 		}
 
-		// The original get_networks() function
+		// The original get_networks() function.
 		return $GLOBALS['wpdb']->get_results( "SELECT * FROM {$GLOBALS['wpdb']->site}" );
 	}
 endif;

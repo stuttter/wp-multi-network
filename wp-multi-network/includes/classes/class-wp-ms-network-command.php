@@ -58,7 +58,6 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 	 * @param array $assoc_args Associative CLI arguments.
 	 */
 	public function create( $args, $assoc_args ) {
-
 		list( $domain, $path ) = $args;
 
 		$assoc_args = wp_parse_args(
@@ -73,9 +72,9 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 
 		if ( $assoc_args['network_admin'] ) {
 			$users = new \WP_CLI\Fetchers\User();
-			$user = $users->get( $assoc_args['network_admin'] );
+			$user  = $users->get( $assoc_args['network_admin'] );
 			if ( ! $user ) {
-				return new WP_Error( 'network_super_admin', __( 'Super user does not exist.', 'wp-multi-network' ) );
+				return new WP_Error( 'network_super_admin', 'Super user does not exist.' );
 			}
 			$network_admin_id = $user->ID;
 		} else {
@@ -86,14 +85,13 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 		$options_to_clone = false;
 
 		if ( ! empty( $clone_network ) && ! get_network( $clone_network ) ) {
-			WP_CLI::error( sprintf( __( "Clone network %s doesn't exist.", 'wp-multi-network' ), $clone_network ) );
+			WP_CLI::error( sprintf( "Clone network %s doesn't exist.", $clone_network ) );
 
 			if ( ! empty( $assoc_args['options_to_clone'] ) ) {
 				$options_to_clone = explode( ',', $assoc_args['options_to_clone'] );
 			}
 		}
 
-		// Add the network
 		$network_id = add_network(
 			array(
 				'domain'           => $domain,
@@ -101,7 +99,7 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 				'site_name'        => $assoc_args['site_name'],
 				'network_name'     => $assoc_args['network_name'],
 				'user_id'          => get_current_user_id(),
-				'network_admin_id'    => $network_admin_id,
+				'network_admin_id' => $network_admin_id,
 				'clone_network'    => $clone_network,
 				'options_to_clone' => $options_to_clone,
 			)
@@ -111,7 +109,7 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 			WP_CLI::error( $network_id );
 		}
 
-		WP_CLI::success( sprintf( __( 'Created network %d.', 'wp-multi-network' ), $network_id ) );
+		WP_CLI::success( sprintf( 'Created network %d.', $network_id ) );
 	}
 
 	/**
@@ -132,7 +130,6 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 	 * @param array $assoc_args Associative CLI arguments.
 	 */
 	public function update( $args, $assoc_args ) {
-
 		list( $id, $domain ) = $args;
 
 		$defaults   = array(
@@ -146,8 +143,7 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 			WP_CLI::error( $network_id );
 		}
 
-		WP_CLI::success( sprintf( __( 'Updated network %d.', 'wp-multi-network' ), $id ) );
-
+		WP_CLI::success( sprintf( 'Updated network %d.', $id ) );
 	}
 
 	/**
@@ -165,13 +161,11 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 	 * @param array $assoc_args Associative CLI arguments.
 	 */
 	public function delete( $args, $assoc_args ) {
-
 		list( $id ) = $args;
 
-		$defaults   = array(
+		$assoc_args = wp_parse_args( $assoc_args, array(
 			'delete_blogs' => false,
-		);
-		$assoc_args = wp_parse_args( $assoc_args, $defaults );
+		) );
 
 		$network_id = delete_network( $id, $assoc_args['delete_blogs'] );
 
@@ -179,7 +173,7 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 			WP_CLI::error( $network_id );
 		}
 
-		WP_CLI::success( sprintf( __( 'Deleted network %d.', 'wp-multi-network' ), $id ) );
+		WP_CLI::success( sprintf( 'Deleted network %d.', $id ) );
 	}
 
 	/**
@@ -199,7 +193,6 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 	 * @param array $assoc_args Associative CLI arguments.
 	 */
 	public function move_site( $args, $assoc_args ) {
-
 		list( $site_id, $new_network_id ) = $args;
 
 		$network_id = move_site( $site_id, $new_network_id );
@@ -208,7 +201,7 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 			WP_CLI::error( $network_id );
 		}
 
-		WP_CLI::success( sprintf( __( 'Blog %1$d has moved to network %2$d.', 'wp-multi-network' ), $site_id, $new_network_id ) );
+		WP_CLI::success( sprintf( 'Site %1$d has moved to network %2$d.', $site_id, $new_network_id ) );
 	}
 
 	/**
@@ -265,10 +258,10 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 	 * @param array $assoc_args Associative CLI arguments.
 	 */
 	public function plugin( $args, $assoc_args ) {
-		$this->fetcher = new \WP_CLI\Fetchers\Plugin;
+		$this->fetcher = new \WP_CLI\Fetchers\Plugin();
 		$action        = array_shift( $args );
 		if ( ! in_array( $action, array( 'activate', 'deactivate' ), true ) ) {
-			WP_CLI::error( sprintf( __( '%s is not a supported action.', 'wp-multi-network' ), $action ) );
+			WP_CLI::error( sprintf( '%s is not a supported action.', $action ) );
 		}
 		$network_wide = \WP_CLI\Utils\get_flag_value( $assoc_args, 'network' );
 		$all          = \WP_CLI\Utils\get_flag_value( $assoc_args, 'all', false );
@@ -295,18 +288,20 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 					$needing_activation --;
 					continue;
 				}
-				// Network-active is the highest level of activation status
+
+				// Network-active is the highest level of activation status.
 				if ( 'active-network' === $status ) {
 					WP_CLI::warning( "Plugin '{$plugin->name}' is already network active." );
 					continue;
 				}
-				// Don't reactivate active plugins, but do let them become network-active
+
+				// Don't reactivate active plugins, but do let them become network-active.
 				if ( ! $network_wide && 'active' === $status ) {
 					WP_CLI::warning( "Plugin '{$plugin->name}' is already active." );
 					continue;
 				}
 
-				// Plugins need to be deactivated before being network activated
+				// Plugins need to be deactivated before being network activated.
 				if ( $network_wide && 'active' === $status ) {
 					deactivate_plugins( $plugin->file, false, false );
 				}
@@ -320,7 +315,7 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 			}
 			restore_current_network();
 		} else {
-			WP_CLI::error( sprintf( __( "Network %s doesn't exist.", 'wp-multi-network' ), $network_id ) );
+			WP_CLI::error( sprintf( "Network %s doesn't exist.", $network_id ) );
 		}
 	}
 
