@@ -1,6 +1,9 @@
 <?php
+/**
+ * Tests for network operations.
+ */
 
-class WPMN_Tests_NetworkOperations extends WP_UnitTestCase {
+class WPMN_Tests_NetworkOperations extends WPMN_UnitTestCase {
 	public function test_network_exists() {
 		$network = $this->factory->network->create();
 		$this->assertTrue( network_exists( $network ) !== false );
