@@ -1,12 +1,23 @@
 <?php
+/**
+ * WP_MS_Network_Command class
+ *
+ * @package WPMN
+ * @since 1.3.0
+ */
 
 /**
- * Network Management Command
+ * Class for managing networks with WP-CLI.
+ *
+ * @since 1.3.0
  */
 class WP_MS_Network_Command extends WP_CLI_Command {
 
 	/**
-	 * @var array Default fields to display for each object.
+	 * Default fields to display for each object.
+	 *
+	 * @since 1.3.0
+	 * @var array
 	 */
 	protected $obj_fields = array(
 		'id',
@@ -15,7 +26,7 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 	);
 
 	/**
-	 * Add a Network
+	 * Add a network.
 	 *
 	 * <domain>
 	 * : Domain for network
@@ -40,6 +51,11 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 	 *
 	 * [--options_to_clone=<options_to_clone>]
 	 * : Options to clone to new network
+	 *
+	 * @since 1.3.0
+	 *
+	 * @param array $args       Positional CLI arguments.
+	 * @param array $assoc_args Associative CLI arguments.
 	 */
 	public function create( $args, $assoc_args ) {
 
@@ -99,7 +115,7 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Update a Network
+	 * Update a network.
 	 *
 	 * <id>
 	 * : ID for network
@@ -109,6 +125,11 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 	 *
 	 * [--path=<path>]
 	 * : Path for network
+	 *
+	 * @since 1.3.0
+	 *
+	 * @param array $args       Positional CLI arguments.
+	 * @param array $assoc_args Associative CLI arguments.
 	 */
 	public function update( $args, $assoc_args ) {
 
@@ -130,13 +151,18 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Delete a Network
+	 * Delete a network.
 	 *
 	 * <id>
 	 * : ID for network
 	 *
 	 * [--delete_blogs=<delete_blogs>]
 	 * : Delete blogs in this network
+	 *
+	 * @since 1.3.0
+	 *
+	 * @param array $args       Positional CLI arguments.
+	 * @param array $assoc_args Associative CLI arguments.
 	 */
 	public function delete( $args, $assoc_args ) {
 
@@ -157,7 +183,7 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Move to blog to another network
+	 * Move a site to another network.
 	 *
 	 * <site_id>
 	 * : Site id to move
@@ -166,6 +192,11 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 	 * : New network id
 	 *
 	 * @subcommand move-site
+	 *
+	 * @since 1.3.0
+	 *
+	 * @param array $args       Positional CLI arguments.
+	 * @param array $assoc_args Associative CLI arguments.
 	 */
 	public function move_site( $args, $assoc_args ) {
 
@@ -198,6 +229,11 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 	 * * path
 	 *
 	 * @subcommand list
+	 *
+	 * @since 1.3.0
+	 *
+	 * @param array $args       Positional CLI arguments.
+	 * @param array $assoc_args Associative CLI arguments.
 	 */
 	public function list_( $args, $assoc_args ) {
 		$items     = get_networks();
@@ -206,7 +242,7 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Network activate or deactivate a plugin
+	 * Network activate or deactivate a plugin.
 	 *
 	 * <activate|deactivate>
 	 * : Action to perform
@@ -223,8 +259,10 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 	 * [--all]
 	 * : If set, all plugins will be activated.
 	 *
-	 * @param array $args
-	 * @param array $assoc_args
+	 * @since 1.3.0
+	 *
+	 * @param array $args       Positional CLI arguments.
+	 * @param array $assoc_args Associative CLI arguments.
 	 */
 	public function plugin( $args, $assoc_args ) {
 		$this->fetcher = new \WP_CLI\Fetchers\Plugin;
@@ -287,24 +325,40 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Get Formatter object based on supplied parameters.
+	 * Gets the formatter object based on supplied parameters.
 	 *
-	 * @param array $assoc_args Parameters passed to command. Determines formatting.
+	 * @since 1.3.0
 	 *
-	 * @return WP_CLI\Formatter
+	 * @param array $assoc_args Associative CLI arguments. Passed by reference.
+	 * @return WP_CLI\Formatter WP-CLI formatter instance.
 	 */
 	protected function get_formatter( &$assoc_args ) {
 		return new WP_CLI\Formatter( $assoc_args, $this->obj_fields, 'wp-multi-network' );
 	}
 
-	/* PRIVATES */
-
+	/**
+	 * Checks whether a given plugin is active for the given context.
+	 *
+	 * @since 1.3.0
+	 *
+	 * @param string $file         Plugin main file path relative to the plugins directory.
+	 * @param bool   $network_wide Whether to check network-wide or not.
+	 * @return bool True if the plugin is active for the given context, false otherwise.
+	 */
 	private function check_active( $file, $network_wide ) {
 		$required = $network_wide ? 'active-network' : 'active';
 
 		return $required === $this->get_status( $file );
 	}
 
+	/**
+	 * Gets the activation status for a given plugin.
+	 *
+	 * @since 1.3.0
+	 *
+	 * @param string $file Plugin main file path relative to the plugins directory.
+	 * @return string Plugin activation status. Either 'active', 'active-network', or 'inactive'.
+	 */
 	protected function get_status( $file ) {
 		if ( is_plugin_active_for_network( $file ) ) {
 			return 'active-network';
@@ -317,6 +371,16 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 		return 'inactive';
 	}
 
+	/**
+	 * Outputs the result of a plugin activation operation.
+	 *
+	 * @since 1.3.0
+	 *
+	 * @param string $name         Plugin name.
+	 * @param string $file         Plugin main file path relative to the plugins directory.
+	 * @param bool   $network_wide Whether to check network-wide or not.
+	 * @param string $action       Action performed.
+	 */
 	private function active_output( $name, $file, $network_wide, $action ) {
 		$network_wide = $network_wide || ( is_multisite() && is_network_only_plugin( $file ) );
 

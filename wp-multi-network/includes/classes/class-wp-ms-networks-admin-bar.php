@@ -1,23 +1,25 @@
 <?php
 /**
- * WP Multi Network Admin Bar
+ * WP_MS_Networks_Admin_Bar class
  *
  * @package WPMN
- * @subpackage Admin
+ * @since 2.2.0
  */
 
 // Exit if accessed directly
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Admin Bar Menu
+ * Class for integrating with the admin bar.
  *
- * @since 2.2
+ * @since 2.2.0
  */
 class WP_MS_Networks_Admin_Bar {
 
 	/**
-	 * Hook methods in
+	 * Constructor.
+	 *
+	 * Hooks in the necessary methods.
 	 *
 	 * @since 2.2.0
 	 */
@@ -51,11 +53,11 @@ class WP_MS_Networks_Admin_Bar {
 	}
 
 	/**
-	 * Output the admin bar menu items
+	 * Outputs the admin bar menu items.
 	 *
 	 * @since 2.2.0
 	 *
-	 * @param WP_Admin_Bar $wp_admin_bar
+	 * @param WP_Admin_Bar $wp_admin_bar Admin bar instance.
 	 */
 	public function admin_bar( $wp_admin_bar ) {
 

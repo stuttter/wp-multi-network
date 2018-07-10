@@ -1,18 +1,25 @@
 <?php
+/**
+ * WP_MS_Networks_List_Table class
+ *
+ * @package WPMN
+ * @since 1.3.0
+ */
 
 // Exit if accessed directly
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Networks List Table class.
+ * Class used to implement displaying networks in a list table.
  *
- * @package WPMN
- * @since 1.3
+ * @since 1.3.0
  */
 class WP_MS_Networks_List_Table extends WP_List_Table {
 
 	/**
-	 * Main constructor
+	 * Constructor.
+	 *
+	 * @since 1.3.0
 	 */
 	public function __construct() {
 		parent::__construct(
@@ -26,17 +33,20 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 	}
 
 	/**
-	 * Return capability used to determine if user can manage networks during
-	 * an ajax request
+	 * Checks whether the current user can manage list table items during an AJAX request.
 	 *
-	 * @return bool
+	 * @since 1.3.0
+	 *
+	 * @return bool True if the user can manage list table items, false otherwise.
 	 */
 	public function ajax_user_can() {
 		return current_user_can( 'manage_networks' );
 	}
 
 	/**
-	 * Prepare items for querying
+	 * Prepares the list table items.
+	 *
+	 * @since 1.3.0
 	 */
 	public function prepare_items() {
 
@@ -92,16 +102,20 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 	}
 
 	/**
-	 * Output message when no networks are found
+	 * Outputs the message to show when no list items are found.
+	 *
+	 * @since 1.3.0
 	 */
 	public function no_items() {
 		esc_html_e( 'No networks found.', 'wp-multi-network' );
 	}
 
 	/**
-	 * Return array of bulk actions
+	 * Gets the array of supported bulk actions.
 	 *
-	 * @return array
+	 * @since 1.3.0
+	 *
+	 * @return array Bulk actions as $slug => $label pairs.
 	 */
 	public function get_bulk_actions() {
 		$actions = array();
@@ -114,9 +128,11 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 	}
 
 	/**
-	 * Output pagination
+	 * Outputs list table pagination.
 	 *
-	 * @param type $which
+	 * @since 1.3.0
+	 *
+	 * @param type $which Where to display the pagination. Either 'top' or 'bottom'.
 	 */
 	public function pagination( $which ) {
 		parent::pagination( $which );
@@ -125,6 +141,8 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 	/**
 	 * Gets the name of the default primary column.
 	 *
+	 * @since 1.3.0
+	 *
 	 * @return string Name of the default primary column, in this case, 'title'.
 	 */
 	protected function get_default_primary_column_name() {
@@ -132,27 +150,38 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 	}
 
 	/**
-	 * Return array of columns
+	 * Gets the list table columns.
 	 *
-	 * @return array
+	 * @since 1.3.0
+	 *
+	 * @return array Columns as $slug => $label pairs.
 	 */
 	public function get_columns() {
-		return apply_filters(
-			'wpmn_networks_columns', array(
-				'cb'     => '<input type="checkbox">',
-				'title'  => __( 'Network Title',  'wp-multi-network' ),
-				'domain' => __( 'Domain',         'wp-multi-network' ),
-				'path'   => __( 'Path',           'wp-multi-network' ),
-				'blogs'  => __( 'Sites',          'wp-multi-network' ),
-				'admins' => __( 'Network Admins', 'wp-multi-network' ),
-			)
+		$columns = array(
+			'cb'     => '<input type="checkbox">',
+			'title'  => __( 'Network Title',  'wp-multi-network' ),
+			'domain' => __( 'Domain',         'wp-multi-network' ),
+			'path'   => __( 'Path',           'wp-multi-network' ),
+			'blogs'  => __( 'Sites',          'wp-multi-network' ),
+			'admins' => __( 'Network Admins', 'wp-multi-network' ),
 		);
+
+		/**
+		 * Filters the networks list table column.
+		 *
+		 * @since 1.3.0
+		 *
+		 * @param array $columns Columns as $slug => $label pairs.
+		 */
+		return apply_filters( 'wpmn_networks_columns', $columns );
 	}
 
 	/**
-	 * Return array of columns that are sortable
+	 * Gets the list table columns that are sortable.
 	 *
-	 * @return array
+	 * @since 1.3.0
+	 *
+	 * @return array Columns as $slug => $orderby_field pairs.
 	 */
 	public function get_sortable_columns() {
 		return array(
@@ -163,52 +192,28 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 	}
 
 	/**
-	 * Return all classes for list-table
+	 * Generates content for a single row of the table.
 	 *
-	 * @return type
+	 * @since 2.3.0
+	 *
+	 * @param object $item The current item.
 	 */
-	protected function get_table_classes() {
-		return array( 'widefat', 'fixed', 'striped', $this->_args['plural'] );
+	public function single_row( $item ) {
+		$class = (int) get_current_site()->id === (int) $network->id ? 'current' : 'not-current';
+
+		echo '<tr class="' . esc_attr( $class ) . '">';
+		$this->single_row_columns( $item );
+		echo '</tr>';
 	}
 
 	/**
-	 * Display table rows
-	 *
-	 * @since 2.0.0
-	 */
-	public function display_rows() {
-
-		// Start buffer
-		ob_start();
-
-		// Loop through rows
-		foreach ( $this->items as $network ) {
-			$class = ( (int) get_current_site()->id === (int) $network->id )
-				? 'current'
-				: 'not-current';
-
-			?><tr class="<?php echo esc_attr( $class ); ?>">
-			<?php
-
-				$this->single_row_columns( $network );
-
-			?>
-			</tr>
-			<?php
-		}
-
-		// End buffer
-		echo ob_get_clean();
-	}
-
-	/**
-	 * Can the current user delete this network?
+	 * Checks whether the current user can delete a given network.
 	 *
 	 * @since 2.0.0
 	 *
-	 * @param WP_Network $network
+	 * @param WP_Network $network Network to check delete capabilities for.
 	 *
-	 * @return boolean
+	 * @return bool True if the user can delete the network, false otherwise.
 	 */
 	private function can_delete( $network ) {
 
@@ -232,11 +237,12 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 	}
 
 	/**
-	 * Get network states
+	 * Gets the network states for a given network.
 	 *
 	 * @since 2.2.0
 	 *
-	 * @param WP_Network $network
+	 * @param WP_Network $network Network to get states for.
+	 * @return string HTML output containing states for the network.
 	 */
 	private function get_states( $network ) {
 
@@ -254,8 +260,8 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 		 *
 		 * @since 2.2.0
 		 *
-		 * @param array   $network_states An array of network display states.
-		 * @param WP_Post $network        The current network object.
+		 * @param array      $network_states An array of network display states.
+		 * @param WP_Network $network        The current network object.
 		 */
 		$network_states = apply_filters( 'display_network_states', $network_states, $network );
 
@@ -283,9 +289,8 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 	 * Handles the checkbox column output.
 	 *
 	 * @since 2.0.0
-	 * @access public
 	 *
-	 * @param WP_Network $network
+	 * @param WP_Network $network The current network object.
 	 */
 	public function column_cb( $network ) {
 
@@ -308,11 +313,8 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 	 * Handles the network name column output.
 	 *
 	 * @since 2.0.0
-	 * @access public
 	 *
-	 * @global string $mode
-	 *
-	 * @param array $network Current network.
+	 * @param WP_Network $network The current network object.
 	 */
 	public function column_title( $network ) {
 
@@ -352,33 +354,33 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 	}
 
 	/**
-	 * Output network domain
+	 * Handles the network domain column output.
 	 *
 	 * @since 2.0.0
 	 *
-	 * @param WP_Network $network
+	 * @param WP_Network $network The current network object.
 	 */
 	public function column_domain( $network ) {
 		echo esc_html( $network->domain );
 	}
 
 	/**
-	 * Output network path
+	 * Handles the network path column output.
 	 *
 	 * @since 2.0.0
 	 *
-	 * @param WP_Network $network
+	 * @param WP_Network $network The current network object.
 	 */
 	public function column_path( $network ) {
 		echo esc_html( $network->path );
 	}
 
 	/**
-	 * Output network sites
+	 * Handles the network sites column output.
 	 *
 	 * @since 2.0.0
 	 *
-	 * @param WP_Network $network
+	 * @param WP_Network $network The current network object.
 	 */
 	public function column_blogs( $network ) {
 
@@ -394,11 +396,11 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 	}
 
 	/**
-	 * Output administrators for a network
+	 * Handles the network administrators column output.
 	 *
 	 * @since 2.0.0
 	 *
-	 * @param WP_Network $network
+	 * @param WP_Network $network The current network object.
 	 */
 	public function column_admins( $network ) {
 
@@ -415,33 +417,20 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 	}
 
 	/**
-	 * Default column
+	 * Handles the ID column output.
 	 *
 	 * @since 2.0.0
 	 *
-	 * @param WP_Network $network
-	 * @param string     $column_name
-	 */
-	public function column_default( $network, $column_name ) {
-		parent::column_default( $network, $column_name );
-	}
-
-	/**
-	 * Handles the ID column output.
-	 *
-	 * @access public
-	 *
-	 * @param array $network Current network.
+	 * @param WP_Network $network The current network object.
 	 */
 	public function column_id( $network ) {
 		echo $network->id;
 	}
 
 	/**
-	 * Generates and displays row action links.
+	 * Generates row action links markup.
 	 *
 	 * @since 2.0.0
-	 * @access protected
 	 *
 	 * @param WP_Network $network     Site being acted upon.
 	 * @param string     $column_name Current column name.
@@ -461,32 +450,20 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 		$network_home_url  = network_home_url();
 		restore_current_network();
 
-		$myurl = add_query_arg(
-			array(
-				'page' => 'networks',
-				'id'   => $network->id,
-			)
-		);
-
-		$edit_network_url = add_query_arg(
-			array(
-				'action' => 'edit_network',
-			), $myurl
-		);
-
-		$delete_network_url = wp_nonce_url(
-			add_query_arg(
-				array(
-					'action' => 'delete_network',
-				), $myurl
-			)
-		);
+		$base_url = add_query_arg( array(
+			'page' => 'networks',
+			'id'   => $network->id,
+		) );
 
 		// Empty actions array
 		$actions = array();
 
 		// Edit
 		if ( current_user_can( 'edit_network', $network->id ) ) {
+			$edit_network_url = add_query_arg( array(
+				'action' => 'edit_network',
+			), $base_url );
+
 			$actions['edit'] = '<span class="edit"><a href="' . esc_url( $edit_network_url ) . '">' . esc_html__( 'Edit', 'wp-multi-network' ) . '</a></span>';
 		}
 
@@ -500,9 +477,22 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 
 		// Delete
 		if ( $this->can_delete( $network ) ) {
+			$delete_network_url = wp_nonce_url( add_query_arg( array(
+				'action' => 'delete_network',
+			), $base_url ) );
+
 			$actions['delete']  = '<span class="delete"><a href="' . esc_url( $delete_network_url ) . '">' . esc_html__( 'Delete', 'wp-multi-network' ) . '</a></span>';
 		}
 
+		/**
+		 * Filters the networks list table row action links.
+		 *
+		 * @since 2.0.0
+		 *
+		 * @param array  Action links as $slug => $link_markup pairs.
+		 * @param int    The current network ID.
+		 * @param string The current network name.
+		 */
 		$actions = apply_filters( 'manage_networks_action_links', array_filter( $actions ), $network->id, $network->sitename );
 
 		return $this->row_actions( $actions );

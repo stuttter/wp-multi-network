@@ -1,20 +1,20 @@
 <?php
-
 /**
- * Metaboxes related to moving a site to a different network
+ * Metaboxes related to moving a site to a different network.
  *
- * @package Plugins/Networks/Metaboxes/Site/Move
+ * @package WPMN
+ * @since 1.7.0
  */
 
 // Exit if accessed directly
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Metabox for assigning which network a site is part of
+ * Renders the metabox for assigning which network a given site should be moved to.
  *
  * @since 1.7.0
  *
- * @param WP_Site $site Results of get_site()
+ * @param WP_Site $site Optional. Site object. Default null.
  */
 function wpmn_move_site_list_metabox( $site = null ) {
 	$networks = get_networks();
@@ -48,11 +48,11 @@ function wpmn_move_site_list_metabox( $site = null ) {
 }
 
 /**
- * Metabox used to publish the move-site page
+ * Renders the metabox used to publish the move-site page.
  *
  * @since 1.7.0
  *
- * @param WP_Site $site
+ * @param WP_Site $site Optional. Site object. Default null.
  */
 function wpmn_move_site_assign_metabox( $site = null ) {
 	?>

@@ -1,17 +1,16 @@
 <?php
-
 /**
- * WP Multi Network Admin
+ * WP_MS_Networks_Admin class
  *
  * @package WPMN
- * @subpackage Admin
+ * @since 1.3.0
  */
 
 // Exit if accessed directly
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Main admin interface
+ * Class used to implement the network admin functionality and UI.
  *
  * @since 1.3.0
  */
@@ -26,7 +25,9 @@ class WP_MS_Networks_Admin {
 	private $feedback_strings = array();
 
 	/**
-	 * Hook methods in
+	 * Constructor.
+	 *
+	 * Hooks in the necessary methods.
 	 *
 	 * @since 1.3.0
 	 */
@@ -53,13 +54,13 @@ class WP_MS_Networks_Admin {
 	}
 
 	/**
-	 * Add the Move action to Sites page on WP >= 3.1
+	 * Add the Move action to the Sites page on WP >= 3.1.
 	 *
 	 * @since 1.3.0
 	 *
-	 * @param array $actions Array of action links
-	 * @param int   $blog_id Blog ID in list table
-	 * @return array
+	 * @param array $actions Array of action links.
+	 * @param int   $blog_id Current site ID.
+	 * @return array Adjusted action links.
 	 */
 	public function add_move_blog_link( $actions = array(), $blog_id = 0 ) {
 
@@ -69,12 +70,10 @@ class WP_MS_Networks_Admin {
 		}
 
 		// Assemble URL
-		$url = $this->admin_url(
-			array(
-				'action'  => 'move',
-				'blog_id' => (int) $blog_id,
-			)
-		);
+		$url = $this->admin_url( array(
+			'action'  => 'move',
+			'blog_id' => (int) $blog_id,
+		) );
 
 		// Add URL to actions links
 		if ( current_user_can( 'manage_networks' ) ) {
@@ -85,13 +84,13 @@ class WP_MS_Networks_Admin {
 		return $actions;
 	}
 
-	/** Menus *****************************************************************/
-
 	/**
-	 * Add the My Networks page to the site-level dashboard
+	 * Adds the My Networks page to the site-level dashboard.
 	 *
-	 * If the user is super admin on another Network, don't require elevated
-	 * permissions on the current Site
+	 * If the user is super admin on another network, don't require elevated
+	 * permissions on the current site.
+	 *
+	 * @since 1.3.0
 	 */
 	public function admin_menu() {
 
@@ -105,10 +104,12 @@ class WP_MS_Networks_Admin {
 	}
 
 	/**
-	 * Add Networks menu and entries to the Network-level dashboard
+	 * Add Networks menu and entries to the network-level dashboard
 	 *
 	 * This method puts the cart before the horse, and could maybe live in the
 	 * WP_MS_Networks_List_Table class also.
+	 *
+	 * @since 1.3.0
 	 */
 	public function network_admin_menu() {
 		$page = add_menu_page( esc_html__( 'Networks', 'wp-multi-network' ), esc_html__( 'Networks', 'wp-multi-network' ), 'manage_networks', 'networks', array( $this, 'route_pages' ), 'dashicons-networking', -1 );
@@ -122,8 +123,8 @@ class WP_MS_Networks_Admin {
 	}
 
 	/**
-	 * Add a separator between the 'Networks' and 'Dashboard' menu items on the
-	 * Network dashboard
+	 * Adds a separator between the 'Networks' and 'Dashboard' menu items on the
+	 * network dashboard.
 	 *
 	 * @since 1.5.2
 	 */
@@ -132,7 +133,7 @@ class WP_MS_Networks_Admin {
 	}
 
 	/**
-	 * Maybe fix the menu highlight for the "Move" page, which is technically
+	 * Fixes the menu highlight for the "Move" page, which is technically
 	 * under the "Sites" menu.
 	 *
 	 * @since 2.2.0
@@ -151,12 +152,12 @@ class WP_MS_Networks_Admin {
 		}
 	}
 
-	/** Assets ****************************************************************/
-
 	/**
-	 * Add JavaScript on networks admin pages only
+	 * Registers and enqueues JavaScript on networks admin pages.
 	 *
 	 * @since 2.0.0
+	 *
+	 * @param string $page Optional. Current page hook. Default empty string.
 	 */
 	public function enqueue_scripts( $page = '' ) {
 
@@ -174,10 +175,8 @@ class WP_MS_Networks_Admin {
 		wp_enqueue_script( 'wp-multi-network' );
 	}
 
-	/** Notices ***************************************************************/
-
 	/**
-	 * Feedback strings
+	 * Sets feedback strings for network admin actions.
 	 *
 	 * @since 2.1.0
 	 */
@@ -203,7 +202,7 @@ class WP_MS_Networks_Admin {
 	}
 
 	/**
-	 * Action feedback
+	 * Prints feedback notices for network admin actions as necessary.
 	 *
 	 * @since 1.3.0
 	 */
@@ -241,10 +240,8 @@ class WP_MS_Networks_Admin {
 		<?php
 	}
 
-	/** Routers ***************************************************************/
-
 	/**
-	 * Network listing and editing functions are routed through this function
+	 * Routes the current request to the correct page.
 	 *
 	 * @since 2.0.0
 	 */
@@ -303,7 +300,7 @@ class WP_MS_Networks_Admin {
 	}
 
 	/**
-	 * Save any form submissions
+	 * Handles network management form submissions.
 	 *
 	 * @since 2.0.0
 	 */
@@ -337,10 +334,8 @@ class WP_MS_Networks_Admin {
 		}
 	}
 
-	/** Pages *****************************************************************/
-
 	/**
-	 * New network creation dashboard page
+	 * Renders the new network creation dashboard page.
 	 *
 	 * @since 2.0.0
 	 */
@@ -415,7 +410,7 @@ class WP_MS_Networks_Admin {
 	}
 
 	/**
-	 * Network listing dashboard page
+	 * Renders the network listing dashboard page.
 	 *
 	 * @since 2.0.0
 	 *
@@ -461,7 +456,7 @@ class WP_MS_Networks_Admin {
 	}
 
 	/**
-	 * Dashboard screen for moving sites -- accessed from the "Sites" screen
+	 * Renders the dashboard screen for moving sites -- accessed from the "Sites" screen.
 	 *
 	 * @since 2.0.0
 	 */
@@ -509,7 +504,7 @@ class WP_MS_Networks_Admin {
 	}
 
 	/**
-	 * Output the delete network page
+	 * Renders the delete network page.
 	 *
 	 * @since 2.0.0
 	 */
@@ -595,7 +590,7 @@ class WP_MS_Networks_Admin {
 	}
 
 	/**
-	 * Output the delete multiple networks page
+	 * Renders the delete multiple networks page.
 	 *
 	 * @since 2.0.0
 	 */
@@ -716,7 +711,7 @@ class WP_MS_Networks_Admin {
 	}
 
 	/**
-	 * Output the my networks page
+	 * Renders the my networks page.
 	 *
 	 * @since 2.0.0
 	 */
@@ -786,10 +781,8 @@ class WP_MS_Networks_Admin {
 		<?php
 	}
 
-	/** Handlers **************************************************************/
-
 	/**
-	 * Handle the request to add a new network
+	 * Handles the request to add a new network.
 	 *
 	 * @since 2.0.0
 	 */
@@ -884,7 +877,7 @@ class WP_MS_Networks_Admin {
 	}
 
 	/**
-	 * Handle the request to update a network
+	 * Handles the request to update a network.
 	 *
 	 * @since 2.0.0
 	 */
@@ -953,7 +946,7 @@ class WP_MS_Networks_Admin {
 	}
 
 	/**
-	 * Handle the request to move a site
+	 * Handles the request to move a site to another network.
 	 *
 	 * @since 2.0.0
 	 */
@@ -1014,7 +1007,7 @@ class WP_MS_Networks_Admin {
 	}
 
 	/**
-	 * Handle the request to reassign sites
+	 * Handles the request to reassign sites to another network.
 	 *
 	 * @since 2.0.0
 	 */
@@ -1090,7 +1083,7 @@ class WP_MS_Networks_Admin {
 	}
 
 	/**
-	 * Handle the request to delete a network
+	 * Handles the request to delete a network.
 	 *
 	 * @since 2.0.0
 	 */
@@ -1111,7 +1104,7 @@ class WP_MS_Networks_Admin {
 	}
 
 	/**
-	 * Handle the request to helete many networks
+	 * Handles the request to delete multiple networks.
 	 *
 	 * @since 2.0.0
 	 */
@@ -1134,25 +1127,24 @@ class WP_MS_Networks_Admin {
 	}
 
 	/**
-	 * Handle redirect after page submit
+	 * Handles redirect after a page submit action.
 	 *
 	 * @since 2.0.0
 	 *
-	 * @param array $args
+	 * @param array $args Optional. URL query arguments. Default empty array.
 	 */
 	private function handle_redirect( $args = array() ) {
 		wp_safe_redirect( $this->admin_url( $args ) );
 		exit;
 	}
 
-	/** Helpers ***************************************************************/
-
 	/**
-	 * Return the URL of the Networks page
+	 * Gets the URL of the networks page.
 	 *
 	 * @since 1.3.0
 	 *
-	 * @return string Absolute URL to Networks page
+	 * @param array $args Optional. URL query arguments. Default empty array.
+	 * @return string Absolute URL to the networks page.
 	 */
 	private function admin_url( $args = array() ) {
 
@@ -1176,7 +1168,7 @@ class WP_MS_Networks_Admin {
 	}
 
 	/**
-	 * Check the nonce
+	 * Checks the nonce for a network management form submission.
 	 *
 	 * @since 2.1.0
 	 */

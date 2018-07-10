@@ -1,9 +1,9 @@
 <?php
-
 /**
- * WP Multi Network Compatibility
+ * Multi-network compatibility functions.
  *
- * @package Plugins/Networks/Compatibility
+ * @package WPMN
+ * @since 1.7.0
  */
 
 // Exit if accessed directly
@@ -11,11 +11,11 @@ defined( 'ABSPATH' ) || exit;
 
 if ( ! function_exists( 'is_global_admin' ) ) :
 	/**
-	 * Can the current user edit all networks?
+	 * Checks whether the current user is a global administrator.
 	 *
 	 * @since 2.2.0
 	 *
-	 * @return boolean
+	 * @return bool True if the user is a global administrator, false otherwise.
 	 */
 	function is_global_admin() {
 		return (bool) apply_filters( 'is_global_admin', is_super_admin() );
@@ -24,31 +24,28 @@ endif;
 
 if ( ! function_exists( 'wp_get_scheme' ) ) :
 	/**
-	 * Return the scheme in use based on is_ssl()
+	 * Returns the scheme in use based on is_ssl().
 	 *
 	 * @since 1.7.0
 	 *
-	 * @return string
+	 * @return string Scheme including colon and slashes.
 	 */
 	function wp_get_scheme() {
-		return is_ssl()
-		? 'https://'
-		: 'http://';
+		return is_ssl() ? 'https://' : 'http://';
 	}
 endif;
 
 if ( ! function_exists( 'wp_sanitize_site_path' ) ) :
 	/**
-	 * Sanitize a site path
+	 * Sanitizes a site path.
 	 *
 	 * This function exists to prevent slashing issues while updating networks and
 	 * moving sites between networks.
 	 *
 	 * @since 1.8.0
 	 *
-	 * @param string $path
-	 *
-	 * @return string
+	 * @param string $path Site path to sanitize.
+	 * @return string Sanitized site path.
 	 */
 	function wp_sanitize_site_path( $path = '' ) {
 		$parts       = explode( '/', $path );
@@ -63,17 +60,16 @@ endif;
 
 if ( ! function_exists( 'wp_validate_site_url' ) ) :
 	/**
-	 * Is a site URL okay to save?
+	 * Validates a site URL.
 	 *
 	 * @since 1.8.0
 	 *
-	 * @global wpdb $wpdb
+	 * @global wpdb $wpdb WordPress database abstraction object.
 	 *
-	 * @param string $domain
-	 * @param string $path
-	 * @param string $slug
-	 *
-	 * @return boolean
+	 * @param string $domain  Site domain.
+	 * @param string $path    Site path.
+	 * @param string $site_id Optional. Site ID, if an existing site. Default 0.
+	 * @return bool True if the site URL is valid, false otherwise.
 	 */
 	function wp_validate_site_url( $domain, $path, $site_id = 0 ) {
 		global $wpdb;
@@ -168,12 +164,12 @@ endif;
 
 if ( ! function_exists( 'wp_get_main_network' ) ) :
 	/**
-	 * Get the main network
+	 * Gets the main network.
 	 *
 	 * Uses the same logic as {@see is_main_network}, but returns the network object
 	 * instead.
 	 *
-	 * @return stdClass|null
+	 * @return WP_Network|null Main network object, or null if not found.
 	 */
 	function wp_get_main_network() {
 

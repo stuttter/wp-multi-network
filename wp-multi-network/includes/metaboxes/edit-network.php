@@ -1,20 +1,20 @@
 <?php
-
 /**
- * Metaboxes related to editing a network
+ * Metaboxes related to editing a network.
  *
- * @package Plugins/Networks/Metaboxes/Network/Edit
+ * @package WPMN
+ * @since 1.7.0
  */
 
 // Exit if accessed directly
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Metabox for assigning properties of a network
+ * Renders the metabox for assigning properties of a network.
  *
  * @since 1.7.0
  *
- * @param WP_Network $network Results of get_network()
+ * @param WP_Network $network Optional. Network object. Default null.
  */
 function wpmn_edit_network_details_metabox( $network = null ) {
 
@@ -57,7 +57,7 @@ function wpmn_edit_network_details_metabox( $network = null ) {
 }
 
 /**
- * Metabox for assigning properties of a network
+ * Renders the metabox for defining the main site for a new network.
  *
  * @since 1.7.0
  */
@@ -80,11 +80,11 @@ function wpmn_edit_network_new_site_metabox() {
 }
 
 /**
- * Metabox for assigning sites to a network
+ * Renders the metabox for assigning sites to a network.
  *
  * @since 1.7.0
  *
- * @param WP_Network $network
+ * @param WP_Network $network Optional. Network object. Default null.
  */
 function wpmn_edit_network_assign_sites_metabox( $network = null ) {
 
@@ -159,11 +159,11 @@ function wpmn_edit_network_assign_sites_metabox( $network = null ) {
 }
 
 /**
- * Metabox used to publish the network
+ * Renders the metabox used to publish the network.
  *
  * @since 1.7.0
  *
- * @param WP_Network $network
+ * @param WP_Network $network Optional. Network object. Default null.
  */
 function wpmn_edit_network_publish_metabox( $network = null ) {
 
