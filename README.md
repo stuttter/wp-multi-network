@@ -91,4 +91,4 @@ To achieve nested folder paths in this fashion `network1/site1`, `network1/site2
 
 ### Can I contribute?
 
-Please! The number of users needing multiple WordPress networks is growing fast. Having an easy-to-use interface and powerful set of functions is critical to managing complex WordPress installations. If this is your thing, please help us out!
+Please! The number of users needing multiple WordPress networks is growing fast. Having an easy-to-use interface and powerful set of functions is critical to managing complex WordPress installations. If this is your thing, please help us out! Read more in the [plugin contributing guidelines](https://github.com/stuttter/wp-multi-network/blob/master/CONTRIBUTING.md).
