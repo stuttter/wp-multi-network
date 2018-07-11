@@ -8,5 +8,6 @@ composer.json export-ignore
 deploy.sh export-ignore
 phpcs.xml.dist export-ignore
 phpunit.xml.dist export-ignore
+CONTRIBUTING.md export-ignore
 LICENSE.md export-ignore
 README.md export-ignore

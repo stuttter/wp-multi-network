@@ -1,33 +1,28 @@
 <?xml version="1.0"?>
-<ruleset name="WordPress Coding Standards for Plugins">
-	<description>Generally-applicable sniffs for WordPress plugins</description>
-
-	<rule ref="WordPress-Core" />
-
-	<rule ref="WordPress.WP.PreparedSQL.NotPrepared">
-			<type>warning</type>
-  </rule>
-
-	<rule ref="WordPress.Files.FileName.InvalidClassFileName">
-			<type>warning</type>
-  </rule>
-
-	<rule ref="Generic.Functions.FunctionCallArgumentSpacing.SpaceBeforeComma">
-			<type>warning</type>
-	</rule>
-	
-	<rule ref="Generic.Functions.FunctionCallArgumentSpacing.TooMuchSpaceAfterComma">
-			<type>warning</type>
-	</rule>
-
+<ruleset name="WP Multi Network PHPCS Rules">
+	<description>PHPCS ruleset for WP Multi Network</description>
 
 	<!-- Check all PHP files in directory tree by default. -->
 	<arg name="extensions" value="php"/>
 	<file>.</file>
 
-	<!-- Show progress and sniff codes in all reports -->
+	<!-- Show progress and sniff codes in all reports. -->
 	<arg value="ps"/>
 
+	<!-- Exclude directories we don't need to check. -->
 	<exclude-pattern>*/node_modules/*</exclude-pattern>
+	<exclude-pattern>*/tests/*</exclude-pattern>
 	<exclude-pattern>*/vendor/*</exclude-pattern>
+
+	<!-- Use WPCS except its VIP restrictions. -->
+	<rule ref="WordPress">
+		<exclude name="WordPress.VIP.RestrictedFunctions"/>
+	</rule>
+
+	<!-- Set WPCS plugin textdomain. -->
+	<rule ref="WordPress.WP.I18n">
+		<properties>
+			<property name="text_domain" type="string" value="wp-multi-network"/>
+		</properties>
+	</rule>
 </ruleset>

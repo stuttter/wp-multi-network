@@ -1,20 +1,25 @@
 <?php
+/**
+ * WP_MS_Networks_Capabilities class
+ *
+ * @package WPMN
+ * @since 2.3.0
+ */
 
-// Exit if accessed directly
+// Exit if accessed directly.
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Networks Capabilities class.
+ * Class responsible for managing capabilities.
  *
- * @package WPMN
- * @since 2.2
+ * @since 2.3.0
  */
 class WP_MS_Networks_Capabilities {
 
 	/**
 	 * Adds hooks for networks capabilities.
 	 *
-	 * @since 2.2
+	 * @since 2.3.0
 	 */
 	public function add_hooks() {
 		add_filter( 'map_meta_cap', array( $this, 'map_meta_cap' ), 10, 4 );
@@ -23,7 +28,7 @@ class WP_MS_Networks_Capabilities {
 	/**
 	 * Ensures only global administrators have access to global capabilities.
 	 *
-	 * @since 2.2
+	 * @since 2.3.0
 	 *
 	 * @param array  $caps    Array of required capabilities.
 	 * @param string $cap     Capability to map.
@@ -60,7 +65,7 @@ class WP_MS_Networks_Capabilities {
 	/**
 	 * Gets the primitive capabilities that should only be granted to global administrators.
 	 *
-	 * @since 2.2
+	 * @since 2.3.0
 	 *
 	 * @return array List of primitive global capabilities.
 	 */
@@ -75,7 +80,7 @@ class WP_MS_Networks_Capabilities {
 		/**
 		 * Filters the primitive capabilities that should only be available to global administrators.
 		 *
-		 * @since 2.2
+		 * @since 2.3.0
 		 *
 		 * @param array $global_capabilities List of primitive global capabilities.
 		 */
@@ -85,7 +90,7 @@ class WP_MS_Networks_Capabilities {
 	/**
 	 * Checks whether a given user has global access.
 	 *
-	 * @since 2.2
+	 * @since 2.3.0
 	 *
 	 * @param int $user_id User ID to check for global administrator permissions.
 	 * @return bool True if the user has global access, false otherwise.
@@ -97,7 +102,7 @@ class WP_MS_Networks_Capabilities {
 		 *
 		 * By default, global access is available to all network administrators.
 		 *
-		 * @since 2.2
+		 * @since 2.3.0
 		 *
 		 * @param bool $has_global_access Whether the user should have global access.
 		 * @param int  $user_id           ID of the user checked.

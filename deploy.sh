@@ -85,6 +85,7 @@ fi
 cd $SVNPATH/trunk/
 
 printf "Removing unnecessary GitHub and test files..."
+rm CONTRIBUTING.md
 rm LICENSE.md
 rm README.md
 rm -rf tests

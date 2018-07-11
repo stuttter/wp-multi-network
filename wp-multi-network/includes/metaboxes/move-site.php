@@ -1,20 +1,20 @@
 <?php
-
 /**
- * Metaboxes related to moving a site to a different network
+ * Metaboxes related to moving a site to a different network.
  *
- * @package Plugins/Networks/Metaboxes/Site/Move
+ * @package WPMN
+ * @since 1.7.0
  */
 
-// Exit if accessed directly
+// Exit if accessed directly.
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Metabox for assigning which network a site is part of
+ * Renders the metabox for assigning which network a given site should be moved to.
  *
  * @since 1.7.0
  *
- * @param WP_Site $site Results of get_site()
+ * @param WP_Site $site Optional. Site object. Default null.
  */
 function wpmn_move_site_list_metabox( $site = null ) {
 	$networks = get_networks();
@@ -33,7 +33,7 @@ function wpmn_move_site_list_metabox( $site = null ) {
 					foreach ( $networks as $new_network ) {
 						?>
 						<option value="<?php echo esc_attr( $new_network->id ); ?>" <?php selected( $site->network_id, $new_network->id ); ?>>
-							<?php echo wp_get_scheme() . esc_html( $new_network->domain . '/' . ltrim( $new_network->path, '/' ) ); ?>
+							<?php echo esc_html( wp_get_scheme() ) . esc_html( $new_network->domain . '/' . ltrim( $new_network->path, '/' ) ); ?>
 						</option>
 						<?php
 					}
@@ -48,11 +48,11 @@ function wpmn_move_site_list_metabox( $site = null ) {
 }
 
 /**
- * Metabox used to publish the move-site page
+ * Renders the metabox used to publish the move-site page.
  *
  * @since 1.7.0
  *
- * @param WP_Site $site
+ * @param WP_Site $site Optional. Site object. Default null.
  */
 function wpmn_move_site_assign_metabox( $site = null ) {
 	?>
@@ -61,13 +61,37 @@ function wpmn_move_site_assign_metabox( $site = null ) {
 		<div id="minor-publishing">
 			<div id="misc-publishing-actions">
 				<div class="misc-pub-section curtime misc-pub-section-first">
-					<span><?php printf( __( 'Created: <strong>%1$s</strong>',  'wp-multi-network' ), $site->registered ); ?></span>
+					<span>
+						<?php
+						printf(
+							/* translators: %s: site registration date */
+							esc_html__( 'Created: <strong>%1$s</strong>', 'wp-multi-network' ),
+							esc_html( $site->registered )
+						);
+						?>
+					</span>
 				</div>
 				<div class="misc-pub-section misc-pub-section-last" id="domain">
-					<span><?php printf( __( 'Domain: <strong>%1$s</strong>', 'wp-multi-network' ), $site->domain ); ?></span>
+					<span>
+						<?php
+						printf(
+							/* translators: %s: site domain */
+							esc_html__( 'Domain: <strong>%1$s</strong>', 'wp-multi-network' ),
+							esc_html( $site->domain )
+						);
+						?>
+					</span>
 				</div>
 				<div class="misc-pub-section misc-pub-section-last" id="path">
-					<span><?php printf( __( 'Path: <strong>%1$s</strong>', 'wp-multi-network' ), $site->path ); ?></span>
+					<span>
+						<?php
+						printf(
+							/* translators: %s: site path */
+							esc_html__( 'Path: <strong>%1$s</strong>', 'wp-multi-network' ),
+							esc_html( $site->path )
+						);
+						?>
+					</span>
 				</div>
 			</div>
 
