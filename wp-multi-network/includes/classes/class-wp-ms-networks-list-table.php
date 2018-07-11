@@ -56,8 +56,12 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 		$order_by = ! empty( $order_by ) ? sanitize_key( $order_by ) : '';
 		$order    = filter_input( INPUT_GET, 'order', FILTER_SANITIZE_STRING );
 		$order    = ! empty( $order ) ? strtoupper( $order ) : 'ASC';
-		$search   = stripslashes( trim( filter_input( INPUT_GET, 's', FILTER_SANITIZE_STRING ) ) );
+		$search   = filter_input( INPUT_GET, 's', FILTER_SANITIZE_STRING );
+		if ( ! $search ) {
+			$search = filter_input( INPUT_POST, 's', FILTER_SANITIZE_STRING );
+		}
 
+		$search = stripslashes( trim( $search ) );
 		if ( false !== strpos( $search, '*' ) ) {
 			$search = trim( $search, '*' );
 		}
