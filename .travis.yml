@@ -49,7 +49,7 @@ before_script:
         ;;
       *)
         composer selfupdate 1.0.0 --no-interaction
-        composer install --dev --no-interaction
+        composer install --no-interaction
         ;;
     esac
   - |
