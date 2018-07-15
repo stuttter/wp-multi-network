@@ -29,7 +29,7 @@ function network_exists($network_id)
  *
  * @return array Networks available on the installation
  */
-function get_networks()
+function get_plugin_networks()
 {
     global $wpdb;
 

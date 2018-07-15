@@ -174,7 +174,7 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 	 * @subcommand list
 	 */
 	public function list_( $args, $assoc_args ) {
-		$items     = get_networks();
+		$items     = get_plugin_networks();
 		$formatter = $this->get_formatter( $assoc_args );
 		$formatter->display_items( $items );
 	}
