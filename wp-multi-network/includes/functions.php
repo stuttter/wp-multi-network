@@ -486,7 +486,7 @@ if ( ! function_exists( 'add_network' ) ) :
 		}
 
 		$r['domain'] = str_replace( ' ', '', strtolower( $r['domain'] ) );
-		$r['path']   = str_replace( ' ', '', strtolower( $r['path'] ) );
+		$r['path']   = str_replace( ' ', '', strtolower( $r['path']   ) );
 
 		$networks = get_networks( array(
 			'domain' => $r['domain'],
@@ -527,7 +527,9 @@ if ( ! function_exists( 'add_network' ) ) :
 		}
 
 		if ( empty( $r['network_meta']['site_name'] ) ) {
-			$r['network_meta']['site_name'] = ! empty( $r['network_name'] ) ? $r['network_name'] : $r['site_name'];
+			$r['network_meta']['site_name'] = ! empty( $r['network_name'] )
+				? $r['network_name']
+				: $r['site_name'];
 		}
 
 		foreach ( $r['network_meta'] as $key => $value ) {
@@ -535,10 +537,15 @@ if ( ! function_exists( 'add_network' ) ) :
 		}
 
 		// Fix upload path and URLs in WP < 3.7.
-		$use_files_rewriting = defined( 'SITE_ID_CURRENT_SITE' ) && get_network( SITE_ID_CURRENT_SITE ) ? get_network_option( SITE_ID_CURRENT_SITE, 'ms_files_rewriting' ) : get_site_option( 'ms_files_rewriting' );
-		if ( empty( $use_files_rewriting ) && version_compare( $wp_version, '3.7', '<' ) ) {
+		$use_files_rewriting = defined( 'SITE_ID_CURRENT_SITE' ) && get_network( SITE_ID_CURRENT_SITE )
+			? get_network_option( SITE_ID_CURRENT_SITE, 'ms_files_rewriting' )
+			: get_site_option( 'ms_files_rewriting' );
 
-			// WP_CONTENT_URL is locked to the current site and can't be overridden, so we have to replace the hostname the hard way.
+		// Not using rewriting, and using a newer version of WordPress than 3.7
+		if ( empty( $use_files_rewriting ) && version_compare( $wp_version, '3.7', '>' ) ) {
+
+			// WP_CONTENT_URL is locked to the current site and can't be overridden,
+			// so we have to replace the hostname the hard way.
 			$current_siteurl = get_option( 'siteurl' );
 			$new_siteurl     = untrailingslashit( get_blogaddress_by_id( $new_blog_id ) );
 			$upload_url      = str_replace( $current_siteurl, $new_siteurl, WP_CONTENT_URL );
@@ -559,7 +566,7 @@ if ( ! function_exists( 'add_network' ) ) :
 			$upload_dir .= $ms_dir;
 			$upload_url .= $ms_dir;
 
-			update_blog_option( $new_blog_id, 'upload_path', $upload_dir );
+			update_blog_option( $new_blog_id, 'upload_path',     $upload_dir );
 			update_blog_option( $new_blog_id, 'upload_url_path', $upload_url );
 		}
 
