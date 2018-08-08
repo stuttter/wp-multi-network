@@ -15,7 +15,7 @@
  * Network:     true
  * License:     GPL v2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
- * Version:     2.2.0
+ * Version:     2.2.1
  * Text Domain: wp-multi-network
  */
 

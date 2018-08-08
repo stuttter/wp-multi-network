@@ -3,7 +3,7 @@ Contributors: johnjamesjacoby, ddean, BrianLayman, rmccue
 Tags: network, networks, blog, blogs, site, sites, domain, domains, mapping, domain mapping, fun
 Requires at least: 4.9
 Tested up to: 5.0
-Stable tag: 2.2.0
+Stable tag: 2.2.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=9Q4F4EL5YJ62J
@@ -109,6 +109,9 @@ please follow the steps in https://paulund.co.uk/wordpress-multisite-nested-path
 Not much to talk about really. Check the code for details!
 
 == Changelog ==
+
+= 2.2.1 =
+* Fix upload paths still using blogs.dir
 
 = 2.2.0 =
 * WordPress 4.9 minimum version bump
