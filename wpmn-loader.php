@@ -86,14 +86,40 @@ class WPMN_Loader {
 	private $admin_bar;
 
 	/**
+	 * Main WP Multi Network Loader instance.
+	 *
+	 * @since 2.3.0
+	 *
+	 * @static object $instance
+	 * @see wpmn()
+	 *
+	 * @return WPMN_Loader|null The one true WP Multi Network Loader instance.
+	 */
+	public static function instance() {
+
+		// Store the instance locally to avoid private static replication.
+		static $instance = null;
+
+		// Only run these methods if they haven't been run previously.
+		if ( null === $instance ) {
+			$instance = new WPMN_Loader();
+			$instance->constants();
+			$instance->setup_globals();
+			$instance->includes();
+		}
+
+		// Always return the instance.
+		return $instance;
+
+	}
+
+	/**
 	 * Constructor.
 	 *
 	 * @since 1.3.0
 	 */
 	public function __construct() {
-		$this->constants();
-		$this->setup_globals();
-		$this->includes();
+		// Do nothing here.
 	}
 
 	/**
@@ -178,14 +204,8 @@ add_action( 'muplugins_loaded', 'setup_multi_network' );
  *
  * @since 1.7.0
  *
- * @return WPMN_Loader WP Multi Network instance to use.
+ * @return WPMN_Loader|null The WP Multi Network instance.
  */
 function wpmn() {
-	static $wpmn = false;
-
-	if ( false === $wpmn ) {
-		$wpmn = new WPMN_Loader();
-	}
-
-	return $wpmn;
+	return WPMN_Loader::instance();
 }
