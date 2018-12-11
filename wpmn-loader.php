@@ -83,7 +83,7 @@ class WPMN_Loader {
 	 * @since 2.3.0
 	 * @var WP_MS_Networks_Admin_Bar
 	 */
-	private $admin_bar;
+	public $admin_bar;
 
 	/**
 	 * Constructor.
