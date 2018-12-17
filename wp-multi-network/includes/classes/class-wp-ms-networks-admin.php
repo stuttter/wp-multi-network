@@ -294,6 +294,12 @@ class WP_MS_Networks_Admin {
 	 * @since 2.0.0
 	 */
 	public function route_save_handlers() {
+		// Bail -- our fields aren't being edited
+		// Otherwise we'll do an unnecessary nonce check
+		if ( ! $_POST['network_edit'] ) {
+			return;
+		}
+		
 		$action = filter_input( INPUT_POST, 'action', FILTER_SANITIZE_STRING );
 		if ( empty( $action ) ) {
 			$alternative_actions = array( 'delete', 'delete_multiple', 'move' );
