@@ -949,8 +949,8 @@ class WP_MS_Networks_Admin {
 	 * @since 2.0.0
 	 */
 	private function handle_reassign_sites() {
-		$to   = array_map( 'absint', filter_input( INPUT_POST, 'to', FILTER_FORCE_ARRAY ) );
-		$from = array_map( 'absint', filter_input( INPUT_POST, 'from', FILTER_FORCE_ARRAY ) );
+		$to   = array_map( 'absint', (array) filter_input( INPUT_POST, 'to', FILTER_FORCE_ARRAY ) );
+		$from = array_map( 'absint', (array) filter_input( INPUT_POST, 'from', FILTER_FORCE_ARRAY ) );
 
 		// Bail early if no movement.
 		if ( empty( $to ) && empty( $from ) ) {
