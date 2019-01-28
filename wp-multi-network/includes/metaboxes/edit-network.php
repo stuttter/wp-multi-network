@@ -179,7 +179,7 @@ function wpmn_edit_network_publish_metabox( $network = null ) {
 							<?php
 							printf(
 								/* translators: %s: network name */
-								esc_html__( 'Name: <strong>%s</strong>', 'wp-multi-network' ),
+								__( 'Name: <strong>%s</strong>', 'wp-multi-network' ),
 								esc_html( get_network_option( $network->id, 'site_name' ) )
 							);
 							?>
@@ -190,7 +190,7 @@ function wpmn_edit_network_publish_metabox( $network = null ) {
 							<?php
 							printf(
 								/* translators: %s: network site count */
-								esc_html__( 'Sites: <strong>%s</strong>', 'wp-multi-network' ),
+								__( 'Sites: <strong>%s</strong>', 'wp-multi-network' ),
 								esc_html( get_network_option( $network->id, 'blog_count' ) )
 							);
 							?>
