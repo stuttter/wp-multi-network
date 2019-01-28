@@ -185,7 +185,7 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 	 *
 	 * @since 2.3.0
 	 *
-	 * @param object $item The current item.
+	 * @param object $network The current network item.
 	 */
 	public function single_row( $network ) {
 		$class = (int) get_current_site()->id === (int) $network->id ? 'current' : 'not-current';
