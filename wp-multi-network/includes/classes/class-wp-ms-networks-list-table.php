@@ -187,11 +187,11 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 	 *
 	 * @param object $item The current item.
 	 */
-	public function single_row( $item ) {
+	public function single_row( $network ) {
 		$class = (int) get_current_site()->id === (int) $network->id ? 'current' : 'not-current';
 
 		echo '<tr class="' . esc_attr( $class ) . '">';
-		$this->single_row_columns( $item );
+		$this->single_row_columns( $network );
 		echo '</tr>';
 	}
 
