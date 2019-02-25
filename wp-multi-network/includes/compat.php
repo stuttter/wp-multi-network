@@ -9,19 +9,6 @@
 // Exit if accessed directly.
 defined( 'ABSPATH' ) || exit;
 
-if ( ! function_exists( 'is_global_admin' ) ) :
-	/**
-	 * Checks whether the current user is a global administrator.
-	 *
-	 * @since 2.2.0
-	 *
-	 * @return bool True if the user is a global administrator, false otherwise.
-	 */
-	function is_global_admin() {
-		return (bool) apply_filters( 'is_global_admin', is_super_admin() );
-	}
-endif;
-
 if ( ! function_exists( 'wp_get_scheme' ) ) :
 	/**
 	 * Returns the scheme in use based on is_ssl().
@@ -89,8 +76,8 @@ if ( ! function_exists( 'wp_validate_site_url' ) ) :
 			return false;
 		}
 
-		// Skip further validation if current user is a super admin.
-		if ( is_super_admin() ) {
+		// Skip further validation if user has access to managing network sites.
+		if ( current_user_can( 'manage_sites' ) ) {
 			return true;
 		}
 

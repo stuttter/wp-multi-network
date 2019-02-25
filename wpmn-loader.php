@@ -78,6 +78,14 @@ class WPMN_Loader {
 	public $admin;
 
 	/**
+	 * Network capabilities class instance.
+	 *
+	 * @since 2.3.0
+	 * @var WP_MS_Networks_Capabilities
+	 */
+	private $capabilities;
+
+	/**
 	 * Network admin bar class instance.
 	 *
 	 * @since 2.3.0
@@ -138,6 +146,8 @@ class WPMN_Loader {
 		require $this->plugin_dir . 'includes/compat.php';
 		require $this->plugin_dir . 'includes/functions.php';
 
+		require $this->plugin_dir . 'includes/classes/class-wp-ms-networks-capabilities.php';
+
 		if ( is_blog_admin() || is_network_admin() ) {
 			require $this->plugin_dir . 'includes/metaboxes/move-site.php';
 			require $this->plugin_dir . 'includes/metaboxes/edit-network.php';
@@ -149,7 +159,10 @@ class WPMN_Loader {
 
 		require $this->plugin_dir . 'includes/classes/class-wp-ms-networks-admin-bar.php';
 
-		$this->admin_bar = new WP_MS_Networks_Admin_bar();
+		$this->capabilities = new WP_MS_Networks_Capabilities();
+		$this->capabilities->add_hooks();
+
+		$this->admin_bar = new WP_MS_Networks_Admin_Bar();
 
 		if ( defined( 'WPMN_DEPRECATED' ) && ( true === WPMN_DEPRECATED ) ) {
 			require $this->plugin_dir . 'includes/deprecated.php';

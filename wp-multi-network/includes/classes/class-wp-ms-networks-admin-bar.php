@@ -65,8 +65,8 @@ class WP_MS_Networks_Admin_Bar {
 
 		$networks = user_has_networks();
 
-		// Bail if user does not have networks or they're not a global admin.
-		if ( empty( $networks ) || ! is_global_admin() ) {
+		// Bail if user does not have networks or they can't manage networks.
+		if ( empty( $networks ) || ! current_user_can( 'manage_networks' ) ) {
 			return;
 		}
 
@@ -87,6 +87,11 @@ class WP_MS_Networks_Admin_Bar {
 
 			switch_to_network( $network_id );
 
+			if ( ! current_user_can( 'manage_network' ) ) {
+				restore_current_network();
+				continue;
+			}
+
 			$wp_admin_bar->add_group( array(
 				'parent' => 'my-networks',
 				'id'     => 'group-network-admin-' . $network_id,
@@ -106,41 +111,56 @@ class WP_MS_Networks_Admin_Bar {
 				'title'  => __( 'Dashboard' ),
 				'href'   => network_admin_url(),
 			) );
-			$wp_admin_bar->add_menu( array(
-				'parent' => 'network-admin-' . $network_id,
-				'id'     => 'network-admin-s' . $network_id,
-				// phpcs:ignore WordPress.WP.I18n.MissingArgDomain
-				'title'  => __( 'Sites' ),
-				'href'   => network_admin_url( 'sites.php' ),
-			) );
-			$wp_admin_bar->add_menu( array(
-				'parent' => 'network-admin-' . $network_id,
-				'id'     => 'network-admin-u' . $network_id,
-				// phpcs:ignore WordPress.WP.I18n.MissingArgDomain
-				'title'  => __( 'Users' ),
-				'href'   => network_admin_url( 'users.php' ),
-			) );
-			$wp_admin_bar->add_menu( array(
-				'parent' => 'network-admin-' . $network_id,
-				'id'     => 'network-admin-t' . $network_id,
-				// phpcs:ignore WordPress.WP.I18n.MissingArgDomain
-				'title'  => __( 'Themes' ),
-				'href'   => network_admin_url( 'themes.php' ),
-			) );
-			$wp_admin_bar->add_menu( array(
-				'parent' => 'network-admin-' . $network_id,
-				'id'     => 'network-admin-p' . $network_id,
-				// phpcs:ignore WordPress.WP.I18n.MissingArgDomain
-				'title'  => __( 'Plugins' ),
-				'href'   => network_admin_url( 'plugins.php' ),
-			) );
-			$wp_admin_bar->add_menu( array(
-				'parent' => 'network-admin-' . $network_id,
-				'id'     => 'network-admin-o' . $network_id,
-				// phpcs:ignore WordPress.WP.I18n.MissingArgDomain
-				'title'  => __( 'Settings' ),
-				'href'   => network_admin_url( 'settings.php' ),
-			) );
+
+			if ( current_user_can( 'manage_sites' ) ) {
+				$wp_admin_bar->add_menu( array(
+					'parent' => 'network-admin-' . $network_id,
+					'id'     => 'network-admin-s' . $network_id,
+					// phpcs:ignore WordPress.WP.I18n.MissingArgDomain
+					'title'  => __( 'Sites' ),
+					'href'   => network_admin_url( 'sites.php' ),
+				) );
+			}
+
+			if ( current_user_can( 'manage_network_users' ) ) {
+				$wp_admin_bar->add_menu( array(
+					'parent' => 'network-admin-' . $network_id,
+					'id'     => 'network-admin-u' . $network_id,
+					// phpcs:ignore WordPress.WP.I18n.MissingArgDomain
+					'title'  => __( 'Users' ),
+					'href'   => network_admin_url( 'users.php' ),
+				) );
+			}
+
+			if ( current_user_can( 'manage_network_themes' ) ) {
+				$wp_admin_bar->add_menu( array(
+					'parent' => 'network-admin-' . $network_id,
+					'id'     => 'network-admin-t' . $network_id,
+					// phpcs:ignore WordPress.WP.I18n.MissingArgDomain
+					'title'  => __( 'Themes' ),
+					'href'   => network_admin_url( 'themes.php' ),
+				) );
+			}
+
+			if ( current_user_can( 'manage_network_plugins' ) ) {
+				$wp_admin_bar->add_menu( array(
+					'parent' => 'network-admin-' . $network_id,
+					'id'     => 'network-admin-p' . $network_id,
+					// phpcs:ignore WordPress.WP.I18n.MissingArgDomain
+					'title'  => __( 'Plugins' ),
+					'href'   => network_admin_url( 'plugins.php' ),
+				) );
+			}
+
+			if ( current_user_can( 'manage_network_options' ) ) {
+				$wp_admin_bar->add_menu( array(
+					'parent' => 'network-admin-' . $network_id,
+					'id'     => 'network-admin-o' . $network_id,
+					// phpcs:ignore WordPress.WP.I18n.MissingArgDomain
+					'title'  => __( 'Settings' ),
+					'href'   => network_admin_url( 'settings.php' ),
+				) );
+			}
 
 			restore_current_network();
 		}

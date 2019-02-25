@@ -238,8 +238,8 @@ class WP_MS_Networks_Admin {
 	 */
 	public function route_pages() {
 
-		// Bail if not a global administrator.
-		if ( ! is_global_admin() ) {
+		// Bail if lacking capabilities.
+		if ( ! current_user_can( 'manage_networks' ) ) {
 			wp_die( esc_html__( 'You do not have permission to access this page.', 'wp-multi-network' ) );
 		}
 
