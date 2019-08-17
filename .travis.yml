@@ -1,16 +1,100 @@
+sudo: false
+dist: trusty
+
 language: php
 
-php:
-    - 5.3
-    - 5.4
-    - 5.5
-    - 5.6
+notifications:
+  email:
+    on_success: never
+    on_failure: change
 
-env:
-    - WP_VERSION=4.2 WP_MULTISITE=1
-    - WP_VERSION=latest WP_MULTISITE=1
+cache:
+  directories:
+    - $HOME/.composer/cache
+
+matrix:
+  include:
+    - php: 7.2
+      env: WP_VERSION=latest WP_MULTISITE=1 PHPLINT=1 PHPCS=1
+    - php: 5.2
+      env: WP_VERSION=latest WP_MULTISITE=1 PHPLINT=1
+      dist: precise
+    - php: 7.2
+      env: WP_VERSION=4.6 WP_MULTISITE=1
+    - php: 5.2
+      env: WP_VERSION=4.6 WP_MULTISITE=1
+      dist: precise
+    - php: nightly
+      env: WP_VERSION=master WP_MULTISITE=1
+  allow_failures:
+    - php: nightly
+      env: WP_VERSION=master WP_MULTISITE=1
 
 before_script:
-    - bash tests/bin/install-wp-tests.sh wordpress_test root '' localhost $WP_VERSION 
-
-script: phpunit
+  - |
+    if [[ "$COVERAGE" != "1" ]]; then
+      stable='^[0-9\.]+$'
+      if [[ "$TRAVIS_PHP_VERSION" =~ $stable ]]; then
+        if [ -f ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini ]; then
+          phpenv config-rm xdebug.ini
+        fi
+      fi
+    fi
+  - |
+    case "$TRAVIS_PHP_VERSION" in
+      5.6|5.5|5.4|5.3)
+        composer global require "phpunit/phpunit:^4"
+        ;;
+      5.2)
+        ;;
+      *)
+        composer selfupdate 1.0.0 --no-interaction
+        composer install --no-interaction
+        ;;
+    esac
+  - |
+    if [[ "$PHPCS" == "1" ]]; then
+      composer config-phpcs
+    fi
+  - |
+    if [[ "$WP_VERSION" == "latest" ]]; then
+      curl -s http://api.wordpress.org/core/version-check/1.7/ > /tmp/wp-latest.json
+      WP_VERSION=$(grep -o '"version":"[^"]*' /tmp/wp-latest.json | sed 's/"version":"//')
+    fi
+  - PLUGIN_SLUG=$(basename $(pwd))
+  - export WP_DEVELOP_DIR=/tmp/wordpress/
+  - git clone --depth=50 --branch="$WP_VERSION" git://develop.git.wordpress.org/ /tmp/wordpress
+  - cd ..
+  - mkdir -p /tmp/wordpress/src/wp-content/mu-plugins
+  - cp -r "$PLUGIN_SLUG" "/tmp/wordpress/src/wp-content/mu-plugins/$PLUGIN_SLUG"
+  - cd /tmp/wordpress/
+  - cp wp-tests-config-sample.php wp-tests-config.php
+  - sed -i "s/youremptytestdbnamehere/wordpress_tests/" wp-tests-config.php
+  - sed -i "s/yourusernamehere/travis/" wp-tests-config.php
+  - sed -i "s/yourpasswordhere//" wp-tests-config.php
+  - mysql -e "CREATE DATABASE wordpress_tests;" -uroot
+  - cd "/tmp/wordpress/src/wp-content/mu-plugins/$PLUGIN_SLUG"
+  - phpenv rehash
+script:
+  - |
+    if [[ "$PHPLINT" == "1" ]]; then
+      find -L . -path ./vendor -prune -o -name '*.php' -not -name 'class-wp-ms-network-command.php' -print0 | xargs -0 -n 1 -P 4 php -l
+    fi
+  - |
+    if [[ "$PHPCS" == "1" ]]; then
+      vendor/bin/phpcs -v --runtime-set ignore_warnings_on_exit 1
+    fi
+  - |
+    case "$TRAVIS_PHP_VERSION" in
+      5.6|5.5|5.4|5.3|5.2)
+        phpunit -c phpunit.xml.dist
+        ;;
+      *)
+        if [[ "$COVERAGE" == "1" ]]; then
+          mkdir -p build/logs
+          vendor/bin/phpunit -c phpunit.xml.dist --coverage-clover build/logs/clover.xml
+        else
+          vendor/bin/phpunit -c phpunit.xml.dist
+        fi
+        ;;
+    esac

@@ -1,32 +1,26 @@
 <?php
-
 /**
- * Metaboxes related to editing a network
+ * Metaboxes related to editing a network.
  *
- * @package Plugins/Networks/Metaboxes/Network/Edit
+ * @package WPMN
+ * @since 1.7.0
  */
 
-// Exit if accessed directly
+// Exit if accessed directly.
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Metabox for assigning properties of a network
+ * Renders the metabox for assigning properties of a network.
  *
  * @since 1.7.0
  *
- * @param WP_Network $network Results of get_blog_details()
+ * @param WP_Network $network Optional. Network object. Default null.
  */
 function wpmn_edit_network_details_metabox( $network = null ) {
+	$domain = ! empty( $network->domain ) ? Requests_IDNAEncoder::encode( $network->domain ) : '';
+	$path   = ! empty( $network->path ) ? $network->path : '/';
 
-	// Domain
-	$domain = ! empty( $network->domain )
-		? Requests_IDNAEncoder::encode( $network->domain )
-		: '';
-
-	// Path
-	$path = ! empty( $network->path )
-		? $network->path
-		: '/'; ?>
+	?>
 
 	<table class="edit-network form-table">
 		<tr class="form-field form-required">
@@ -35,7 +29,7 @@ function wpmn_edit_network_details_metabox( $network = null ) {
 			</th>
 			<td>
 				<label for="domain">
-					<span class="scheme"><?php echo wp_get_scheme(); ?></span>
+					<span class="scheme"><?php echo esc_html( wp_get_scheme() ); ?></span>
 					<input type="text" name="domain" id="domain" class="regular-text" value="<?php echo esc_attr( $domain ); ?>">
 				</label>
 			</td>
@@ -51,16 +45,16 @@ function wpmn_edit_network_details_metabox( $network = null ) {
 		</tr>
 	</table>
 
-<?php
+	<?php
 }
 
 /**
- * Metabox for assigning properties of a network
+ * Renders the metabox for defining the main site for a new network.
  *
  * @since 1.7.0
  */
 function wpmn_edit_network_new_site_metabox() {
-?>
+	?>
 
 	<table class="edit-network form-table">
 		<tr class="form-field form-required">
@@ -74,26 +68,24 @@ function wpmn_edit_network_new_site_metabox() {
 		</tr>
 	</table>
 
-<?php
+	<?php
 }
 
 /**
- * Metabox for assigning sites to a network
+ * Renders the metabox for assigning sites to a network.
  *
  * @since 1.7.0
  *
- * @param WP_Network $network
+ * @param WP_Network $network Optional. Network object. Default null.
  */
 function wpmn_edit_network_assign_sites_metabox( $network = null ) {
-
-	// To
 	$to = get_sites( array(
-		'network_id' => $network->id
+		'site__not_in' => get_main_site_id( $network->id ),
+		'network_id'   => $network->id,
 	) );
 
-	// From
 	$from = get_sites( array(
-		'network__not_in' => array( $network->id )
+		'network__not_in' => array( $network->id ),
 	) );
 
 	?>
@@ -101,21 +93,20 @@ function wpmn_edit_network_assign_sites_metabox( $network = null ) {
 	<table class="assign-sites widefat">
 		<thead>
 			<tr>
-				<th><?php esc_html_e( 'Available Sites', 'wp-multi-network' ); ?></th>
+				<th><?php esc_html_e( 'Available Subsites', 'wp-multi-network' ); ?></th>
 				<th>&nbsp;</th>
-				<th><?php esc_html_e( 'Network Sites', 'wp-multi-network' ); ?></th>
+				<th><?php esc_html_e( 'Network Subsites', 'wp-multi-network' ); ?></th>
 			</tr>
 		</thead>
 		<tr>
 			<td class="column-available">
-				<p class="description"><?php esc_html_e( 'Subsites in other networks & orphaned sites without networks.', 'wp-multi-network' ); ?></p>
 				<select name="from[]" id="from" multiple>
 
 					<?php foreach ( $from as $site ) : ?>
 
-						<?php if ( ( (int) $site->site_id !== (int) $network->id ) && ! is_main_site_for_network( $site->blog_id ) ) : ?>
+						<?php if ( ( (int) $site->network_id !== (int) $network->id ) && ! is_main_site_for_network( $site->id ) ) : ?>
 
-							<option value="<?php echo esc_attr( $site->blog_id ); ?>">
+							<option value="<?php echo esc_attr( $site->id ); ?>">
 								<?php echo esc_html( sprintf( '%1$s (%2$s%3$s)', $site->name, $site->domain, $site->path ) ); ?>
 							</option>
 
@@ -126,18 +117,17 @@ function wpmn_edit_network_assign_sites_metabox( $network = null ) {
 				</select>
 			</td>
 			<td class="column-actions">
-				<input type="button" name="unassign" id="unassign" class="button" value="&larr;">
-				<input type="button" name="assign" id="assign" class="button" value="&rarr;">
+				<input type="button" name="assign" id="assign" class="button assign" value="&rarr;">
+				<input type="button" name="unassign" id="unassign" class="button unassign" value="&larr;">
 			</td>
 			<td class="column-assigned">
-				<p class="description"><?php esc_html_e( 'Only subsites of this network can be reassigned.', 'wp-multi-network' ); ?></p>
 				<select name="to[]" id="to" multiple>
 
 					<?php foreach ( $to as $site ) : ?>
 
-						<?php if ( (int) $site->site_id === (int) $network->id ) : ?>
+						<?php if ( (int) $site->network_id === (int) $network->id ) : ?>
 
-							<option value="<?php echo esc_attr( $site->blog_id ); ?>" <?php disabled( is_main_site_for_network( $site->blog_id ) ); ?>>
+							<option value="<?php echo esc_attr( $site->id ); ?>" <?php disabled( is_main_site_for_network( $site->id ) ); ?>>
 								<?php echo esc_html( sprintf( '%1$s (%2$s%3$s)', $site->name, $site->domain, $site->path ) ); ?>
 							</option>
 
@@ -150,59 +140,75 @@ function wpmn_edit_network_assign_sites_metabox( $network = null ) {
 		</tr>
 	</table>
 
-<?php
+	<?php
 }
 
 /**
- * Metabox used to publish the network
+ * Renders the metabox used to publish the network.
  *
  * @since 1.7.0
  *
- * @param WP_Network $network
+ * @param WP_Network $network Optional. Network object. Default null.
  */
 function wpmn_edit_network_publish_metabox( $network = null ) {
+	if ( empty( $network ) ) {
+		$network_id  = 0;
+		$button_text = esc_html__( 'Create', 'wp-multi-network' );
+		$action      = 'create';
+	} else {
+		$network_id  = $network->id;
+		$button_text = esc_html__( 'Update', 'wp-multi-network' );
+		$action      = 'update';
+	}
 
-	// Network ID
-	$network_id = empty( $network )
-		? 0
-		: $network->id;
-
-	// Button text
-	$button_text = empty( $network )
-		? esc_html__( 'Create', 'wp-multi-network' )
-		: esc_html__( 'Update', 'wp-multi-network' );
-
-	// Button action
-	$action = empty( $network )
-		? 'create'
-		: 'update';
-
-	// Cancel URL
 	$cancel_url = add_query_arg( array(
-		'page' => 'networks'
-	), network_admin_url( 'admin.php' ) ); ?>
+		'page' => 'networks',
+	), network_admin_url( 'admin.php' ) );
+	?>
 
 	<div class="submitbox">
 		<div id="minor-publishing">
 			<div id="misc-publishing-actions">
+				<?php
 
-				<?php if ( ! empty( $network ) ) : ?>
+				if ( ! empty( $network ) ) {
+					?>
 
 					<div class="misc-pub-section misc-pub-section-first" id="network">
-						<span><?php printf( __( 'Name: <strong>%1$s</strong>',  'wp-multi-network' ), get_network_option( $network->id, 'site_name' ) ); ?></span>
+						<span>
+							<?php
+							printf(
+								/* translators: %s: network name */
+								__( 'Name: <strong>%s</strong>', 'wp-multi-network' ),
+								esc_html( get_network_option( $network->id, 'site_name' ) )
+							);
+							?>
+						</span>
 					</div>
 					<div class="misc-pub-section misc-pub-section-last" id="sites">
-						<span><?php printf( __( 'Sites: <strong>%1$s</strong>', 'wp-multi-network' ), get_network_option( $network->id, 'blog_count' ) ); ?></span>
+						<span>
+							<?php
+							printf(
+								/* translators: %s: network site count */
+								__( 'Sites: <strong>%s</strong>', 'wp-multi-network' ),
+								esc_html( get_network_option( $network->id, 'blog_count' ) )
+							);
+							?>
+						</span>
 					</div>
 
-				<?php else : ?>
+					<?php
+				} else {
+					?>
 
 					<div class="misc-pub-section misc-pub-section-first" id="sites">
 						<span><?php esc_html_e( 'Creating a network with 1 new site.', 'wp-multi-network' ); ?></span>
 					</div>
 
-				<?php endif; ?>
+					<?php
+				}
 
+				?>
 			</div>
 
 			<div class="clear"></div>
@@ -225,5 +231,5 @@ function wpmn_edit_network_publish_metabox( $network = null ) {
 		</div>
 	</div>
 
-<?php
+	<?php
 }

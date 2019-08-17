@@ -1,14 +1,31 @@
 <phpunit
-	bootstrap="tests/bootstrap.php"
 	backupGlobals="false"
+	backupStaticAttributes="false"
+	bootstrap="tests/integration/includes/bootstrap.php"
 	colors="true"
 	convertErrorsToExceptions="true"
 	convertNoticesToExceptions="true"
 	convertWarningsToExceptions="true"
+	processIsolation="false"
+	stopOnError="false"
+	stopOnFailure="false"
+	stopOnIncomplete="false"
+	stopOnSkipped="false"
+	syntaxCheck="false"
+	verbose="true"
 	>
+	<php>
+		<const name="WP_TESTS_MULTISITE" value="1" />
+	</php>
 	<testsuites>
 		<testsuite>
-			<directory prefix="test-" suffix=".php">./tests/</directory>
+			<directory suffix=".php">./tests/integration/tests/</directory>
 		</testsuite>
 	</testsuites>
+	<filter>
+		<whitelist>
+			<directory>./wp-multi-network/includes</directory>
+			<file>./wpmn-loader.php</file>
+		</whitelist>
+	</filter>
 </phpunit>

@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<ruleset name="WP Multi Network PHPCS Rules">
+	<description>PHPCS ruleset for WP Multi Network</description>
+
+	<!-- Check all PHP files in directory tree by default. -->
+	<arg name="extensions" value="php"/>
+	<file>.</file>
+
+	<!-- Show progress and sniff codes in all reports. -->
+	<arg value="ps"/>
+
+	<!-- Exclude directories we don't need to check. -->
+	<exclude-pattern>*/node_modules/*</exclude-pattern>
+	<exclude-pattern>*/tests/*</exclude-pattern>
+	<exclude-pattern>*/vendor/*</exclude-pattern>
+
+	<!-- Use WPCS except its VIP restrictions. -->
+	<rule ref="WordPress">
+		<exclude name="WordPress.VIP.RestrictedFunctions"/>
+	</rule>
+
+	<!-- Set WPCS plugin textdomain. -->
+	<rule ref="WordPress.WP.I18n">
+		<properties>
+			<property name="text_domain" type="string" value="wp-multi-network"/>
+		</properties>
+	</rule>
+</ruleset>

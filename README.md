@@ -1,3 +1,9 @@
+[![WordPress plugin](https://img.shields.io/wordpress/plugin/v/wp-multi-network.svg)](https://wordpress.org/plugins/wp-multi-network/)
+[![WordPress](https://img.shields.io/wordpress/v/wp-multi-network.svg)](https://wordpress.org/plugins/wp-multi-network/)
+[![Build Status](https://api.travis-ci.org/stuttter/wp-multi-network.png?branch=master)](https://travis-ci.org/stuttter/wp-multi-network)
+[![Latest Stable Version](https://poser.pugx.org/stuttter/wp-multi-network/version)](https://packagist.org/packages/stuttter/wp-multi-network)
+[![License](https://poser.pugx.org/stuttter/wp-multi-network/license)](https://packagist.org/packages/stuttter/wp-multi-network)
+
 # WP Multi Network
 
 A Network Management UI for global admins in a WordPress Multisite environment
@@ -85,4 +91,4 @@ To achieve nested folder paths in this fashion `network1/site1`, `network1/site2
 
 ### Can I contribute?
 
-Please! The number of users needing multiple WordPress networks is growing fast. Having an easy-to-use interface and powerful set of functions is critical to managing complex WordPress installations. If this is your thing, please help us out!
+Please! The number of users needing multiple WordPress networks is growing fast. Having an easy-to-use interface and powerful set of functions is critical to managing complex WordPress installations. If this is your thing, please help us out! Read more in the [plugin contributing guidelines](https://github.com/stuttter/wp-multi-network/blob/master/CONTRIBUTING.md).

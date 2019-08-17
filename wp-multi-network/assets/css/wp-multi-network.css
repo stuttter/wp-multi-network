@@ -91,19 +91,46 @@ table.assign-sites thead th {
 	padding: 10px 9px;
 }
 
-table.assign-sites select {
+table.assign-sites select[multiple] {
 	width: 100%;
+	height: 80px !important;
+	margin: 0;
 }
 
-table.assign-sites td.column-available,
-table.assign-sites td.column-assigned {
-	width: 44%;
+table.assign-sites .button {
+	margin: 0 5px;
+	width: 35%;
+	height: 80px;
 }
 
 table.assign-sites td.column-actions {
-	width: 12%;
-	text-align: center;
-	vertical-align: middle;
+	width: 16%;
+	padding: 8px 0;
+}
+
+table.assign-sites td.column-actions .assign {
+	float: left;
+	content: "\f341";
+}
+
+table.assign-sites td.column-actions .unassign {
+	float: right;
+}
+
+table.assign-sites td.column-available {
+	padding-right: 0;
+}
+
+table.assign-sites td.column-assigned {
+	padding-left: 0;
+}
+table.assign-sites td.column-available,
+table.assign-sites td.column-assigned {
+	width: 42%;
+}
+
+table.assign-sites td.column-assigned {
+	text-align: right;
 }
 
 div.network-delete {
