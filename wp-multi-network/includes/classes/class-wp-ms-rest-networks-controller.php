@@ -181,7 +181,7 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 		 */
 		$prepared_args = apply_filters( 'rest_network_query', $prepared_args, $request );
 
-		$query        = new WP_Network_Query;
+		$query        = new WP_Network_Query();
 		$query_result = $query->query( $prepared_args );
 		$networks     = array();
 		foreach ( $query_result as $network ) {
@@ -200,7 +200,7 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 			// Out-of-bounds, run the query again without LIMIT for total count.
 			unset( $prepared_args['number'], $prepared_args['offset'] );
 
-			$query                  = new WP_Network_Query;
+			$query                  = new WP_Network_Query();
 			$prepared_args['count'] = true;
 
 			$total_networks = $query->query( $prepared_args );
@@ -563,7 +563,7 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	 *
 	 * @since 2.3.0
 	 *
-	 * @param WP_Network $network Network object.
+	 * @param WP_Network      $network Network object.
 	 * @param WP_REST_Request $request Request object.
 	 *
 	 * @return WP_REST_Response Response object.
@@ -624,6 +624,7 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	}
 
 	/**
+	 * Helper function to normalisze query params.
 	 *
 	 * @since 2.3.0
 	 *
@@ -836,7 +837,7 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	 *
 	 * @since 2.3.0
 	 *
-	 * @param WP_Network $network Network object.
+	 * @param WP_Network      $network Network object.
 	 * @param WP_REST_Request $request Request data to check.
 	 *
 	 * @return bool Whether the network can be read.
@@ -863,9 +864,9 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	}
 
 	/**
-	 * Helper method to add status code to returned WP_error objects
+	 * Helper method to add status code to returned WP_error objects.
 	 *
-	 * @param WP_Error $error
+	 * @param WP_Error $error Input WP_Error object.
 	 *
 	 * @return WP_Error $error
 	 */

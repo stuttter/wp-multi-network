@@ -172,7 +172,7 @@ class WPMN_Loader {
 			require $this->plugin_dir . 'includes/classes/class-wp-ms-network-command.php';
 		}
 
-		// REST endpoint class only load 4.7+
+		// REST endpoint class only load 4.7+.
 		if ( version_compare( $GLOBALS['wp_version'], '4.7', '>=' ) ) {
 			require $this->plugin_dir . 'includes/classes/class-wp-ms-rest-networks-controller.php';
 		}
@@ -195,7 +195,7 @@ add_action( 'muplugins_loaded', 'setup_multi_network' );
  * @since 2.3.0
  */
 function setup_multi_network_endpoints() {
-	$controller = new WP_MS_REST_Networks_Controller;
+	$controller = new WP_MS_REST_Networks_Controller();
 	$controller->register_routes();
 }
 add_action( 'rest_api_init', 'setup_multi_network_endpoints', 99 );

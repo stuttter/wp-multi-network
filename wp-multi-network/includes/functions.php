@@ -507,8 +507,8 @@ if ( ! function_exists( 'add_network' ) ) :
 		$new_network_id = insert_network( $r['domain'], $r['path'] );
 
 		if ( is_wp_error( $new_network_id ) ) {
-		  return $new_network_id;
-	  }
+			return $new_network_id;
+		}
 
 		if ( empty( $new_network_id ) ) {
 			return false;

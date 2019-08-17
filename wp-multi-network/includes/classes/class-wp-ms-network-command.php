@@ -163,9 +163,11 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 	public function delete( $args, $assoc_args ) {
 		list( $id ) = $args;
 
-		$assoc_args = wp_parse_args( $assoc_args, array(
-			'delete_blogs' => false,
-		) );
+		$assoc_args = wp_parse_args(
+			$assoc_args, array(
+				'delete_blogs' => false,
+			)
+		);
 
 		$network_id = delete_network( $id, $assoc_args['delete_blogs'] );
 
