@@ -379,7 +379,7 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 		$network_admins = ! empty( $network_admins ) ? array_filter( $network_admins ) : array();
 
 		// Concatenate for markup.
-		echo empty( $network_admins ) ? esc_html( join( ', ', $network_admins ) ) : esc_html( '&mdash;' );
+		echo ! empty( $network_admins ) ? esc_html( join( ', ', $network_admins ) ) : esc_html( '&mdash;' );
 	}
 
 	/**
