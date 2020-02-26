@@ -391,9 +391,9 @@ class WP_MS_Networks_Admin {
 			</h1>
 
 			<form method="post" id="edit-network-form" action="">
-				<div id="poststuff">
+				<div id="poststuff" class="poststuff">
 					<div id="post-body" class="metabox-holder columns-2">
-						<div id="post-body-content" style="position: relative;">
+						<div id="post-body-content">
 							<div id="titlediv">
 								<div id="titlewrap">
 									<label class="screen-reader-text" id="title-prompt-text" for="title"><?php echo esc_html_e( 'Enter network title here', 'wp-multi-network' ); ?></label>
