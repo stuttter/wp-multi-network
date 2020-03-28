@@ -4,13 +4,13 @@
  *
  * @package WPMN
  * @subpackage REST_API
- * @since 2.3.0
+ * @since 2.4.0
  */
 
 /**
  * Core controller used to access networks via the REST API.
  *
- * @since 2.3.0
+ * @since 2.4.0
  *
  * @see WP_REST_Controller
  */
@@ -19,7 +19,7 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	/**
 	 * Constructor.
 	 *
-	 * @since 2.3.0
+	 * @since 2.4.0
 	 */
 	public function __construct() {
 		$this->namespace = 'wpmn/v1';
@@ -29,7 +29,7 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	/**
 	 * Registers the routes for the objects of the controller.
 	 *
-	 * @since 2.3.0
+	 * @since 2.4.0
 	 */
 	public function register_routes() {
 
@@ -97,7 +97,7 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	/**
 	 * Checks if a given request has access to read networks.
 	 *
-	 * @since 2.3.0
+	 * @since 2.4.0
 	 *
 	 * @param WP_REST_Request $request Full details about the request.
 	 *
@@ -110,7 +110,7 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	/**
 	 * Retrieves a list of network items.
 	 *
-	 * @since 2.3.0
+	 * @since 2.4.0
 	 *
 	 * @param WP_REST_Request $request Full details about the request.
 	 *
@@ -172,7 +172,7 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 		/**
 		 * Filters arguments, before passing to WP_Network_Query, when querying networks via the REST API.
 		 *
-		 * @since 2.3.0
+		 * @since 2.4.0
 		 *
 		 * @link https://developer.wordpress.org/reference/classes/wp_network_query/
 		 *
@@ -237,7 +237,7 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	/**
 	 * Get the network, if the ID is valid.
 	 *
-	 * @since 2.3.0
+	 * @since 2.4.0
 	 *
 	 * @param int $id Supplied ID.
 	 *
@@ -265,7 +265,7 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	/**
 	 * Checks if a given request has access to read the network.
 	 *
-	 * @since 2.3.0
+	 * @since 2.4.0
 	 *
 	 * @param WP_REST_Request $request Full details about the request.
 	 *
@@ -283,7 +283,7 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	/**
 	 * Retrieves a network.
 	 *
-	 * @since 2.3.0
+	 * @since 2.4.0
 	 *
 	 * @param WP_REST_Request $request Full details about the request.
 	 *
@@ -304,7 +304,7 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	/**
 	 * Checks if a given request has access to create a network.
 	 *
-	 * @since 2.3.0
+	 * @since 2.4.0
 	 *
 	 * @param WP_REST_Request $request Full details about the request.
 	 *
@@ -317,7 +317,7 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	/**
 	 * Creates a network.
 	 *
-	 * @since 2.3.0
+	 * @since 2.4.0
 	 *
 	 * @param WP_REST_Request $request Full details about the request.
 	 *
@@ -344,7 +344,7 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 		 * Returning a WP_Error value from the filter will shortcircuit insertion and allow
 		 * skipping further processing.
 		 *
-		 * @since 2.3.0
+		 * @since 2.4.0
 		 *
 		 * @param array|WP_Error $prepared_network The prepared network data for insert_network().
 		 * @param WP_REST_Request $request Request used to insert the network.
@@ -371,7 +371,7 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 		/**
 		 * Fires after a network is created or updated via the REST API.
 		 *
-		 * @since 2.3.0
+		 * @since 2.4.0
 		 *
 		 * @param WP_Network $network Inserted or updated network object.
 		 * @param WP_REST_Request $request Request object.
@@ -402,7 +402,7 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	/**
 	 * Checks if a given REST request has access to update a network.
 	 *
-	 * @since 2.3.0
+	 * @since 2.4.0
 	 *
 	 * @param WP_REST_Request $request Full details about the request.
 	 *
@@ -428,7 +428,7 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	/**
 	 * Updates a network.
 	 *
-	 * @since 2.3.0
+	 * @since 2.4.0
 	 *
 	 * @param WP_REST_Request $request Full details about the request.
 	 *
@@ -490,7 +490,7 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	/**
 	 * Checks if a given request has access to delete a network.
 	 *
-	 * @since 2.3.0
+	 * @since 2.4.0
 	 *
 	 * @param WP_REST_Request $request Full details about the request.
 	 *
@@ -508,7 +508,7 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	/**
 	 * Deletes a network.
 	 *
-	 * @since 2.3.0
+	 * @since 2.4.0
 	 *
 	 * @param WP_REST_Request $request Full details about the request.
 	 *
@@ -547,7 +547,7 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 		/**
 		 * Fires after a network is deleted via the REST API.
 		 *
-		 * @since 2.3.0
+		 * @since 2.4.0
 		 *
 		 * @param WP_Network $network The deleted network data.
 		 * @param WP_REST_Response $response The response returned from the API.
@@ -561,7 +561,7 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	/**
 	 * Prepares a single network output for response.
 	 *
-	 * @since 2.3.0
+	 * @since 2.4.0
 	 *
 	 * @param WP_Network      $network Network object.
 	 * @param WP_REST_Request $request Request object.
@@ -592,7 +592,7 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 		 *
 		 * Allows modification of the network right before it is returned.
 		 *
-		 * @since 2.3.0
+		 * @since 2.4.0
 		 *
 		 * @param WP_REST_Response $response The response object.
 		 * @param WP_Network $network The original network object.
@@ -604,7 +604,7 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	/**
 	 * Prepares links for the request.
 	 *
-	 * @since 2.3.0
+	 * @since 2.4.0
 	 *
 	 * @param WP_Network $network Network object.
 	 *
@@ -626,7 +626,7 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	/**
 	 * Helper function to normalisze query params.
 	 *
-	 * @since 2.3.0
+	 * @since 2.4.0
 	 *
 	 * @param string $query_param Query parameter.
 	 *
@@ -648,7 +648,7 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	/**
 	 * Prepares a single network to be inserted into the database.
 	 *
-	 * @since 2.3.0
+	 * @since 2.4.0
 	 *
 	 * @param WP_REST_Request $request Request object.
 	 *
@@ -674,7 +674,7 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 		 *
 		 * Allows modification of the network right after it is prepared for the database.
 		 *
-		 * @since 2.3.0
+		 * @since 2.4.0
 		 *
 		 * @param array $prepared_network The prepared network data for `insert_network`.
 		 * @param WP_REST_Request $request The current request.
@@ -685,7 +685,7 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	/**
 	 * Retrieves the network's schema, conforming to JSON Schema.
 	 *
-	 * @since 2.3.0
+	 * @since 2.4.0
 	 *
 	 * @return array
 	 */
@@ -733,7 +733,7 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	/**
 	 * Retrieves the query params for collections.
 	 *
-	 * @since 2.3.0
+	 * @since 2.4.0
 	 *
 	 * @return array Networks collection parameters.
 	 */
@@ -828,7 +828,7 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 		 * collection parameter to an internal WP_Network_Query parameter. Use the
 		 * `rest_network_query` filter to set WP_Network_Query parameters.
 		 *
-		 * @since 2.3.0
+		 * @since 2.4.0
 		 *
 		 * @param array $query_params JSON Schema-formatted collection parameters.
 		 */
@@ -839,7 +839,7 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	/**
 	 * Checks if the network can be read.
 	 *
-	 * @since 2.3.0
+	 * @since 2.4.0
 	 *
 	 * @param WP_Network      $network Network object.
 	 * @param WP_REST_Request $request Request data to check.
@@ -857,7 +857,7 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	/**
 	 * Checks if a network can be edited or deleted.
 	 *
-	 * @since 2.3.0
+	 * @since 2.4.0
 	 *
 	 * @param object $network Network object.
 	 *
