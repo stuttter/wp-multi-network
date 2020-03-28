@@ -166,7 +166,7 @@ class  WP_MS_Test_REST_Networks_Controller extends WP_Test_REST_Controller_Testc
 
 	}
 
-	protected function check_network_data( $data, $context, $links ) {
+	protected function check_network_data( $data ) {
 		$network = get_network( $data['id'] );
 
 		$this->assertEquals( $network->id, $data['id'] );
