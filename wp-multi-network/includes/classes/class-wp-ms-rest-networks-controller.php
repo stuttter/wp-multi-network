@@ -666,7 +666,7 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 		}
 
 		if ( isset( $request['site_name'] ) ) {
-			$prepared_network['site_name'] = $request['site_name'];
+			$prepared_network['network_name'] = $request['site_name'];
 		}
 
 		/**
