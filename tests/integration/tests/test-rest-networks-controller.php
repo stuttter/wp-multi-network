@@ -13,6 +13,7 @@ class  WP_MS_Test_REST_Networks_Controller extends WP_Test_REST_Controller_Testc
 				'user_login' => 'superadmin',
 			)
 		);
+    grant_super_admin( self::$superadmin_id );
 
 		// Set up networks for pagination tests.
 		for ( $i = 0; $i < self::$total_networks - 1; $i++ ) {
