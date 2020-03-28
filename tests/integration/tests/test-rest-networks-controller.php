@@ -18,7 +18,7 @@ class  WP_MS_Test_REST_Networks_Controller extends WP_Test_REST_Controller_Testc
 			$network_ids[] = $factory->network->create();
 		}
 
-		self::$network_id = $factory->network->create()
+		self::$network_id = $factory->network->create();
 	}
 
 	public static function wpTearDownAfterClass() {
@@ -137,7 +137,7 @@ class  WP_MS_Test_REST_Networks_Controller extends WP_Test_REST_Controller_Testc
 	protected function check_network_data( $data, $context, $links ) {
 		$network = get_network( $data['id'] );
 
-		$this->assertEquals( $network->network_ID, $data['id'] );
+		$this->assertEquals( $network->id, $data['id'] );
 		$this->assertEquals( $network->domain, $data['domain'] );
 		$this->assertEquals( $network->path, $data['path'] );
 		$this->assertEquals( $network->site_name, $data['site_name'] );
