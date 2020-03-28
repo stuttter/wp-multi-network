@@ -14,15 +14,15 @@ cache:
 
 matrix:
   include:
-    - php: 7.2
+    - php: 7.4
       env: WP_VERSION=latest WP_MULTISITE=1 PHPLINT=1 PHPCS=1
-    - php: 5.2
+    - php: 5.6
       env: WP_VERSION=latest WP_MULTISITE=1 PHPLINT=1
       dist: precise
-    - php: 7.2
-      env: WP_VERSION=4.6 WP_MULTISITE=1
-    - php: 5.2
-      env: WP_VERSION=4.6 WP_MULTISITE=1
+    - php: 7.4
+      env: WP_VERSION=4.9 WP_MULTISITE=1
+    - php: 5.6
+      env: WP_VERSION=4.9 WP_MULTISITE=1
       dist: precise
     - php: nightly
       env: WP_VERSION=master WP_MULTISITE=1
