@@ -18,7 +18,8 @@ class  WP_MS_Test_REST_Networks_Controller extends WP_Test_REST_Controller_Testc
 		$this->assertEquals( 'view', $data['endpoints'][0]['args']['context']['default'] );
 		$this->assertEquals( array( 'view', 'embed', 'edit' ), $data['endpoints'][0]['args']['context']['enum'] );
 		// Single.
-		$request  = new WP_REST_Request( 'OPTIONS', '/wpmn/v1/networks/' . self::$approved_id );
+    $network  = $this->factory->network->create();
+		$request  = new WP_REST_Request( 'OPTIONS', '/wpmn/v1/networks/' . $network );
 		$response = rest_get_server()->dispatch( $request );
 		$data     = $response->get_data();
 		$this->assertEquals( 'view', $data['endpoints'][0]['args']['context']['default'] );
@@ -33,26 +34,19 @@ class  WP_MS_Test_REST_Networks_Controller extends WP_Test_REST_Controller_Testc
 		sort( $keys );
 		$this->assertEquals(
 			array(
-				'after',
-				'author',
-				'author_email',
-				'author_exclude',
-				'before',
-				'context',
-				'exclude',
-				'include',
-				'offset',
-				'order',
-				'orderby',
-				'page',
-				'parent',
-				'parent_exclude',
-				'password',
-				'per_page',
-				'post',
-				'search',
-				'status',
-				'type',
+        'context',
+        'domain',
+        'domain_exclude',
+        'exclude',
+        'include',
+        'offset',
+        'order',
+        'orderby',
+        'page',
+        'path',
+        'path_exclude',
+        'per_page',
+        'search',
 			),
 			$keys
 		);
