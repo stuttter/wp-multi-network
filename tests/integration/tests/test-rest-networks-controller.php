@@ -133,7 +133,7 @@ class  WP_MS_Test_REST_Networks_Controller extends WP_Test_REST_Controller_Testc
 		$this->check_network_data( $data );
 		$network = get_network( $data['id'] );
 		$this->assertEquals( $network->domain, 'www.example.net' );
-		$this->assertEquals( $network->path, 'network' );
+		$this->assertEquals( $network->path, '\/network\/' );
 		$this->assertEquals( $network->site_name, 'main-network' );
 	}
 
@@ -148,7 +148,7 @@ class  WP_MS_Test_REST_Networks_Controller extends WP_Test_REST_Controller_Testc
 		$this->check_network_data( $data );
 		$network = get_network( $data['id'] );
 		$this->assertEquals( $network->domain, 'www.example.co' );
-		$this->assertEquals( $network->path, 'update' );
+		$this->assertEquals( $network->path, '\/update\/' );
 	}
 
 	public function test_delete_item() {
@@ -236,7 +236,7 @@ class  WP_MS_Test_REST_Networks_Controller extends WP_Test_REST_Controller_Testc
 		$request->set_param( 'domain', 'www.example.co' );
 		$request->set_param( 'path', '/update' );
 		$response = rest_get_server()->dispatch( $request );
-		$this->assertErrorResponse( 'rest_cannot_edit', $response, 403 );
+		$this->assertErrorResponse( 'rest_cannot_edit', $response, 401 );
 	}
 
 	public function test_delete_item_no_permission() {
