@@ -133,7 +133,7 @@ class  WP_MS_Test_REST_Networks_Controller extends WP_Test_REST_Controller_Testc
 		$this->check_network_data( $data );
 		$network = get_network( $data['id'] );
 		$this->assertEquals( $network->domain, 'www.example.net' );
-		$this->assertEquals( $network->path, '\/network\/' );
+		$this->assertEquals( $network->path, '/network/' );
 		$this->assertEquals( $network->site_name, 'main-network' );
 	}
 
@@ -148,7 +148,7 @@ class  WP_MS_Test_REST_Networks_Controller extends WP_Test_REST_Controller_Testc
 		$this->check_network_data( $data );
 		$network = get_network( $data['id'] );
 		$this->assertEquals( $network->domain, 'www.example.co' );
-		$this->assertEquals( $network->path, '\/update\/' );
+		$this->assertEquals( $network->path, '/update/' );
 	}
 
 	public function test_delete_item() {
