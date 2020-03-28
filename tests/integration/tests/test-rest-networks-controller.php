@@ -148,7 +148,7 @@ class  WP_MS_Test_REST_Networks_Controller extends WP_Test_REST_Controller_Testc
 		$this->check_network_data( $data );
 		$network = get_network( $data['id'] );
 		$this->assertEquals( $network->domain, 'www.example.co' );
-		$this->assertEquals( $network->path, '/update/' );
+		$this->assertEquals( $network->path, '/update /' );
 	}
 
 	public function test_delete_item() {
@@ -201,7 +201,7 @@ class  WP_MS_Test_REST_Networks_Controller extends WP_Test_REST_Controller_Testc
 		wp_set_current_user( 0 );
 		$request  = new WP_REST_Request( 'GET', '/wpmn/v1/networks' );
 		$response = rest_get_server()->dispatch( $request );
-		$this->assertErrorResponse( 'rest_forbidden', $response, 403 );
+		$this->assertErrorResponse( 'rest_forbidden', $response, rest_authorization_required_code() );
 	}
 
 	/**
@@ -211,7 +211,7 @@ class  WP_MS_Test_REST_Networks_Controller extends WP_Test_REST_Controller_Testc
 		wp_set_current_user( 0 );
 		$request  = new WP_REST_Request( 'GET', '/wpmn/v1/networks/' . self::$network_id );
 		$response = rest_get_server()->dispatch( $request );
-		$this->assertErrorResponse( 'rest_forbidden', $response, 403 );
+		$this->assertErrorResponse( 'rest_forbidden', $response, rest_authorization_required_code() );
 	}
 
 	/**
@@ -223,7 +223,7 @@ class  WP_MS_Test_REST_Networks_Controller extends WP_Test_REST_Controller_Testc
 		$request->set_param( 'domain', 'www.example.net' );
 		$request->set_param( 'path', '/network' );
 		$response = rest_get_server()->dispatch( $request );
-		$this->assertErrorResponse( 'rest_forbidden', $response, 403 );
+		$this->assertErrorResponse( 'rest_forbidden', $response, rest_authorization_required_code() );
 	}
 
 	/**
@@ -236,7 +236,7 @@ class  WP_MS_Test_REST_Networks_Controller extends WP_Test_REST_Controller_Testc
 		$request->set_param( 'domain', 'www.example.co' );
 		$request->set_param( 'path', '/update' );
 		$response = rest_get_server()->dispatch( $request );
-		$this->assertErrorResponse( 'rest_cannot_edit', $response, 401 );
+		$this->assertErrorResponse( 'rest_cannot_edit', $response, rest_authorization_required_code() );
 	}
 
 	public function test_delete_item_no_permission() {
@@ -245,7 +245,7 @@ class  WP_MS_Test_REST_Networks_Controller extends WP_Test_REST_Controller_Testc
 		$request          = new WP_REST_Request( 'DELETE', '/wpmn/v1/networks/' . $network_id );
 		$request['force'] = true;
 		$response         = rest_get_server()->dispatch( $request );
-		$this->assertErrorResponse( 'rest_forbidden', $response, 403 );
+		$this->assertErrorResponse( 'rest_forbidden', $response, rest_authorization_required_code() );
 	}
 
 	protected function check_network_data( $data ) {
