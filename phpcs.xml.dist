@@ -11,6 +11,7 @@
 
 	<!-- Exclude directories we don't need to check. -->
 	<exclude-pattern>*/node_modules/*</exclude-pattern>
+	<exclude-pattern>*/tests/*</exclude-pattern>
 	<exclude-pattern>*/vendor/*</exclude-pattern>
 
 	<!-- Use WPCS except its VIP restrictions. -->

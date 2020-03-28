@@ -193,7 +193,7 @@ class  WP_MS_Test_REST_Networks_Controller extends WP_Test_REST_Controller_Testc
 		wp_set_current_user( 0 );
 		$request  = new WP_REST_Request( 'GET', '/wpmn/v1/networks' );
 		$response = rest_get_server()->dispatch( $request );
-		$this->assertErrorResponse( 'rest_cannot_view', $response, 401 );
+		$this->assertErrorResponse( 'rest_forbidden', $response, 401 );
 	}
 
 	/**
@@ -203,7 +203,7 @@ class  WP_MS_Test_REST_Networks_Controller extends WP_Test_REST_Controller_Testc
 		wp_set_current_user( 0 );
 		$request  = new WP_REST_Request( 'GET', '/wpmn/v1/networks/' . self::$network_id );
 		$response = rest_get_server()->dispatch( $request );
-		$this->assertErrorResponse( 'rest_cannot_view', $response, 401 );
+		$this->assertErrorResponse( 'rest_forbidden', $response, 401 );
 	}
 
 	/**
@@ -215,7 +215,7 @@ class  WP_MS_Test_REST_Networks_Controller extends WP_Test_REST_Controller_Testc
 		$request->set_param( 'domain', 'www.example.net' );
 		$request->set_param( 'path', '/network' );
 		$response = rest_get_server()->dispatch( $request );
-		$this->assertErrorResponse( 'rest_cannot_create', $response, 401 );
+		$this->assertErrorResponse( 'rest_forbidden', $response, 401 );
 	}
 
 	/**
@@ -228,7 +228,7 @@ class  WP_MS_Test_REST_Networks_Controller extends WP_Test_REST_Controller_Testc
 		$request->set_param( 'domain', 'www.example.net' );
 		$request->set_param( 'path', '/network' );
 		$response = rest_get_server()->dispatch( $request );
-		$this->assertErrorResponse( 'rest_cannot_update', $response, 401 );
+		$this->assertErrorResponse( 'rest_no_route', $response, 401 );
 	}
 
 	public function test_delete_item_no_permission() {
@@ -237,7 +237,7 @@ class  WP_MS_Test_REST_Networks_Controller extends WP_Test_REST_Controller_Testc
 		$request          = new WP_REST_Request( 'DELETE', '/wpmn/v1/networks/' . $network_id );
 		$request['force'] = true;
 		$response         = rest_get_server()->dispatch( $request );
-		$this->assertErrorResponse( 'rest_cannot_delete', $response, 401 );
+		$this->assertErrorResponse( 'rest_forbidden', $response, 401 );
 	}
 
 	protected function check_network_data( $data ) {
