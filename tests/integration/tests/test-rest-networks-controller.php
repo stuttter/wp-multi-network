@@ -3,6 +3,7 @@
 class  WP_MS_Test_REST_Networks_Controller extends WP_Test_REST_Controller_Testcase {
 	protected static $superadmin_id;
 	protected static $total_networks = 30;
+	protected static $per_page       = 50;
 	protected static $network_id;
 
 	public static function wpSetUpBeforeClass( $factory ) {
