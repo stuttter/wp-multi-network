@@ -152,6 +152,25 @@ class  WP_MS_Test_REST_Networks_Controller extends WP_Test_REST_Controller_Testc
 		$this->assertEquals( 200, $response->get_status() );
 	}
 
+	public function test_no_update_item() {
+		$network_id = wp_rand();
+		wp_set_current_user( self::$superadmin_id );
+		$request = new WP_REST_Request( 'POST', '/wpmn/v1/networks/' . $network_id );
+		$request->set_param( 'domain', 'www.example.co' );
+		$request->set_param( 'path', '/update' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertEquals( 404, $response->get_status() );
+	}
+
+	public function test_no_delete_item() {
+		$network_id = wp_rand();
+		wp_set_current_user( self::$superadmin_id );
+		$request          = new WP_REST_Request( 'DELETE', '/wpmn/v1/networks/' . $network_id );
+		$request['force'] = true;
+		$response         = rest_get_server()->dispatch( $request );
+		$this->assertEquals( 404, $response->get_status() );
+	}
+
 	public function test_get_item_schema() {
 		$request    = new WP_REST_Request( 'OPTIONS', '/wpmn/v1/networks' );
 		$response   = rest_get_server()->dispatch( $request );
@@ -164,6 +183,61 @@ class  WP_MS_Test_REST_Networks_Controller extends WP_Test_REST_Controller_Testc
 		$this->assertArrayHasKey( 'site_id', $properties );
 		$this->assertArrayHasKey( 'link', $properties );
 
+	}
+
+
+	/**
+	 *
+	 */
+	public function test_get_items_no_permission() {
+		wp_set_current_user( 0 );
+		$request  = new WP_REST_Request( 'GET', '/wpmn/v1/networks' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_cannot_view', $response, 401 );
+	}
+
+	/**
+	 *
+	 */
+	public function test_get_item_no_permission() {
+		wp_set_current_user( 0 );
+		$request  = new WP_REST_Request( 'GET', '/wpmn/v1/networks/' . self::$network_id );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_cannot_view', $response, 401 );
+	}
+
+	/**
+	 *
+	 */
+	public function test_create_item_no_permission() {
+		wp_set_current_user( 0 );
+		$request = new WP_REST_Request( 'POST', '/wpmn/v1/networks' );
+		$request->set_param( 'domain', 'www.example.net' );
+		$request->set_param( 'path', '/network' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_cannot_create', $response, 401 );
+	}
+
+	/**
+	 *
+	 */
+	public function test_update_item_no_permission() {
+		$network_id = $this->factory->network->create();
+		wp_set_current_user( 0 );
+		$request = new WP_REST_Request( 'POST', '/wpmn/v1/networks' . $network_id );
+		$request->set_param( 'domain', 'www.example.net' );
+		$request->set_param( 'path', '/network' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_cannot_update', $response, 401 );
+	}
+
+	public function test_delete_item_no_permission() {
+		$network_id = $this->factory->network->create();
+		wp_set_current_user( 0 );
+		$request          = new WP_REST_Request( 'DELETE', '/wpmn/v1/networks/' . $network_id );
+		$request['force'] = true;
+		$response         = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_cannot_delete', $response, 401 );
 	}
 
 	protected function check_network_data( $data ) {
