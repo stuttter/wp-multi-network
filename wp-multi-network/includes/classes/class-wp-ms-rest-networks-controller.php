@@ -665,6 +665,10 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 			$prepared_network['domain'] = $request['domain'];
 		}
 
+		if ( isset( $request['site_name'] ) ) {
+			$prepared_network['site_name'] = $request['site_name'];
+		}
+
 		/**
 		 * Filters a network after it is prepared for the database.
 		 *
