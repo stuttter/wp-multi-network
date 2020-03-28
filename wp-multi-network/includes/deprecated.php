@@ -73,7 +73,9 @@ if ( ! function_exists( 'get_network_option' ) ) :
 	function get_network_option( $network_id, $key, $default = false ) {
 		if ( ! switch_to_network( $network_id, true ) ) {
 			return new WP_Error(
-				'wpmn.network_missing', __( 'Network does not exist', 'wp-multi-network' ), array(
+				'wpmn.network_missing',
+				__( 'Network does not exist', 'wp-multi-network' ),
+				array(
 					'status' => 400,
 				)
 			);
@@ -105,7 +107,9 @@ if ( ! function_exists( 'add_network_option' ) ) :
 	function add_network_option( $network_id, $key, $value ) {
 		if ( ! switch_to_network( $network_id, true ) ) {
 			return new WP_Error(
-				'wpmn.network_missing', __( 'Network does not exist', 'wp-multi-network' ), array(
+				'wpmn.network_missing',
+				__( 'Network does not exist', 'wp-multi-network' ),
+				array(
 					'status' => 400,
 				)
 			);
@@ -137,7 +141,9 @@ if ( ! function_exists( 'update_network_option' ) ) :
 	function update_network_option( $network_id, $key, $value ) {
 		if ( ! switch_to_network( $network_id, true ) ) {
 			return new WP_Error(
-				'wpmn.network_missing', __( 'Network does not exist', 'wp-multi-network' ), array(
+				'wpmn.network_missing',
+				__( 'Network does not exist', 'wp-multi-network' ),
+				array(
 					'status' => 400,
 				)
 			);
@@ -168,7 +174,9 @@ if ( ! function_exists( 'delete_network_option' ) ) :
 	function delete_network_option( $network_id, $key ) {
 		if ( ! switch_to_network( $network_id, true ) ) {
 			return new WP_Error(
-				'wpmn.network_missing', __( 'Network does not exist', 'wp-multi-network' ), array(
+				'wpmn.network_missing',
+				__( 'Network does not exist', 'wp-multi-network' ),
+				array(
 					'status' => 400,
 				)
 			);

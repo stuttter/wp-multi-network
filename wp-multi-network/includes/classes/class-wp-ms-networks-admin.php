@@ -63,10 +63,12 @@ class WP_MS_Networks_Admin {
 			return $actions;
 		}
 
-		$url = $this->admin_url( array(
-			'action'  => 'move',
-			'blog_id' => (int) $blog_id,
-		) );
+		$url = $this->admin_url(
+			array(
+				'action'  => 'move',
+				'blog_id' => (int) $blog_id,
+			)
+		);
 
 		if ( current_user_can( 'manage_networks' ) ) {
 			$actions['move'] = '<a href="' . esc_url( $url ) . '" class="move">' . esc_html__( 'Move', 'wp-multi-network' ) . '</a>';
@@ -296,11 +298,11 @@ class WP_MS_Networks_Admin {
 	public function route_save_handlers() {
 
 		// Bail -- our fields aren't being edited
-		// Otherwise we'll do an unnecessary nonce check
-		if ( empty( $_POST['network_edit'] ) ) {
+		// Otherwise we'll do an unnecessary nonce check.
+		if ( empty( $_POST['network_edit'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			return;
 		}
-		
+
 		$action = filter_input( INPUT_POST, 'action', FILTER_SANITIZE_STRING );
 		if ( empty( $action ) ) {
 			$alternative_actions = array( 'delete', 'delete_multiple', 'move' );
@@ -619,9 +621,11 @@ class WP_MS_Networks_Admin {
 		$all_networks = array_map( 'absint', $all_networks );
 		$all_networks = array_diff( $all_networks, array( $network_id ) );
 
-		$networks = get_networks( array(
-			'network__in' => $all_networks,
-		) );
+		$networks = get_networks(
+			array(
+				'network__in' => $all_networks,
+			)
+		);
 
 		// Bail if no networks found.
 		if ( empty( $networks ) ) {
@@ -634,9 +638,11 @@ class WP_MS_Networks_Admin {
 			}
 		}
 
-		$sites = get_sites( array(
-			'network__in' => $all_networks,
-		) );
+		$sites = get_sites(
+			array(
+				'network__in' => $all_networks,
+			)
+		);
 		?>
 
 		<div class="wrap">
@@ -830,27 +836,31 @@ class WP_MS_Networks_Admin {
 		$network_path   = wp_unslash( filter_input( INPUT_POST, 'path', FILTER_SANITIZE_STRING ) );
 		$site_name      = wp_unslash( filter_input( INPUT_POST, 'new_site', FILTER_SANITIZE_STRING ) );
 
-		$network_title  = strip_tags( $network_title );
+		$network_title  = wp_strip_all_tags( $network_title );
 		$network_domain = str_replace( ' ', '', strtolower( sanitize_text_field( $network_domain ) ) );
 		$network_path   = str_replace( ' ', '', strtolower( sanitize_text_field( $network_path ) ) );
-		$site_name      = ! empty( $site_name ) ? strip_tags( $site_name ) : $network_title;
+		$site_name      = ! empty( $site_name ) ? wp_strip_all_tags( $site_name ) : $network_title;
 
 		// Bail if missing fields.
 		if ( empty( $network_title ) || empty( $network_domain ) || empty( $network_path ) ) {
-			$this->handle_redirect( array(
-				'page'            => 'add-new-network',
-				'network_created' => '0',
-			) );
+			$this->handle_redirect(
+				array(
+					'page'            => 'add-new-network',
+					'network_created' => '0',
+				)
+			);
 		}
 
-		$result  = add_network( array(
-			'domain'           => $network_domain,
-			'path'             => $network_path,
-			'site_name'        => $site_name,
-			'user_id'          => get_current_user_id(),
-			'clone_network'    => $clone,
-			'options_to_clone' => $options_to_clone,
-		) );
+		$result  = add_network(
+			array(
+				'domain'           => $network_domain,
+				'path'             => $network_path,
+				'site_name'        => $site_name,
+				'user_id'          => get_current_user_id(),
+				'clone_network'    => $clone,
+				'options_to_clone' => $options_to_clone,
+			)
+		);
 		$success = '0';
 
 		if ( ! empty( $result ) && ! is_wp_error( $result ) ) {
@@ -858,16 +868,22 @@ class WP_MS_Networks_Admin {
 				update_network_option( $result, 'site_name', $posted['title'] );
 			}
 
-			update_network_option( $result, 'active_sitewide_plugins', array(
-				'wp-multi-network/wpmn-loader.php' => time(),
-			) );
+			update_network_option(
+				$result,
+				'active_sitewide_plugins',
+				array(
+					'wp-multi-network/wpmn-loader.php' => time(),
+				)
+			);
 
 			$success = '1';
 		}
 
-		$this->handle_redirect( array(
-			'network_created' => $success,
-		) );
+		$this->handle_redirect(
+			array(
+				'network_created' => $success,
+			)
+		);
 	}
 
 	/**
@@ -893,11 +909,13 @@ class WP_MS_Networks_Admin {
 
 		// Bail if missing fields.
 		if ( empty( $network_title ) || empty( $network_domain ) || empty( $network_path ) ) {
-			$this->handle_redirect( array(
-				'id'              => $network_id,
-				'action'          => 'edit_network',
-				'network_updated' => '0',
-			) );
+			$this->handle_redirect(
+				array(
+					'id'              => $network_id,
+					'action'          => 'edit_network',
+					'network_updated' => '0',
+				)
+			);
 		}
 
 		$updated = update_network( $network_id, $network_domain, $network_path );
@@ -908,11 +926,13 @@ class WP_MS_Networks_Admin {
 			$success = '1';
 		}
 
-		$this->handle_redirect( array(
-			'id'              => $network_id,
-			'action'          => 'edit_network',
-			'network_updated' => $success,
-		) );
+		$this->handle_redirect(
+			array(
+				'id'              => $network_id,
+				'action'          => 'edit_network',
+				'network_updated' => $success,
+			)
+		);
 	}
 
 	/**
@@ -925,9 +945,14 @@ class WP_MS_Networks_Admin {
 		$new_network = filter_input( INPUT_POST, 'to', FILTER_SANITIZE_NUMBER_INT );
 
 		if ( empty( $site_id ) ) {
-			wp_safe_redirect( add_query_arg( array(
-				'site_moved' => 0,
-			), network_admin_url( 'sites.php' ) ) );
+			wp_safe_redirect(
+				add_query_arg(
+					array(
+						'site_moved' => 0,
+					),
+					network_admin_url( 'sites.php' )
+				)
+			);
 			exit;
 		}
 
@@ -935,18 +960,28 @@ class WP_MS_Networks_Admin {
 
 		// Bail if site cannot be found or new network is the same as existing.
 		if ( empty( $site ) || ( $site->network_id === $new_network ) ) {
-			wp_safe_redirect( add_query_arg( array(
-				'site_moved' => 0,
-			), network_admin_url( 'sites.php' ) ) );
+			wp_safe_redirect(
+				add_query_arg(
+					array(
+						'site_moved' => 0,
+					),
+					network_admin_url( 'sites.php' )
+				)
+			);
 			exit;
 		}
 
 		$moved   = move_site( $site_id, $new_network );
 		$success = is_wp_error( $moved ) ? '0' : '1';
 
-		wp_safe_redirect( add_query_arg( array(
-			'site_moved' => $success,
-		), network_admin_url( 'sites.php' ) ) );
+		wp_safe_redirect(
+			add_query_arg(
+				array(
+					'site_moved' => $success,
+				),
+				network_admin_url( 'sites.php' )
+			)
+		);
 		exit;
 	}
 
@@ -969,10 +1004,12 @@ class WP_MS_Networks_Admin {
 		$moving_to   = array();
 		$moving_from = array();
 
-		$sites_list = get_sites( array(
-			'network_id' => $network_id,
-			'fields'     => 'ids',
-		) );
+		$sites_list = get_sites(
+			array(
+				'network_id' => $network_id,
+				'fields'     => 'ids',
+			)
+		);
 
 		// Move sites out of current network.
 		foreach ( $from as $site_id ) {
@@ -1021,9 +1058,11 @@ class WP_MS_Networks_Admin {
 			wp_die( esc_html( $result->get_error_message() ) );
 		}
 
-		$this->handle_redirect( array(
-			'network_deleted' => '1',
-		) );
+		$this->handle_redirect(
+			array(
+				'network_deleted' => '1',
+			)
+		);
 	}
 
 	/**
@@ -1042,9 +1081,11 @@ class WP_MS_Networks_Admin {
 			}
 		}
 
-		$this->handle_redirect( array(
-			'networks_deleted' => '1',
-		) );
+		$this->handle_redirect(
+			array(
+				'networks_deleted' => '1',
+			)
+		);
 	}
 
 	/**
@@ -1068,9 +1109,12 @@ class WP_MS_Networks_Admin {
 	 * @return string Absolute URL to the networks page.
 	 */
 	private function admin_url( $args = array() ) {
-		$r = wp_parse_args( $args, array(
-			'page' => 'networks',
-		) );
+		$r = wp_parse_args(
+			$args,
+			array(
+				'page' => 'networks',
+			)
+		);
 
 		$page = ! empty( $r['action'] ) && ( 'move' === $r['action'] ) ? 'sites.php' : 'admin.php';
 
