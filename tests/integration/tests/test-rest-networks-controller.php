@@ -13,7 +13,7 @@ class  WP_MS_Test_REST_Networks_Controller extends WP_Test_REST_Controller_Testc
 				'user_login' => 'superadmin',
 			)
 		);
-    grant_super_admin( self::$superadmin_id );
+		grant_super_admin( self::$superadmin_id );
 
 		// Set up networks for pagination tests.
 		for ( $i = 0; $i < self::$total_networks - 1; $i++ ) {
@@ -88,7 +88,7 @@ class  WP_MS_Test_REST_Networks_Controller extends WP_Test_REST_Controller_Testc
 		$this->assertEquals( 200, $response->get_status() );
 
 		$networks = $response->get_data();
-		$this->assertCount( self::$total_networks, $networks );
+		$this->assertCount( self::$total_networks + 1, $networks );
 	}
 
 	public function test_get_item() {
@@ -99,7 +99,7 @@ class  WP_MS_Test_REST_Networks_Controller extends WP_Test_REST_Controller_Testc
 		$this->assertEquals( 200, $response->get_status() );
 
 		$data = $response->get_data();
-		$this->check_network_data( $data, 'view', $response->get_links() );
+		$this->check_network_data( $data );
 	}
 
 	public function test_prepare_item() {
@@ -116,23 +116,53 @@ class  WP_MS_Test_REST_Networks_Controller extends WP_Test_REST_Controller_Testc
 		$this->assertEquals( 200, $response->get_status() );
 
 		$data = $response->get_data();
-		$this->check_network_data( $data, 'edit', $response->get_links() );
+		$this->check_network_data( $data );
 	}
-	public function test_create_item() {
 
+	public function test_create_item() {
+		wp_set_current_user( self::$superadmin_id );
+
+		$request = new WP_REST_Request( 'POST', '/wpmn/v1/networks' );
+		$request->set_param( 'domain', 'www.example.net' );
+		$request->set_param( 'path', '/network' );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+
+		$this->assertEquals( 201, $response->get_status() );
+		$this->check_network_data( $data );
 	}
 
 	public function test_update_item() {
-
+		$network_id = $this->factory->network->create();
+		wp_set_current_user( self::$superadmin_id );
+		$request = new WP_REST_Request( 'POST', '/wpmn/v1/networks/' . $network_id );
+		$request->set_param( 'domain', 'www.example.co' );
+		$request->set_param( 'path', '/update' );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$this->check_network_data( $data );
 	}
 
 	public function test_delete_item() {
-
+		$network_id = $this->factory->network->create();
+		wp_set_current_user( self::$superadmin_id );
+		$request          = new WP_REST_Request( 'DELETE', '/wpmn/v1/networks/' . $network_id );
+		$request['force'] = true;
+		$response         = rest_get_server()->dispatch( $request );
+		$this->assertEquals( 200, $response->get_status() );
 	}
 
-
-
 	public function test_get_item_schema() {
+		$request    = new WP_REST_Request( 'OPTIONS', '/wpmn/v1/networks' );
+		$response   = rest_get_server()->dispatch( $request );
+		$data       = $response->get_data();
+		$properties = $data['schema']['properties'];
+		$this->assertEquals( 5, count( $properties ) );
+		$this->assertArrayHasKey( 'id', $properties );
+		$this->assertArrayHasKey( 'path', $properties );
+		$this->assertArrayHasKey( 'domain', $properties );
+		$this->assertArrayHasKey( 'site_id', $properties );
+		$this->assertArrayHasKey( 'link', $properties );
 
 	}
 
