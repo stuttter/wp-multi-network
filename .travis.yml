@@ -44,6 +44,8 @@ before_script:
         fi
       fi
     fi
+  - composer selfupdate 1.0.0 --no-interaction
+  - composer install --no-interaction
   - |
     if [[ "$PHPCS" == "1" ]]; then
       composer config-phpcs
