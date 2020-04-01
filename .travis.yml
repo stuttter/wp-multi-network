@@ -79,16 +79,9 @@ script:
       vendor/bin/phpcs -v --runtime-set ignore_warnings_on_exit 1
     fi
   - |
-    case "$TRAVIS_PHP_VERSION" in
-      5.6|5.5|5.4|5.3|5.2)
-        phpunit -c phpunit.xml.dist
-        ;;
-      *)
-        if [[ "$COVERAGE" == "1" ]]; then
-          mkdir -p build/logs
-          vendor/bin/phpunit -c phpunit.xml.dist --coverage-clover build/logs/clover.xml
-        else
-          vendor/bin/phpunit -c phpunit.xml.dist
-        fi
-        ;;
-    esac
+    if [[ "$COVERAGE" == "1" ]]; then
+      mkdir -p build/logs
+      vendor/bin/phpunit -c phpunit.xml.dist --coverage-clover build/logs/clover.xml
+    else
+      vendor/bin/phpunit -c phpunit.xml.dist
+    fi
