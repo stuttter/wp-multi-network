@@ -436,7 +436,8 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 			$edit_network_url = add_query_arg(
 				array(
 					'action' => 'edit_network',
-				), $base_url
+				),
+				$base_url
 			);
 
 			$actions['edit'] = '<span class="edit"><a href="' . esc_url( $edit_network_url ) . '">' . esc_html__( 'Edit', 'wp-multi-network' ) . '</a></span>';
@@ -456,7 +457,8 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 				add_query_arg(
 					array(
 						'action' => 'delete_network',
-					), $base_url
+					),
+					$base_url
 				)
 			);
 

@@ -168,7 +168,8 @@ function wpmn_edit_network_publish_metabox( $network = null ) {
 	$cancel_url = add_query_arg(
 		array(
 			'page' => 'networks',
-		), network_admin_url( 'admin.php' )
+		),
+		network_admin_url( 'admin.php' )
 	);
 	?>
 
@@ -185,7 +186,7 @@ function wpmn_edit_network_publish_metabox( $network = null ) {
 							<?php
 							printf(
 								/* translators: %s: network name */
-								__( 'Name: <strong>%s</strong>', 'wp-multi-network' ), // @codingStandardsIgnoreLine WordPress.XSS.EscapeOutput.OutputNotEscaped
+								__( 'Name: <strong>%s</strong>', 'wp-multi-network' ), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 								esc_html( get_network_option( $network->id, 'site_name' ) )
 							);
 							?>
@@ -196,7 +197,7 @@ function wpmn_edit_network_publish_metabox( $network = null ) {
 							<?php
 							printf(
 								/* translators: %s: network site count */
-								__( 'Sites: <strong>%s</strong>', 'wp-multi-network' ),  // @codingStandardsIgnoreLine WordPress.XSS.EscapeOutput.OutputNotEscaped
+								__( 'Sites: <strong>%s</strong>', 'wp-multi-network' ), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 								esc_html( get_network_option( $network->id, 'blog_count' ) )
 							);
 							?>

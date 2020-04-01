@@ -70,14 +70,16 @@ class WP_MS_Networks_Admin_Bar {
 			return;
 		}
 
-		$wp_admin_bar->add_menu( array(
-			'id'    => 'my-networks',
-			'title' => __( 'My Networks', 'wp-multi-network' ),
-			'href'  => network_admin_url( 'admin.php?page=networks' ),
-			'meta'  => array(
-				'class' => 'networks-parent',
-			),
-		) );
+		$wp_admin_bar->add_menu(
+			array(
+				'id'    => 'my-networks',
+				'title' => __( 'My Networks', 'wp-multi-network' ),
+				'href'  => network_admin_url( 'admin.php?page=networks' ),
+				'meta'  => array(
+					'class' => 'networks-parent',
+				),
+			)
+		);
 
 		foreach ( $networks as $network_id ) {
 			$network = get_network( $network_id );

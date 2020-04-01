@@ -299,8 +299,7 @@ class WP_MS_Networks_Admin {
 
 		// Bail -- our fields aren't being edited
 		// Otherwise we'll do an unnecessary nonce check.
-		// @codingStandardsIgnoreLine WordPress.CSRF.NonceVerification.NoNonceVerification
-		if ( empty( $_POST['network_edit'] ) ) {
+		if ( empty( $_POST['network_edit'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			return;
 		}
 
@@ -837,10 +836,10 @@ class WP_MS_Networks_Admin {
 		$network_path   = wp_unslash( filter_input( INPUT_POST, 'path', FILTER_SANITIZE_STRING ) );
 		$site_name      = wp_unslash( filter_input( INPUT_POST, 'new_site', FILTER_SANITIZE_STRING ) );
 
-		$network_title  = strip_tags( $network_title );
+		$network_title  = wp_strip_all_tags( $network_title );
 		$network_domain = str_replace( ' ', '', strtolower( sanitize_text_field( $network_domain ) ) );
 		$network_path   = str_replace( ' ', '', strtolower( sanitize_text_field( $network_path ) ) );
-		$site_name      = ! empty( $site_name ) ? strip_tags( $site_name ) : $network_title;
+		$site_name      = ! empty( $site_name ) ? wp_strip_all_tags( $site_name ) : $network_title;
 
 		// Bail if missing fields.
 		if ( empty( $network_title ) || empty( $network_domain ) || empty( $network_path ) ) {
@@ -870,7 +869,9 @@ class WP_MS_Networks_Admin {
 			}
 
 			update_network_option(
-				$result, 'active_sitewide_plugins', array(
+				$result,
+				'active_sitewide_plugins',
+				array(
 					'wp-multi-network/wpmn-loader.php' => time(),
 				)
 			);
@@ -948,7 +949,8 @@ class WP_MS_Networks_Admin {
 				add_query_arg(
 					array(
 						'site_moved' => 0,
-					), network_admin_url( 'sites.php' )
+					),
+					network_admin_url( 'sites.php' )
 				)
 			);
 			exit;
@@ -962,7 +964,8 @@ class WP_MS_Networks_Admin {
 				add_query_arg(
 					array(
 						'site_moved' => 0,
-					), network_admin_url( 'sites.php' )
+					),
+					network_admin_url( 'sites.php' )
 				)
 			);
 			exit;
@@ -975,7 +978,8 @@ class WP_MS_Networks_Admin {
 			add_query_arg(
 				array(
 					'site_moved' => $success,
-				), network_admin_url( 'sites.php' )
+				),
+				network_admin_url( 'sites.php' )
 			)
 		);
 		exit;
@@ -1106,7 +1110,8 @@ class WP_MS_Networks_Admin {
 	 */
 	private function admin_url( $args = array() ) {
 		$r = wp_parse_args(
-			$args, array(
+			$args,
+			array(
 				'page' => 'networks',
 			)
 		);
