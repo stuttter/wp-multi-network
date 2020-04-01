@@ -24,7 +24,7 @@ if ( false !== getenv( 'WP_TESTS_DIR' ) ) {
 
 // Bail if the WordPress core test suite was not found.
 if ( ! file_exists( $_tests_dir . '/includes/functions.php' ) ) {
-	echo "The WordPress core test suite could not be located, please provide its path via WP_TESTS_DIR." . PHP_EOL;
+	echo 'The WordPress core test suite could not be located, please provide its path via WP_TESTS_DIR.' . PHP_EOL;
 	exit( 1 );
 }
 
