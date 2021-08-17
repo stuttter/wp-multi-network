@@ -21,7 +21,7 @@ WP Multi Network allows cape wearing super-admins to create new networks of site
 ### Shared Cookies
 
 Stash something similar to this in your `wp-config.php` to share cookies across all sites & networks.
-```
+```php
 // Cookies
 define( 'COOKIEHASH',        md5( 'yourdomain.com' ) );
 define( 'COOKIE_DOMAIN',     'yourdomain.com'        );
@@ -39,7 +39,7 @@ define( 'LOGGED_IN_COOKIE',   'thing_logged_in' . COOKIEHASH );
 ### Domain/Sub-domain flexibility
 
 Stash something similar to this in your `wp-config.php` to make new site/network/domain creation and resolution as flexible as possible. You'll likely need some server configuration outside of WordPress to help with this (documentation pending.)
-```
+```php
 // Multisite
 define( 'MULTISITE',           true                  );
 define( 'SUBDOMAIN_INSTALL',   false                 );
