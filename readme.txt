@@ -1,5 +1,5 @@
 === WP Multi Network ===
-Contributors: johnjamesjacoby, ddean, BrianLayman, rmccue
+Contributors: johnjamesjacoby, ddean, BrianLayman, rmccue, spacedmonkey
 Tags: network, networks, blog, blogs, site, sites, domain, domains, mapping, domain mapping, fun
 Requires at least: 4.9
 Tested up to: 5.0
