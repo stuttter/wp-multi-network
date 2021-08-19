@@ -270,8 +270,7 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 
 		$needing_activation = count( $args );
 		$assoc_args         = wp_parse_args(
-			$assoc_args,
-			array(
+			$assoc_args, array(
 				'network_id' => false,
 			)
 		);
