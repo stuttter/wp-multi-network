@@ -168,8 +168,7 @@ function wpmn_edit_network_publish_metabox( $network = null ) {
 	$cancel_url = add_query_arg(
 		array(
 			'page' => 'networks',
-		),
-		network_admin_url( 'admin.php' )
+		), network_admin_url( 'admin.php' )
 	);
 	?>
 

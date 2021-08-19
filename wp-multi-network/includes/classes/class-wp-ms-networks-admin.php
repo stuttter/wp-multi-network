@@ -869,9 +869,7 @@ class WP_MS_Networks_Admin {
 			}
 
 			update_network_option(
-				$result,
-				'active_sitewide_plugins',
-				array(
+				$result, 'active_sitewide_plugins', array(
 					'wp-multi-network/wpmn-loader.php' => time(),
 				)
 			);
@@ -949,8 +947,7 @@ class WP_MS_Networks_Admin {
 				add_query_arg(
 					array(
 						'site_moved' => 0,
-					),
-					network_admin_url( 'sites.php' )
+					), network_admin_url( 'sites.php' )
 				)
 			);
 			exit;
@@ -964,8 +961,7 @@ class WP_MS_Networks_Admin {
 				add_query_arg(
 					array(
 						'site_moved' => 0,
-					),
-					network_admin_url( 'sites.php' )
+					), network_admin_url( 'sites.php' )
 				)
 			);
 			exit;
@@ -978,8 +974,7 @@ class WP_MS_Networks_Admin {
 			add_query_arg(
 				array(
 					'site_moved' => $success,
-				),
-				network_admin_url( 'sites.php' )
+				), network_admin_url( 'sites.php' )
 			)
 		);
 		exit;
@@ -1110,8 +1105,7 @@ class WP_MS_Networks_Admin {
 	 */
 	private function admin_url( $args = array() ) {
 		$r = wp_parse_args(
-			$args,
-			array(
+			$args, array(
 				'page' => 'networks',
 			)
 		);

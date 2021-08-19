@@ -61,8 +61,7 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 		list( $domain, $path ) = $args;
 
 		$assoc_args = wp_parse_args(
-			$assoc_args,
-			array(
+			$assoc_args, array(
 				'network_admin'    => false,
 				'site_name'        => false,
 				'network_name'     => false,
@@ -165,8 +164,7 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 		list( $id ) = $args;
 
 		$assoc_args = wp_parse_args(
-			$assoc_args,
-			array(
+			$assoc_args, array(
 				'delete_blogs' => false,
 			)
 		);
@@ -284,8 +282,7 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 				$args = array_map(
 					function ( $file ) {
 							return \WP_CLI\Utils\get_plugin_name( $file );
-					},
-					array_keys( get_plugins() )
+					}, array_keys( get_plugins() )
 				);
 			}
 			foreach ( $this->fetcher->get_many( $args ) as $plugin ) {

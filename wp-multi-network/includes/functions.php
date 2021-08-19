@@ -437,7 +437,7 @@ if ( ! function_exists( 'add_network' ) ) :
 
 		$func_args = func_get_args();
 		// Backward compatibility with old method of passing arguments.
-		if ( ! is_array( $args ) || func_num_args() > 1 ) {
+		if ( ! is_array( $args ) || $func_args > 1 ) {
 			_deprecated_argument( __METHOD__, '1.7.0', sprintf(
 				/* translators: 1: method name, 2: file name */
 				esc_html__( 'Arguments passed to %1$s should be in an associative array. See the inline documentation at %2$s for more details.', 'wp-multi-network' ),
