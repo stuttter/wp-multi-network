@@ -865,8 +865,8 @@ class WP_MS_Networks_Admin {
 		$success = '0';
 
 		if ( ! empty( $result ) && ! is_wp_error( $result ) ) {
-			if ( ! empty( $posted['title'] ) ) {
-				update_network_option( $result, 'site_name', $posted['title'] );
+			if ( ! empty( $network_title ) ) {
+				update_network_option( $result, 'site_name', $network_title );
 			}
 
 			update_network_option(
