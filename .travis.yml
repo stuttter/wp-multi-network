@@ -15,7 +15,7 @@ cache:
 matrix:
   include:
     - php: 7.2
-      env: WP_VERSION=latest WP_MULTISITE=1 PHPLINT=1 PHPCS=1
+      env: WP_VERSION=latest WP_MULTISITE=1 PHPLINT=1
     - php: 5.6
       env: WP_VERSION=latest WP_MULTISITE=1 PHPLINT=1
       dist: precise
@@ -79,10 +79,6 @@ script:
   - |
     if [[ "$PHPLINT" == "1" ]]; then
       find -L . -path ./vendor -prune -o -name '*.php' -not -name 'class-wp-ms-network-command.php' -print0 | xargs -0 -n 1 -P 4 php -l
-    fi
-  - |
-    if [[ "$PHPCS" == "1" ]]; then
-      vendor/bin/phpcs -v --runtime-set ignore_warnings_on_exit 1
     fi
   - |
     case "$TRAVIS_PHP_VERSION" in
