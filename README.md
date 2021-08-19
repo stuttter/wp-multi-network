@@ -21,7 +21,7 @@ WP Multi Network allows cape wearing super-admins to create new networks of site
 ### Shared Cookies
 
 Stash something similar to this in your `wp-config.php` to share cookies across all sites & networks.
-```
+```php
 // Cookies
 define( 'COOKIEHASH',        md5( 'yourdomain.com' ) );
 define( 'COOKIE_DOMAIN',     'yourdomain.com'        );
@@ -39,7 +39,7 @@ define( 'LOGGED_IN_COOKIE',   'thing_logged_in' . COOKIEHASH );
 ### Domain/Sub-domain flexibility
 
 Stash something similar to this in your `wp-config.php` to make new site/network/domain creation and resolution as flexible as possible. You'll likely need some server configuration outside of WordPress to help with this (documentation pending.)
-```
+```php
 // Multisite
 define( 'MULTISITE',           true                  );
 define( 'SUBDOMAIN_INSTALL',   false                 );
@@ -87,7 +87,7 @@ WP Multi-Network needs to be running to set the upload path for new sites. As su
 
 ### Can I achieve a multi-level URL path structure domain/network/site with subfolder network?
 
-To achieve nested folder paths in this fashion `network1/site1`, `network1/site2` etc, please follow the steps in this [article](https://paulund.co.uk/wordpress-multisite-nested-paths) to construct a custom `sunrise.php` (Thanks to https://paulund.co.uk for providing these steps).
+To achieve nested folder paths in this fashion `network1/site1`, `network1/site2` etc, please follow the steps in this [article](https://github.com/stuttter/wp-multi-network/wiki/WordPress-Multisite-With-Nested-Folder-Paths) to construct a custom `sunrise.php` (Thanks to https://paulund.co.uk for providing these steps).
 
 ### Can I contribute?
 

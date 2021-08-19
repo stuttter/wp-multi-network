@@ -1,12 +1,13 @@
 === WP Multi Network ===
-Contributors: johnjamesjacoby, ddean, BrianLayman, rmccue
+Contributors: johnjamesjacoby, ddean, BrianLayman, rmccue, spacedmonkey
 Tags: network, networks, blog, blogs, site, sites, domain, domains, mapping, domain mapping, fun
 Requires at least: 4.9
-Tested up to: 5.0
-Stable tag: 2.2.1
+Tested up to: 5.9
+Requires PHP: 5.2
+Stable tag: 2.4.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
-Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=9Q4F4EL5YJ62J
+Donate link: https://buy.stripe.com/7sI3cd2tK1Cy2lydQR
 
 == Description ==
 

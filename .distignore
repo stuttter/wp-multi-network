@@ -1,0 +1,20 @@
+# A set of files you probably don't want in your WordPress.org distribution
+.distignore
+.editorconfig
+.git
+.gitignore
+.gitattributes
+.travis.yml
+.DS_Store
+.wordpress-org
+.github
+tests
+composer.json
+composer.lock
+CONTRIBUTING.md
+deploy.sh
+LICENSE.md
+license.txt
+phpcs.xml.dist
+phpunit.xml.dist
+README.md
