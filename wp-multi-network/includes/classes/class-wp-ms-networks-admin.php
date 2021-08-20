@@ -225,9 +225,6 @@ class WP_MS_Networks_Admin {
 				<?php echo esc_html( $message ); ?>
 				<a href="<?php echo esc_url( $this->admin_url() ); ?>"><?php esc_html_e( 'Back to Networks.', 'wp-multi-network' ); ?></a>
 			</p>
-			<button type="button" class="notice-dismiss">
-				<span class="screen-reader-text"><?php esc_html_e( 'Dismiss this notice', 'wp-multi-network' ); ?></span>
-			</button>
 		</div>
 
 		<?php
@@ -618,7 +615,7 @@ class WP_MS_Networks_Admin {
 	 */
 	private function page_delete_networks() {
 		$network_id   = get_main_network_id();
-		$all_networks = filter_input( INPUT_POST, 'all_networks', FILTER_FORCE_ARRAY );
+		$all_networks = filter_input( INPUT_POST, 'all_networks', FILTER_SANITIZE_NUMBER_INT, FILTER_FORCE_ARRAY );
 		$all_networks = array_map( 'absint', $all_networks );
 		$all_networks = array_diff( $all_networks, array( $network_id ) );
 
@@ -822,7 +819,7 @@ class WP_MS_Networks_Admin {
 	private function handle_add_network() {
 
 		// Sanitize options to clone.
-		$options_to_clone = filter_input( INPUT_POST, 'options_to_clone', FILTER_FORCE_ARRAY );
+		$options_to_clone = filter_input( INPUT_POST, 'options_to_clone', FILTER_DEFAULT, FILTER_FORCE_ARRAY );
 		$options_to_clone = ! empty( $options_to_clone )
 			? array_keys( $options_to_clone )
 			: array_keys( network_options_to_copy() );
@@ -1028,8 +1025,8 @@ class WP_MS_Networks_Admin {
 	private function handle_reassign_sites() {
 
 		// Sanitize values.
-		$to   = array_map( 'absint', (array) filter_input( INPUT_POST, 'to',   FILTER_FORCE_ARRAY ) );
-		$from = array_map( 'absint', (array) filter_input( INPUT_POST, 'from', FILTER_FORCE_ARRAY ) );
+		$to   = array_map( 'absint', (array) filter_input( INPUT_POST, 'to',   FILTER_SANITIZE_NUMBER_INT, FILTER_FORCE_ARRAY ) );
+		$from = array_map( 'absint', (array) filter_input( INPUT_POST, 'from', FILTER_SANITIZE_NUMBER_INT, FILTER_FORCE_ARRAY ) );
 
 		// Bail early if no movement.
 		if ( empty( $to ) && empty( $from ) ) {
@@ -1119,7 +1116,7 @@ class WP_MS_Networks_Admin {
 	private function handle_delete_networks() {
 
 		// Sanitize values.
-		$deleted_networks = array_map( 'absint', filter_input( INPUT_POST, 'deleted_networks', FILTER_FORCE_ARRAY ) );
+		$deleted_networks = array_map( 'absint', filter_input( INPUT_POST, 'deleted_networks', FILTER_SANITIZE_NUMBER_INT, FILTER_FORCE_ARRAY ) );
 		$override         = (bool) filter_input( INPUT_POST, 'override' );
 
 		// Loop through deleted networks.
