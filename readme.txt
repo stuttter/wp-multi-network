@@ -4,7 +4,7 @@ Tags: network, networks, blog, blogs, site, sites, domain, domains, mapping, dom
 Requires at least: 4.9
 Tested up to: 5.9
 Requires PHP: 5.2
-Stable tag: 2.4.0
+Stable tag: 2.4.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Donate link: https://buy.stripe.com/7sI3cd2tK1Cy2lydQR
@@ -110,6 +110,20 @@ please follow the steps in https://paulund.co.uk/wordpress-multisite-nested-path
 Not much to talk about really. Check the code for details!
 
 == Changelog ==
+= 2.4.2 =
+* Update code for WordPress coding standards. 
+* Other small bug fixes.
+
+= 2.4.1 =
+* Update required php / wordpress versions.
+
+= 2.4.0 =
+* Add networks REST API endpoint.
+
+= 2.3.0 =
+* Add network capability mapping.
+* Add WP CLI command.
+* Other improvements.
 
 = 2.2.1 =
 * Fix upload paths still using blogs.dir
