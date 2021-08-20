@@ -296,8 +296,7 @@ class WP_MS_Networks_Admin {
 
 		// Bail -- our fields aren't being edited
 		// Otherwise we'll do an unnecessary nonce check.
-		// @codingStandardsIgnoreLine WordPress.CSRF.NonceVerification.NoNonceVerification
-		if ( empty( $_POST['network_edit'] ) ) {
+		if ( empty( $_POST['network_edit'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			return;
 		}
 
@@ -831,19 +830,19 @@ class WP_MS_Networks_Admin {
 		}
 
 		// Sanitize values.
-		$network_title  = wp_unslash( filter_input( INPUT_POST, 'title',    FILTER_SANITIZE_STRING ) );
-		$network_domain = wp_unslash( filter_input( INPUT_POST, 'domain',   FILTER_SANITIZE_STRING ) );
-		$network_path   = wp_unslash( filter_input( INPUT_POST, 'path',     FILTER_SANITIZE_STRING ) );
+		$network_title  = wp_unslash( filter_input( INPUT_POST, 'title', FILTER_SANITIZE_STRING ) );
+		$network_domain = wp_unslash( filter_input( INPUT_POST, 'domain', FILTER_SANITIZE_STRING ) );
+		$network_path   = wp_unslash( filter_input( INPUT_POST, 'path', FILTER_SANITIZE_STRING ) );
 		$site_name      = wp_unslash( filter_input( INPUT_POST, 'new_site', FILTER_SANITIZE_STRING ) );
 
 		// Additional formatting.
-		$network_title  = strip_tags( $network_title );
+		$network_title  = wp_strip_all_tags( $network_title );
 		$network_domain = str_replace( ' ', '', strtolower( sanitize_text_field( $network_domain ) ) );
 		$network_path   = str_replace( ' ', '', strtolower( sanitize_text_field( $network_path ) ) );
 
 		// Fallback to network title if not explicitly set.
-		$site_name      = ! empty( $site_name )
-			? strip_tags( $site_name )
+		$site_name = ! empty( $site_name )
+			? wp_strip_all_tags( $site_name )
 			: $network_title;
 
 		// Bail if missing fields.
@@ -871,7 +870,7 @@ class WP_MS_Networks_Admin {
 		// Default success value.
 		$success = '0';
 
-		// No failure
+		// No failure.
 		if ( ! empty( $result ) && ! is_wp_error( $result ) ) {
 
 			// Update network name.
@@ -914,9 +913,9 @@ class WP_MS_Networks_Admin {
 		}
 
 		// Sanitize values.
-		$network_title  = wp_unslash( filter_input( INPUT_POST, 'title',  FILTER_SANITIZE_STRING ) );
+		$network_title  = wp_unslash( filter_input( INPUT_POST, 'title', FILTER_SANITIZE_STRING ) );
 		$network_domain = wp_unslash( filter_input( INPUT_POST, 'domain', FILTER_SANITIZE_STRING ) );
-		$network_path   = wp_unslash( filter_input( INPUT_POST, 'path',   FILTER_SANITIZE_STRING ) );
+		$network_path   = wp_unslash( filter_input( INPUT_POST, 'path', FILTER_SANITIZE_STRING ) );
 
 		// Additional formatting.
 		$network_title  = sanitize_text_field( $network_title );
@@ -968,8 +967,8 @@ class WP_MS_Networks_Admin {
 	private function handle_move_site() {
 
 		// Sanitize values.
-		$site_id     = filter_input( INPUT_GET,  'blog_id', FILTER_SANITIZE_NUMBER_INT );
-		$new_network = filter_input( INPUT_POST, 'to',      FILTER_SANITIZE_NUMBER_INT );
+		$site_id     = filter_input( INPUT_GET, 'blog_id', FILTER_SANITIZE_NUMBER_INT );
+		$new_network = filter_input( INPUT_POST, 'to', FILTER_SANITIZE_NUMBER_INT );
 
 		// Bail if no site ID.
 		if ( empty( $site_id ) ) {

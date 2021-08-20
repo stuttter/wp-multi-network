@@ -14,8 +14,12 @@ cache:
 
 matrix:
   include:
-    - php: 7.2
+    - php: 7.4
       env: WP_VERSION=latest WP_MULTISITE=1 PHPLINT=1
+    - php: 7.3
+      env: WP_VERSION=latest WP_MULTISITE=1
+    - php: 7.2
+      env: WP_VERSION=latest WP_MULTISITE=1
     - php: 5.6
       env: WP_VERSION=latest WP_MULTISITE=1 PHPLINT=1
       dist: precise
@@ -48,14 +52,9 @@ before_script:
       5.2)
         ;;
       *)
-        composer selfupdate 1.0.0 --no-interaction
         composer install --no-interaction
         ;;
     esac
-  - |
-    if [[ "$PHPCS" == "1" ]]; then
-      composer config-phpcs
-    fi
   - |
     if [[ "$WP_VERSION" == "latest" ]]; then
       curl -s http://api.wordpress.org/core/version-check/1.7/ > /tmp/wp-latest.json

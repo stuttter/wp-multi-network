@@ -435,8 +435,9 @@ if ( ! function_exists( 'add_network' ) ) :
 	function add_network( $args = array() ) {
 		global $wpdb, $wp_version, $wp_db_version;
 
+		$func_args = func_get_args();
 		// Backward compatibility with old method of passing arguments.
-		if ( ! is_array( $args ) || func_num_args() > 1 ) {
+		if ( ! is_array( $args ) || $func_args > 1 ) {
 			_deprecated_argument( __METHOD__, '1.7.0', sprintf(
 				/* translators: 1: method name, 2: file name */
 				esc_html__( 'Arguments passed to %1$s should be in an associative array. See the inline documentation at %2$s for more details.', 'wp-multi-network' ),
@@ -445,7 +446,6 @@ if ( ! function_exists( 'add_network' ) ) :
 			) );
 
 			// Juggle function parameters.
-			$func_args     = func_get_args();
 			$old_args_keys = array(
 				0 => 'domain',
 				1 => 'path',
@@ -708,8 +708,7 @@ if ( ! function_exists( 'update_network' ) ) :
 
 				// Loop through URL-dependent options and correct them.
 				foreach ( network_options_list() as $option_name ) {
-					// phpcs:ignore WordPress.VIP.DirectDatabaseQuery.DirectQuery,WordPress.VIP.DirectDatabaseQuery.NoCaching,WordPress.WP.PreparedSQL.NotPrepared
-					$value = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$option_table} WHERE option_name = %s", $option_name ) );
+					$value = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$option_table} WHERE option_name = %s", $option_name ) );  // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
 					if ( ! empty( $value ) && ( false !== strpos( $value->option_value, $old_path ) ) ) {
 						$new_value = str_replace( $old_path, $full_path, $value->option_value );
