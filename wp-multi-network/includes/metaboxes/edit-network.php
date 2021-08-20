@@ -79,13 +79,15 @@ function wpmn_edit_network_new_site_metabox() {
  * @param WP_Network $network Optional. Network object. Default null.
  */
 function wpmn_edit_network_assign_sites_metabox( $network = null ) {
+
+	// Get sites in this Network.
 	$to = get_sites(
 		array(
-			'site__not_in' => get_main_site_id( $network->id ),
-			'network_id'   => $network->id,
+			'network_id' => $network->id,
 		)
 	);
 
+	// Get sites not in this Network.
 	$from = get_sites(
 		array(
 			'network__not_in' => array( $network->id ),
@@ -97,48 +99,79 @@ function wpmn_edit_network_assign_sites_metabox( $network = null ) {
 	<table class="assign-sites widefat">
 		<thead>
 			<tr>
-				<th><?php esc_html_e( 'Available Subsites', 'wp-multi-network' ); ?></th>
+				<th><?php esc_html_e( 'Sites in this Network', 'wp-multi-network' ); ?></th>
 				<th>&nbsp;</th>
-				<th><?php esc_html_e( 'Network Subsites', 'wp-multi-network' ); ?></th>
+				<th><?php esc_html_e( 'Sites not in this Network', 'wp-multi-network' ); ?></th>
 			</tr>
 		</thead>
 		<tr>
-			<td class="column-available">
-				<select name="from[]" id="from" multiple>
+			<td class="column-assigned">
+				<select name="to[]" id="to" multiple>
+					<?php
 
-					<?php foreach ( $from as $site ) : ?>
+					// Loop through to sites.
+					foreach ( $to as $site ) :
 
-						<?php if ( ( (int) $site->network_id !== (int) $network->id ) && ! is_main_site_for_network( $site->id ) ) : ?>
+						// Is main?
+						$is_main = is_main_site_for_network( $site->id );
 
-							<option value="<?php echo esc_attr( $site->id ); ?>">
-								<?php echo esc_html( sprintf( '%1$s (%2$s%3$s)', $site->name, $site->domain, $site->path ) ); ?>
+						// Get main helper text.
+						$main_text = ! empty( $is_main )
+							? esc_attr__( ' (Primary)', 'wp-multi-network' )
+							: '';
+
+						if ( (int) $site->network_id === (int) $network->id ) :
+
+							?>
+
+							<option value="<?php echo esc_attr( $site->id ); ?>" <?php disabled( $is_main ); ?>>
+								<?php echo esc_html( sprintf( '%1$s - %2$s%3$s%4$s', get_blog_option( $site->id, 'blogname' ), $site->domain, $site->path, $main_text ) ); ?>
 							</option>
 
-						<?php endif; ?>
+							<?php
 
-					<?php endforeach; ?>
+						endif;
 
+					endforeach;
+
+					?>
 				</select>
 			</td>
 			<td class="column-actions">
 				<input type="button" name="assign" id="assign" class="button assign" value="&rarr;">
 				<input type="button" name="unassign" id="unassign" class="button unassign" value="&larr;">
 			</td>
-			<td class="column-assigned">
-				<select name="to[]" id="to" multiple>
+			<td class="column-available">
+				<select name="from[]" id="from" multiple>
+					<?php
 
-					<?php foreach ( $to as $site ) : ?>
+					// Loop through from sites.
+					foreach ( $from as $site ) :
 
-						<?php if ( (int) $site->network_id === (int) $network->id ) : ?>
+						// Is main?
+						$is_main = is_main_site_for_network( $site->id );
 
-							<option value="<?php echo esc_attr( $site->id ); ?>" <?php disabled( is_main_site_for_network( $site->id ) ); ?>>
-								<?php echo esc_html( sprintf( '%1$s (%2$s%3$s)', $site->name, $site->domain, $site->path ) ); ?>
+						// Get main helper text.
+						$main_text = ! empty( $is_main )
+							? esc_attr__( ' (Primary)', 'wp-multi-network' )
+							: '';
+
+						// Omit main sites for now.
+						if ( ( (int) $site->network_id !== (int) $network->id ) && empty( $is_main ) ) :
+
+							?>
+
+							<option value="<?php echo esc_attr( $site->id ); ?>">
+								<?php echo esc_html( sprintf( '%1$s - %2$s%3$s%4$s', get_blog_option( $site->id, 'blog_ame' ), $site->domain, $site->path, $main_text ) ); ?>
 							</option>
 
-						<?php endif; ?>
+							<?php
 
-					<?php endforeach; ?>
+						endif;
 
+					endforeach;
+
+					?>
 				</select>
 			</td>
 		</tr>
