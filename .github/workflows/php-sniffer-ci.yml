@@ -1,4 +1,4 @@
-name: PHP Lints
+name: PHP - Code Sniffer
 
 on:
   push:
