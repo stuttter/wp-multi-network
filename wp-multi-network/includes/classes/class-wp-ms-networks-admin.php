@@ -1024,7 +1024,7 @@ class WP_MS_Networks_Admin {
 	private function handle_reassign_sites() {
 
 		// Sanitize values.
-		$to   = array_map( 'absint', (array) filter_input( INPUT_POST, 'to',   FILTER_SANITIZE_NUMBER_INT, FILTER_FORCE_ARRAY ) );
+		$to   = array_map( 'absint', (array) filter_input( INPUT_POST, 'to', FILTER_SANITIZE_NUMBER_INT, FILTER_FORCE_ARRAY ) );
 		$from = array_map( 'absint', (array) filter_input( INPUT_POST, 'from', FILTER_SANITIZE_NUMBER_INT, FILTER_FORCE_ARRAY ) );
 
 		// Bail early if no movement.
