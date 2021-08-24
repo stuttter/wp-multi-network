@@ -1,19 +1,27 @@
 === WP Multi Network ===
-Contributors: johnjamesjacoby, ddean, BrianLayman, rmccue, spacedmonkey
-Tags: network, networks, blog, blogs, site, sites, domain, domains, mapping, domain mapping, fun
+Author:            Triple J Software, Inc.
+Author URI:        https://jjj.software
+Donate link:       https://buy.stripe.com/7sI3cd2tK1Cy2lydQR
+Plugin URI:        https://wordpress.org/plugins/wp-multi-network/
+License URI:       https://www.gnu.org/licenses/gpl-2.0.html
+License:           GPLv2 or later
+Contributors:      johnjamesjacoby, flixos90, rmccue, spacedmonkey
+Tags:              network, sites, domains, global, admin
+Requires PHP:      5.2
 Requires at least: 4.9
-Tested up to: 5.9
-Requires PHP: 5.2
-Stable tag: 2.4.2
-License: GPLv2 or later
-License URI: https://www.gnu.org/licenses/gpl-2.0.html
-Donate link: https://buy.stripe.com/7sI3cd2tK1Cy2lydQR
+Tested up to:      5.9
+Stable tag:        2.4.2
 
 == Description ==
 
 Turn your WordPress Multisite installation into many multisite networks, surrounding one global set of users.
 
-WP Multi Network allows global administrators to create new networks with their own sites and domain arrangements.
+* Reveals hidden WordPress Multisite functionality.
+* Includes a "Networks" top-level Network-Admin menu.
+* Includes a List Table for viewing available networks.
+* Allows moving subsites between networks.
+* Allows global administrators to create new networks with their own sites and domain arrangements.
+* Group sites into logical networks using nearly any combination of domain (example.org) and path (/site/).
 
 == Installation ==
 
@@ -26,16 +34,20 @@ WP Multi Network allows global administrators to create new networks with their 
 
 = Can each network have a different domain? =
 
-Yes you can. That is what this plugin does best.
+Yes you can. That is what this plugin does best!
 
 Think of how WordPress.org works:
 
 * wordpress.org
+* make.wordpress.org/core
 * buddypress.org
+* codex.buddypress.org
 * bbpress.org
+* codex.bbpress.org
 * wordcamp.org
+* us.wordcamp.org/2021
 
-Users are global, and can login to any of those networks with the same credentials.
+Users are global, and they can login to any of those domains with the same login and password. Each of those domains has their own subdomains and subdirectories, many of which are sites or (networks of them).
 
 = Will this work on standard WordPress? =
 
@@ -60,15 +72,15 @@ define( 'DOMAIN_CURRENT_SITE', $_SERVER['HTTP_HOST'] );
 //define( 'SITE_ID_CURRENT_SITE', 1 );
 //define( 'BLOG_ID_CURRENT_SITE', 1 );
 
-// Uncomment and change to a URL to funnel no-site-found requests to
+// Un-comment and change to a URL to funnel no-site-found requests to
 //define( 'NOBLOGREDIRECT', '/404/' );
 
 /**
- * These are purposely set for maximum compliance with multisite and
- * multinetwork. Your config may vary.
+ * These are purposely set for maximum compatibility with multisite and
+ * multi-network. Your config may vary.
  */
-define( 'WP_HOME',    'http://' . $_SERVER['HTTP_HOST'] );
-define( 'WP_SITEURL', 'http://' . $_SERVER['HTTP_HOST'] );
+define( 'WP_HOME',    'https://' . $_SERVER['HTTP_HOST'] );
+define( 'WP_SITEURL', 'https://' . $_SERVER['HTTP_HOST'] );
 `
 
 = What about cookies? =
@@ -100,7 +112,7 @@ If you disable it on one of your networks, any new site you create on that netwo
 
 Just leave this plugin network-activated (or in mu-plugins) and it will take care of everything.
 
-= Can I achieve a multi-level URL path structure domain/network/site with subfolder network? =
+= Can I achieve a multi-level URL path structure (domain/network/site) with a subfolder network? =
 
 To achieve nested folder paths in this fashion network1/site1, network1/site2 etc,
 please follow the steps in https://paulund.co.uk/wordpress-multisite-nested-paths to construct a custom sunrise.php (Thanks to https://paulund.co.uk for providing these steps).
@@ -111,11 +123,11 @@ Not much to talk about really. Check the code for details!
 
 == Changelog ==
 = 2.4.2 =
-* Update code for WordPress coding standards. 
+* Update code for WordPress coding standards.
 * Other small bug fixes.
 
 = 2.4.1 =
-* Update required php / wordpress versions.
+* Update required PHP / wordpress versions.
 
 = 2.4.0 =
 * Add networks REST API endpoint.
@@ -126,96 +138,96 @@ Not much to talk about really. Check the code for details!
 * Other improvements.
 
 = 2.2.1 =
-* Fix upload paths still using blogs.dir
+* Fix upload paths still using blogs.dir.
 
 = 2.2.0 =
-* WordPress 4.9 minimum version bump
-* Fix bug preventing sites from being moved
-* Tweak some CSS styling
-* Use more WordPress core functions for sites & networks
+* WordPress 4.9 minimum version bump.
+* Fix bug preventing sites from being moved.
+* Tweak some styling.
+* Use more WordPress core functions for sites & networks.
 
 = 2.1.0 =
-* Add nonce checks to forms
-* Add validation & output sanitization to form fields
+* Add nonce checks to forms.
+* Add validation & output sanitization to form fields.
 
 = 2.0.0 =
-* WordPress 4.6 minimum version bump
-* Caching improvements for WordPress 4.6
-* Refactor list tables & admin method code
+* WordPress 4.6 minimum version bump.
+* Caching improvements for WordPress 4.6.
+* Refactor list tables & admin method code.
 
 = 1.8.1 =
-* Fix site reassignment metabox from moving sites incorrectly
+* Fix site reassignment metabox from moving sites incorrectly.
 
 = 1.8.0 =
-* Support for core compat functions
-* Fix bug causing site moves to break
-* Fix bug allowing duplicate site URLs
-* Remove _network_option() functions
-* Remove network.zero placeholder
-* WordPress 4.5 & 4.6 compatibility updates
+* Support for core compat functions.
+* Fix bug causing site moves to break.
+* Fix bug allowing duplicate site URLs.
+* Remove _network_option() functions.
+* Remove network.zero placeholder.
+* WordPress 4.5 & 4.6 compatibility updates.
 
 = 1.7.0 =
-* WordPress 4.4 compatibility updates
-* Metabox overhaul
-* network.zero improvements
-* Fix site assignments
-* Various UI improvements
-* Global, class, function, and method cleanup
+* WordPress 4.4 compatibility updates.
+* Metabox overhaul.
+* network.zero improvements.
+* Fix site assignments.
+* Various UI improvements.
+* Global, class, function, and method cleanup.
 
 = 1.6.1 =
-* WordPress 4.3 UI compatibility updates
-* Remove site "Actions" column integration
+* WordPress 4.3 UI compatibility updates.
+* Remove site "Actions" column integration.
 
 = 1.6.0 =
-* Move inclusion to muplugins_loaded
-* Introduce network switching API
-* Introduce network options API
-* Update action links to better match sites list
-* Better support for domain mapping
-* Refactor file names & locations
-* Deprecate wpmn_fix_subsite_upload_path()
-* Include basic WPCLI support
-* Escaped gettext output
-* Fix bulk network deletion
-* Scrutinized code formatting
+* Move inclusion to muplugins_loaded.
+* Introduce network switching API.
+* Introduce network options API.
+* Update action links to better match sites list.
+* Better support for domain mapping.
+* Refactor file names & locations.
+* Deprecate wpmn_fix_subsite_upload_path().
+* Include basic WPCLI support.
+* Escaped gettext output.
+* Fix bulk network deletion.
+* Scrutinized code formatting.
 
 = 1.5.1 =
-* Fix debug notices when creating networks
-* Fix incorrect variable usage causing weird output
-* Adds default path when creating new networks
+* Fix debug notices when creating networks.
+* Fix incorrect variable usage causing weird output.
+* Adds default path when creating new networks.
 
 = 1.5 =
-* Support for WordPress 3.8
+* Support for WordPress 3.8.
 * Finally, a menu icon!
-* Improved output sanitization
+* Improved output sanitization.
 
 = 1.4.1 =
-* Fix issue when changing network domain or path - contributed by mgburns
-* Improve support for native uploaded file handling
+* Fix issue when changing network domain or path - contributed by mgburns.
+* Improve support for native uploaded file handling.
 
 = 1.4 =
-* Fix admin pages (let us know if you find something broken)
-* Add support for WP 3.5+ upload handling - thanks, RavanH (see notes: "What's up with uploads?")
+* Fix admin pages (let us know if you find something broken).
+* Add support for WP 3.5+ upload handling - thanks, RavanH (see notes: "What's up with uploads?").
 
 = 1.3.1 =
-* Fix prepare() usages
-* Fix some debug notices
+* Fix prepare() usages.
+* Fix some debug notices.
 
 = 1.3 =
-* Refactor into smaller pieces
-* Add phpdoc
-* Deprecate functions for friendlier core-style functions
-* Code clean-up
-* Remove inline JS
+* Refactor into smaller pieces.
+* Add PHP docs.
+* Deprecate functions for friendlier core-style functions.
+* Code clean-up.
+* Remove inline JavaScript.
 
 = 1.2 =
-* Implemented 3.1 Network Admin Menu, backwards compatiblity maintained.
-* Fix multiple minor issues;
-* Add Site Admin and Network Admin to Network lists
-* Add various security and bullet proofing
+* Implemented 3.1 Network Admin Menu, backwards compatibility maintained.
+* Fix multiple minor issues.
+* Add Site Admin and Network Admin to Network lists.
+* Add various security and bullet proofing.
 
 = 1.1 =
-* Better WordPress 3.0 compatibility
+* Better WordPress 3.0 compatibility.
 
 = 1.0 =
-Getting started
+Getting started.
