@@ -105,7 +105,12 @@ function wpmn_move_site_assign_metabox( $site = null ) {
 
 				wp_nonce_field( 'edit_network', 'network_edit' );
 
-				submit_button( esc_attr__( 'Move', 'wp-multi-network' ), 'primary', 'move', false );
+				submit_button(
+					esc_attr__( 'Move', 'wp-multi-network' ),
+					'primary',
+					'move',
+					false
+				);
 
 				?>
 				<input type="hidden" name="action" value="update">
