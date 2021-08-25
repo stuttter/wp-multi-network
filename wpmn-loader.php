@@ -7,17 +7,18 @@
  *
  * @wordpress-plugin
  * Plugin Name:       WP Multi-Network
+ * Description:       Provides a Network Management Interface for global administrators in WordPress Multisite installations.
  * Plugin URI:        https://wordpress.org/plugins/wp-multi-network/
- * Description:       A Network Management UI for global administrators in WordPress Multisite
- * Author:            <a href="https://jjj.blog">John James Jacoby</a>, <a href="http://www.generalthreat.com/">David Dean</a>, <a href="https://ehermitsinc.com/">Brian Layman</a>, <a href="https://rmccue.io/">Ryan McCue</a> & <a href="https:///www.spacedmonkey.com">Jonny Harris</a>
- * Tags:              blog, domain, mapping, multisite, network, networks, path, site, subdomain
- * Network:           true
- * License:           GPL v2 or later
+ * Author:            Triple J Software, Inc.
+ * Author URI:        https://jjj.software
+ * License:           GPLv2 or later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
- * Version:           2.4.0
+ * Text Domain:       wp-multi-network
+ * Network:           true
  * Requires at least: 4.9
  * Requires PHP:      5.2
- * Text Domain:       wp-multi-network
+ * Tested up to:      5.8
+ * Version:           2.4.2
  */
 
 // Exit if accessed directly.
