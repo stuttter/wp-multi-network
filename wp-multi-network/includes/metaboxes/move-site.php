@@ -17,29 +17,53 @@ defined( 'ABSPATH' ) || exit;
  * @param WP_Site $site Optional. Site object. Default null.
  */
 function wpmn_move_site_list_metabox( $site = null ) {
+
+	// Get networks and scheme.
 	$networks = get_networks();
+	$scheme   = wp_get_scheme();
+
 	?>
 
-	<table class="move-site widefat">
+	<table class="form-table move-site widefat">
 		<tr>
-			<th><?php esc_html_e( 'New Network', 'wp-multi-network' ); ?></th>
+			<th><?php esc_html_e( 'Network', 'wp-multi-network' ); ?></th>
 			<td>
 				<select name="to" id="to">
 					<option value="0">
 						<?php esc_html_e( '&mdash; No Network &mdash;', 'wp-multi-network' ); ?>
 					</option>
+
 					<?php
 
-					foreach ( $networks as $new_network ) {
+					foreach ( $networks as $new_network ) :
+
+						// Concatenate the network URL.
+						$url = $scheme . $new_network->domain . '/' . ltrim( $new_network->path, '/' );
+
 						?>
+
 						<option value="<?php echo esc_attr( $new_network->id ); ?>" <?php selected( $site->network_id, $new_network->id ); ?>>
-							<?php echo esc_html( wp_get_scheme() ) . esc_html( $new_network->domain . '/' . ltrim( $new_network->path, '/' ) ); ?>
+							<?php echo esc_html( $url ); ?>
 						</option>
+
 						<?php
-					}
+
+					endforeach;
 
 					?>
 				</select>
+
+				<p class="description">
+					<?php
+						esc_html_e( 'Choose the Network this Site should belong to.', 'wp-multi-network' );
+					?>
+
+					<br>
+
+					<?php
+						esc_html_e( '"No Network" will orphan the site, making it inaccessible.', 'wp-multi-network' );
+					?>
+				</p>
 			</td>
 		</tr>
 	</table>
