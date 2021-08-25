@@ -422,10 +422,20 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 		$network_home_url  = network_home_url();
 		restore_current_network();
 
+		// Setup the base URL.
 		$base_url = add_query_arg(
 			array(
 				'page' => 'networks',
 				'id'   => $network->id,
+			),
+			remove_query_arg(
+				array(
+					'action',
+					'network_created',
+					'page',
+					'site_moved',
+					'success',
+				)
 			)
 		);
 
@@ -436,7 +446,8 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 			$edit_network_url = add_query_arg(
 				array(
 					'action' => 'edit_network',
-				), $base_url
+				),
+				$base_url
 			);
 
 			$actions['edit'] = '<span class="edit"><a href="' . esc_url( $edit_network_url ) . '">' . esc_html__( 'Edit', 'wp-multi-network' ) . '</a></span>';
@@ -474,6 +485,7 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 		 */
 		$actions = apply_filters( 'manage_networks_action_links', array_filter( $actions ), $network->id, $network->sitename );
 
+		// Return all row actions.
 		return $this->row_actions( $actions );
 	}
 }
