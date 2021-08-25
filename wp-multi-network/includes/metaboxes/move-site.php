@@ -65,8 +65,8 @@ function wpmn_move_site_assign_metabox( $site = null ) {
 						<?php
 						printf(
 							/* translators: %s: site registration date */
-							esc_html__( 'Created: <strong>%1$s</strong>', 'wp-multi-network' ),
-							esc_html( $site->registered )
+							esc_html__( 'Created: %1$s', 'wp-multi-network' ),
+							'<strong>' . esc_html( $site->registered ) . '</strong>'
 						);
 						?>
 					</span>
@@ -76,8 +76,8 @@ function wpmn_move_site_assign_metabox( $site = null ) {
 						<?php
 						printf(
 							/* translators: %s: site domain */
-							esc_html__( 'Domain: <strong>%1$s</strong>', 'wp-multi-network' ),
-							esc_html( $site->domain )
+							esc_html__( 'Domain: %1$s', 'wp-multi-network' ),
+							'<strong>' . esc_html( $site->domain ) . '</strong>'
 						);
 						?>
 					</span>
@@ -87,8 +87,8 @@ function wpmn_move_site_assign_metabox( $site = null ) {
 						<?php
 						printf(
 							/* translators: %s: site path */
-							esc_html__( 'Path: <strong>%1$s</strong>', 'wp-multi-network' ),
-							esc_html( $site->path )
+							esc_html__( 'Path: %1$s', 'wp-multi-network' ),
+							'<strong>' . esc_html( $site->path ) . '</strong>'
 						);
 						?>
 					</span>
@@ -105,10 +105,15 @@ function wpmn_move_site_assign_metabox( $site = null ) {
 
 				wp_nonce_field( 'edit_network', 'network_edit' );
 
-				submit_button( esc_attr__( 'Move', 'wp-multi-network' ), 'primary', 'move', false );
+				submit_button(
+					esc_attr__( 'Move', 'wp-multi-network' ),
+					'primary',
+					'move',
+					false
+				);
 
 				?>
-				<input type="hidden" name="action" value="update">
+				<input type="hidden" name="action" value="move">
 				<input type="hidden" name="from" value="<?php echo esc_attr( $site->network_id ); ?>">
 			</div>
 			<div class="clear"></div>
