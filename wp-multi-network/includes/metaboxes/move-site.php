@@ -113,7 +113,7 @@ function wpmn_move_site_assign_metabox( $site = null ) {
 				);
 
 				?>
-				<input type="hidden" name="action" value="update">
+				<input type="hidden" name="action" value="move">
 				<input type="hidden" name="from" value="<?php echo esc_attr( $site->network_id ); ?>">
 			</div>
 			<div class="clear"></div>
