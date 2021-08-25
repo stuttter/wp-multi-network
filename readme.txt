@@ -10,7 +10,7 @@ Tags:              network, sites, domains, global, admin
 Requires PHP:      5.2
 Requires at least: 4.9
 Tested up to:      5.9
-Stable tag:        2.4.2
+Stable tag:        2.5.0
 
 == Description ==
 
@@ -122,6 +122,15 @@ please follow the steps in https://paulund.co.uk/wordpress-multisite-nested-path
 Not much to talk about really. Check the code for details!
 
 == Changelog ==
+= 2.5.0 =
+* Fix new networks sometimes not being created.
+* Fix moving sites sometimes not working.
+* Fix network name always being "New Network".
+* Fix several debug notices related to filter_input().
+* Fix several redirection & admin-notice issues.
+* Allow networks to be created with empty network name & site name.
+* Update author link & plugin meta data.
+
 = 2.4.2 =
 * Update code for WordPress coding standards.
 * Other small bug fixes.
