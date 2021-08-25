@@ -480,8 +480,27 @@ class WP_MS_Networks_Admin {
 			wp_die( esc_html__( 'Invalid site id.', 'wp-multi-network' ) );
 		}
 
-		add_meta_box( 'wpmn-move-site-list', esc_html__( 'Assign Network', 'wp-multi-network' ), 'wpmn_move_site_list_metabox', get_current_screen()->id, 'normal', 'high', array( $site ) );
-		add_meta_box( 'wpmn-move-site-publish', esc_html__( 'Site', 'wp-multi-network' ), 'wpmn_move_site_assign_metabox', get_current_screen()->id, 'side', 'high', array( $site ) );
+		// Site List
+		add_meta_box(
+			'wpmn-move-site-list',
+			esc_html__( 'Assign Network', 'wp-multi-network' ),
+			'wpmn_move_site_list_metabox',
+			get_current_screen()->id,
+			'normal',
+			'high',
+			array( $site )
+		);
+
+		// Move
+		add_meta_box(
+			'wpmn-move-site-publish',
+			esc_html__( 'Site', 'wp-multi-network' ),
+			'wpmn_move_site_assign_metabox',
+			get_current_screen()->id,
+			'side',
+			'high',
+			array( $site )
+		);
 
 		$add_network_url = $this->admin_url( array( 'page' => 'add-new-network' ) );
 		?>
