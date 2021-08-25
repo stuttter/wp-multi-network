@@ -328,25 +328,6 @@ if ( ! function_exists( 'restore_current_network' ) ) :
 	}
 endif;
 
-if ( ! function_exists( '_wp_update_network_counts' ) ) :
-	/**
-	 * Updates network counts.
-	 *
-	 * This will go away once wp_update_network_counts() no longer sucks.
-	 *
-	 * @since 2.2.0
-	 * @access private
-	 *
-	 * @param int $network_id Network ID for which to update network counts.
-	 */
-	function _wp_update_network_counts( $network_id ) {
-		switch_to_network( $network_id );
-		wp_update_network_site_counts();
-		wp_update_network_user_counts();
-		restore_current_network();
-	}
-endif;
-
 if ( ! function_exists( 'insert_network' ) ) :
 	/**
 	 * Stores basic network info in the sites table.
@@ -608,8 +589,10 @@ if ( ! function_exists( 'add_network' ) ) :
 			}
 		}
 
-		_wp_update_network_counts( $new_network_id );
+		// Update network counts.
+		wp_update_network_counts( $new_network_id );
 
+		// Clean the network cache.
 		clean_network_cache( $new_network_id );
 
 		/**
@@ -716,12 +699,15 @@ if ( ! function_exists( 'update_network' ) ) :
 					}
 				}
 
-				refresh_blog_details( $site->id );
+				// Clean the blog cache.
+				clean_blog_cache( $site->id );
 			}
 		}
 
-		_wp_update_network_counts( $network->id );
+		// Update network counts.
+		wp_update_network_counts( $network->id );
 
+		// Clean the network cache.
 		clean_network_cache( $network->id );
 
 		/**
@@ -792,6 +778,7 @@ if ( ! function_exists( 'delete_network' ) ) :
 		// phpcs:ignore WordPress.VIP.DirectDatabaseQuery.DirectQuery
 		$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->sitemeta} WHERE site_id = %d", $network->id ) );
 
+		// Clean the network cache.
 		clean_network_cache( $network->id );
 
 		/**
@@ -825,21 +812,26 @@ if ( ! function_exists( 'move_site' ) ) :
 
 		$site = get_site( $site_id );
 
+		// Cast network IDs to ints.
+		$old_network_id = (int) $site->network_id;
+		$new_network_id = (int) $new_network_id;
+
 		// Bail if site does not exist.
 		if ( empty( $site ) ) {
 			return new WP_Error( 'blog_not_exist', __( 'Site does not exist.', 'wp-multi-network' ) );
 		}
 
 		// Bail if site is the main site.
-		if ( is_main_site( $site->id, $site->network_id ) ) {
+		if ( is_main_site( $site->id, $old_network_id ) ) {
 			return true;
 		}
 
-		$new_network_id = (int) $new_network_id;
-		if ( $new_network_id === (int) $site->network_id ) {
+		// Bail if no change.
+		if ( $new_network_id === $old_network_id ) {
 			return true;
 		}
 
+		// Update the database entry.
 		$result = $wpdb->update( // phpcs:ignore WordPress.VIP.DirectDatabaseQuery.DirectQuery
 			$wpdb->blogs,
 			array(
@@ -849,24 +841,34 @@ if ( ! function_exists( 'move_site' ) ) :
 				'blog_id' => $site->id,
 			)
 		);
+
+		// Bail if error.
 		if ( empty( $result ) ) {
 			return new WP_Error( 'blog_not_moved', __( 'Site could not be moved.', 'wp-multi-network' ) );
 		}
 
-		if ( 0 !== $site->network_id ) {
-			_wp_update_network_counts( $site->network_id );
+		// Update old network counts.
+		if ( 0 !== $old_network_id ) {
+			wp_update_network_counts( $old_network_id );
 		}
 
+		// Update new network counts.
 		if ( 0 !== $new_network_id ) {
-			_wp_update_network_counts( $new_network_id );
+			wp_update_network_counts( $new_network_id );
 		}
 
-		refresh_blog_details( $site_id );
+		// Clean the blog cache.
+		clean_blog_cache( $site_id );
 
-		clean_network_cache( array_filter( array(
-			$site->network_id,
-			$new_network_id,
-		) ) );
+		// Clean the network caches.
+		clean_network_cache(
+			array_filter(
+				array(
+					$site->network_id,
+					$new_network_id,
+				)
+			)
+		);
 
 		/**
 		 * Fires after a site has been moved to a new network.
