@@ -880,7 +880,7 @@ class WP_MS_Networks_Admin {
 			: $network_title;
 
 		// Bail if missing fields.
-		if ( empty( $network_title ) || empty( $network_domain ) || empty( $network_path ) ) {
+		if ( empty( $network_domain ) || empty( $network_path ) ) {
 			$this->handle_redirect(
 				array(
 					'page'            => 'add-new-network',
@@ -889,22 +889,20 @@ class WP_MS_Networks_Admin {
 			);
 		}
 
-		// Add network.
-		$result = add_network(
-			array(
-				'domain'           => $network_domain,
-				'path'             => $network_path,
-				'site_name'        => $site_name,
-				'user_id'          => get_current_user_id(),
-				'clone_network'    => $clone,
-				'options_to_clone' => $options_to_clone,
-			)
+		// Arguments for add_network().
+		$args = array(
+			'domain'           => $network_domain,
+			'path'             => $network_path,
+			'site_name'        => $site_name,
+			'user_id'          => get_current_user_id(),
+			'clone_network'    => $clone,
+			'options_to_clone' => $options_to_clone,
 		);
 
-		// Default success value.
-		$success = '0';
+		// Add network.
+		$result = add_network( $args );
 
-		// No failure.
+		// Success!
 		if ( ! empty( $result ) && ! is_wp_error( $result ) ) {
 
 			// Update network name.
@@ -914,19 +912,26 @@ class WP_MS_Networks_Admin {
 
 			// Self-activate on new network.
 			update_network_option(
-				$result, 'active_sitewide_plugins', array(
+				$result,
+				'active_sitewide_plugins',
+				array(
 					'wp-multi-network/wpmn-loader.php' => time(),
 				)
 			);
 
-			// Success!
-			$success = '1';
+			// Redirect.
+			$this->handle_redirect(
+				array(
+					'network_created' => '1',
+				)
+			);
 		}
 
-		// Redirect.
+		// Failure.
 		$this->handle_redirect(
 			array(
-				'network_created' => $success,
+				'page'            => 'add-new-network',
+				'network_created' => '0',
 			)
 		);
 	}
@@ -1010,7 +1015,8 @@ class WP_MS_Networks_Admin {
 				add_query_arg(
 					array(
 						'site_moved' => 0,
-					), network_admin_url( 'sites.php' )
+					),
+					network_admin_url( 'sites.php' )
 				)
 			);
 			exit;
@@ -1020,12 +1026,13 @@ class WP_MS_Networks_Admin {
 		$site = get_site( $site_id );
 
 		// Bail if site cannot be found or new network is the same as existing.
-		if ( empty( $site ) || ( $site->network_id === $new_network ) ) {
+		if ( empty( $site ) || ( (int) $site->network_id === (int) $new_network ) ) {
 			wp_safe_redirect(
 				add_query_arg(
 					array(
 						'site_moved' => 0,
-					), network_admin_url( 'sites.php' )
+					),
+					network_admin_url( 'sites.php' )
 				)
 			);
 			exit;
@@ -1044,7 +1051,8 @@ class WP_MS_Networks_Admin {
 			add_query_arg(
 				array(
 					'site_moved' => $success,
-				), network_admin_url( 'sites.php' )
+				),
+				network_admin_url( 'sites.php' )
 			)
 		);
 		exit;
@@ -1198,7 +1206,8 @@ class WP_MS_Networks_Admin {
 
 		// Parse arguments.
 		$r = wp_parse_args(
-			$args, array(
+			$args,
+			array(
 				'page' => 'networks',
 			)
 		);
