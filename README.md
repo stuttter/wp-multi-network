@@ -77,7 +77,7 @@ You need to have multi-site functionality enabled before using this plugin. http
 
 ### Where can I get support?
 
-The WordPress support forums: https://wordpress.org/tags/wp-multi-network/
+Create a GitHub [issue](https://github.com/stuttter/wp-multi-network/issues).
 
 ### What's up with uploads?
 
@@ -87,7 +87,7 @@ WP Multi-Network needs to be running to set the upload path for new sites. As su
 
 ### Can I achieve a multi-level URL path structure domain/network/site with subfolder network?
 
-To achieve nested folder paths in this fashion `network1/site1`, `network1/site2` etc, please follow the steps in this [article](https://github.com/stuttter/wp-multi-network/wiki/WordPress-Multisite-With-Nested-Folder-Paths) to construct a custom `sunrise.php` (Thanks to https://paulund.co.uk for providing these steps).
+To achieve nested folder paths in this fashion `network1/site1`, `network1/site2` etc, please follow the steps in this [article](https://github.com/stuttter/wp-multi-network/wiki/WordPress-Multisite-With-Nested-Folder-Paths) to construct a custom `sunrise.php` (Thanks to [Paul Underwood](https://paulund.co.uk) for providing these steps).
 
 ### Can I contribute?
 

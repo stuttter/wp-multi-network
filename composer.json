@@ -1,7 +1,7 @@
 {
   "name": "stuttter/wp-multi-network",
-  "description": "A Network Management UI for global administrators in WordPress Multisite",
-  "homepage": "https://github.com/stuttter/wp-multi-network",
+  "description": "Provides a Network Management Interface for global administrators in WordPress Multisite installations.",
+  "homepage": "https://wordpress.org/plugins/wp-multi-network/",
   "type": "wordpress-plugin",
   "license": "GPL-2.0-or-later",
   "authors": [
@@ -10,6 +10,9 @@
       "email": "johnjamesjacoby@me.com"
     }
   ],
+  "support": {
+    "issues": "https://github.com/stuttter/wp-multi-network/issues"
+  },
   "require": {
     "php": ">=5.2",
     "composer/installers": "^1.0"
