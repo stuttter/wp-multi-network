@@ -55,7 +55,7 @@ You can activate it, but it won't do anything. You need to have the multisite fu
 
 = Where can I get support? =
 
-The WordPress support forums: https://wordpress.org/support/plugin/wp-multi-network/
+Create a GitHub issue: https://github.com/stuttter/wp-multi-network/issues/new
 
 = What about multisite constants? =
 
