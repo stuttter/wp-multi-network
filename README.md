@@ -6,11 +6,16 @@
 
 # WP Multi Network
 
-A Network Management UI for global admins in a WordPress Multisite environment
+Provides a Network Management Interface for global administrators in WordPress Multisite installations.
 
-Turn your multi-site installation of WordPress into many multi-site networks, all surrounding one central user base.
+Turn your WordPress Multisite installation into many multisite networks, surrounding one global set of users.
 
-WP Multi Network allows cape wearing super-admins to create new networks of sites, allowing for infinitely extensible site, network, and domain arrangements.
+* Reveals hidden WordPress Multisite functionality.
+* Includes a "Networks" top-level Network-Admin menu.
+* Includes a List Table for viewing available networks.
+* Allows moving subsites between networks.
+* Allows global administrators to create new networks with their own sites and domain arrangements.
+* Group sites into logical networks using nearly any combination of domain (example.org) and path (/site/).
 
 # Installation
 
@@ -18,13 +23,16 @@ WP Multi Network allows cape wearing super-admins to create new networks of site
 * Activate in the "Plugins" network admin panel using the "Network Activate" link.
 * Comment out the `DOMAIN_CURRENT_SITE` line in your `wp-config.php` file. If you don't have this line, you probably need to enable multisite.
 
-### Shared Cookies
+### Cookie Configuration
 
-Stash something similar to this in your `wp-config.php` to share cookies across all sites & networks.
+Stash something like this in your `wp-config.php` to use a single cookie configuration across all sites & networks.
+
+Replace `example.com` with the domain for the main site in your primary network.
+
 ```php
 // Cookies
-define( 'COOKIEHASH',        md5( 'yourdomain.com' ) );
-define( 'COOKIE_DOMAIN',     'yourdomain.com'        );
+define( 'COOKIEHASH',        md5( 'example.com' ) );
+define( 'COOKIE_DOMAIN',     'example.com'        );
 define( 'ADMIN_COOKIE_PATH', '/' );
 define( 'COOKIEPATH',        '/' );
 define( 'SITECOOKIEPATH',    '/' );
@@ -38,7 +46,10 @@ define( 'LOGGED_IN_COOKIE',   'thing_logged_in' . COOKIEHASH );
 
 ### Domain/Sub-domain flexibility
 
-Stash something similar to this in your `wp-config.php` to make new site/network/domain creation and resolution as flexible as possible. You'll likely need some server configuration outside of WordPress to help with this (documentation pending.)
+Stash something like this in your `wp-config.php` to make new site/network/domain creation and resolution as flexible as possible.
+
+You'll likely need some server configuration outside of WordPress to help with this (documentation pending.)
+
 ```php
 // Multisite
 define( 'MULTISITE',           true                  );
@@ -57,8 +68,8 @@ define( 'DOMAIN_CURRENT_SITE', $_SERVER['HTTP_HOST'] );
  * These are purposely set for maximum compliance with multisite and
  * multinetwork. Your config may vary.
  */
-define( 'WP_HOME',    'http://' . $_SERVER['HTTP_HOST'] );
-define( 'WP_SITEURL', 'http://' . $_SERVER['HTTP_HOST'] );
+define( 'WP_HOME',    'https://' . $_SERVER['HTTP_HOST'] );
+define( 'WP_SITEURL', 'https://' . $_SERVER['HTTP_HOST'] );
 ```
 
 ### Single Sign-on
@@ -73,17 +84,21 @@ Yes you can. That is what this plugin does best.
 
 ### Will this work on standard WordPress?
 
-You need to have multi-site functionality enabled before using this plugin. https://codex.wordpress.org/Create_A_Network
+You need to have WordPress Multisite enabled before using this plugin.
+
+See: https://codex.wordpress.org/Create_A_Network
 
 ### Where can I get support?
 
-Create a GitHub [issue](https://github.com/stuttter/wp-multi-network/issues).
+Community: https://wordpress.org/support/plugin/wp-multi-network
+
+Development: https://github.com/stuttter/wp-multi-network/discussions
 
 ### What's up with uploads?
 
 WP Multi-Network needs to be running to set the upload path for new sites. As such, all new networks created with this plugin will have it network activated. If you do disable it on one of your networks, any new site on that network will upload files to that network's root site, effectively causing them to be broken.
 
-(TL;DR - Leave this plugin activated and it will make sure uploads go where they're suppose do.)
+Leave this plugin activated, and it will make sure uploads go where they are expected to.
 
 ### Can I achieve a multi-level URL path structure domain/network/site with subfolder network?
 
@@ -91,4 +106,4 @@ To achieve nested folder paths in this fashion `network1/site1`, `network1/site2
 
 ### Can I contribute?
 
-Please! The number of users needing multiple WordPress networks is growing fast. Having an easy-to-use interface and powerful set of functions is critical to managing complex WordPress installations. If this is your thing, please help us out! Read more in the [plugin contributing guidelines](https://github.com/stuttter/wp-multi-network/blob/master/CONTRIBUTING.md).
+Yes! Having an easy-to-use interface and powerful set of functions is critical to managing complex WordPress installations. If this is your thing, please help us out! Read more in the [plugin contributing guidelines](https://github.com/stuttter/wp-multi-network/blob/master/CONTRIBUTING.md).

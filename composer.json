@@ -11,7 +11,9 @@
     }
   ],
   "support": {
-    "issues": "https://github.com/stuttter/wp-multi-network/issues"
+    "source": "https://github.com/stuttter/wp-multi-network",
+    "issues": "https://github.com/stuttter/wp-multi-network/issues",
+    "forum": "https://github.com/stuttter/wp-multi-network/discussions"
   },
   "require": {
     "php": ">=5.2",
