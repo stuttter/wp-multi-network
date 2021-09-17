@@ -592,7 +592,7 @@ if ( ! function_exists( 'add_network' ) ) :
 			: get_site_option( 'ms_files_rewriting' );
 
 		// Not using rewriting, and using a newer version of WordPress than 3.7.
-		if ( empty( $use_files_rewriting ) && version_compare( $wp_version, '3.7', '<' ) ) {
+		if ( empty( $use_files_rewriting ) && version_compare( $wp_version, '3.7', '>' ) ) {
 
 			// WP_CONTENT_URL is locked to the current site and can't be overridden,
 			// so we have to replace the hostname the hard way.
