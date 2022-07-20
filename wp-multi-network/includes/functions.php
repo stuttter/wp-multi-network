@@ -576,6 +576,8 @@ if ( ! function_exists( 'add_network' ) ) :
 			return $new_blog_id;
 		}
 
+		$r['network_meta']['main_site'] = $new_blog_id;
+
 		if ( empty( $r['network_meta']['site_name'] ) ) {
 			$r['network_meta']['site_name'] = ! empty( $r['network_name'] )
 				? $r['network_name']
