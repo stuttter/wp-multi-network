@@ -122,6 +122,9 @@ please follow the steps in https://paulund.co.uk/wordpress-multisite-nested-path
 Not much to talk about really. Check the code for details!
 
 == Changelog ==
+= 2.5.1 =
+* Save main site on network as network option. 
+
 = 2.5.0 =
 * Fix new networks sometimes not being created.
 * Fix moving sites sometimes not working.
