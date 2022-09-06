@@ -10,7 +10,7 @@ Tags:              network, sites, domains, global, admin
 Requires PHP:      5.2
 Requires at least: 4.9
 Tested up to:      5.9
-Stable tag:        2.5.0
+Stable tag:        2.5.1
 
 == Description ==
 
