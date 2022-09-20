@@ -167,7 +167,7 @@ if ( ! function_exists( 'is_main_site_for_network' ) ) :
 	 */
 	function is_main_site_for_network( $site_id ) {
 		$site = get_site( $site_id );
-		$main = get_main_site_id(  $site->network_id );
+		$main = get_main_site_id( $site->network_id );
 
 		// Bail if no site or network was found.
 		if ( empty( $main ) ) {
@@ -701,7 +701,7 @@ if ( ! function_exists( 'update_network' ) ) :
 			return new WP_Error( 'network_not_exist', __( 'Network does not exist.', 'wp-multi-network' ) );
 		}
 
-		$site_id = get_main_site_id(  $id );
+		$site_id = get_main_site_id( $id );
 		$path    = wp_sanitize_site_path( $path );
 
 		// Bail if site URL is invalid.
