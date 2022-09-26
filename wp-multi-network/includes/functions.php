@@ -133,7 +133,7 @@ if ( ! function_exists( 'get_main_site_for_network' ) ) :
 		if ( ! empty( $network->blog_id ) ) {
 			$primary_id = $network->blog_id;
 		} else {
-			$primary_id = wp_cache_get( "network:{$network->id}:main_site", 'site-options' );
+			$primary_id = get_network_option( $network->id, 'main_site' );
 
 			if ( false === $primary_id ) {
 				$sites = get_sites( array(
@@ -147,7 +147,7 @@ if ( ! function_exists( 'get_main_site_for_network' ) ) :
 				$primary_id = ! empty( $sites ) ? reset( $sites ) : 0;
 
 				if ( ! empty( $primary_id ) ) {
-					wp_cache_add( "network:{$network->id}:main_site", $primary_id, 'site-options' );
+					update_network_option( $network->id, 'main_site', $primary_id );
 				}
 			}
 		}
@@ -167,7 +167,7 @@ if ( ! function_exists( 'is_main_site_for_network' ) ) :
 	 */
 	function is_main_site_for_network( $site_id ) {
 		$site = get_site( $site_id );
-		$main = get_main_site_for_network( $site->network_id );
+		$main = get_main_site_id( $site->network_id );
 
 		// Bail if no site or network was found.
 		if ( empty( $main ) ) {
@@ -254,7 +254,7 @@ if ( ! function_exists( 'switch_to_network' ) ) :
 
 		// Populate extra properties if not set already.
 		if ( ! isset( $current_site->blog_id ) ) {
-			$current_site->blog_id = get_main_site_for_network( $current_site );
+			$current_site->blog_id = get_main_site_id( $current_site->id );
 		}
 		if ( ! isset( $current_site->site_name ) ) {
 			$current_site->site_name = get_network_name();
@@ -576,6 +576,8 @@ if ( ! function_exists( 'add_network' ) ) :
 			return $new_blog_id;
 		}
 
+		$r['network_meta']['main_site'] = $new_blog_id;
+
 		if ( empty( $r['network_meta']['site_name'] ) ) {
 			$r['network_meta']['site_name'] = ! empty( $r['network_name'] )
 				? $r['network_name']
@@ -699,7 +701,7 @@ if ( ! function_exists( 'update_network' ) ) :
 			return new WP_Error( 'network_not_exist', __( 'Network does not exist.', 'wp-multi-network' ) );
 		}
 
-		$site_id = get_main_site_for_network( $id );
+		$site_id = get_main_site_id( $id );
 		$path    = wp_sanitize_site_path( $path );
 
 		// Bail if site URL is invalid.
