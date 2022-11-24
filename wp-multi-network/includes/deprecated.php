@@ -9,6 +9,20 @@
 // Exit if accessed directly.
 defined( 'ABSPATH' ) || exit;
 
+if ( ! function_exists( 'is_global_admin' ) ) :
+	/**
+	 * Checks whether the current user is a global administrator.
+	 *
+	 * @since 2.2.0
+	 * @deprecated 2.3.0
+	 *
+	 * @return bool True if the user is a global administrator, false otherwise.
+	 */
+	function is_global_admin() {
+		return (bool) apply_filters( 'is_global_admin', is_super_admin() );
+	}
+endif;
+
 if ( ! function_exists( 'wpmn_fix_subsite_upload_path' ) ) {
 	/**
 	 * Keeps uploads for a newly-created subsite from being stored under the

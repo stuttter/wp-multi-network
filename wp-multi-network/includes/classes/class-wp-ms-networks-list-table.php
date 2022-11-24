@@ -84,10 +84,12 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 		$this->items = $query->query( $args );
 		$count       = $query->found_networks;
 
-		$this->set_pagination_args( array(
-			'total_items' => $count,
-			'per_page'    => $per_page,
-		) );
+		$this->set_pagination_args(
+			array(
+				'total_items' => $count,
+				'per_page'    => $per_page,
+			)
+		);
 	}
 
 	/**
@@ -185,13 +187,13 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 	 *
 	 * @since 2.3.0
 	 *
-	 * @param object $item The current item.
+	 * @param object $network The current network item.
 	 */
-	public function single_row( $item ) {
+	public function single_row( $network ) {
 		$class = (int) get_current_site()->id === (int) $network->id ? 'current' : 'not-current';
 
 		echo '<tr class="' . esc_attr( $class ) . '">';
-		$this->single_row_columns( $item );
+		$this->single_row_columns( $network );
 		echo '</tr>';
 	}
 
@@ -305,11 +307,15 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 		if ( current_user_can( 'edit_network', $network->id ) ) {
 			$link = sprintf(
 				'<a href="%1$s" class="edit" aria-label="%2$s">%3$s</a>',
-				esc_url( add_query_arg( array(
-					'page'   => 'networks',
-					'action' => 'edit_network',
-					'id'     => $network->id,
-				) ) ),
+				esc_url(
+					add_query_arg(
+						array(
+							'page'   => 'networks',
+							'action' => 'edit_network',
+							'id'     => $network->id,
+						)
+					)
+				),
 				/* translators: %s: network title */
 				esc_attr( sprintf( __( '&#8220;%s&#8221; (Edit)', 'wp-multi-network' ), $link ) ),
 				$link
@@ -379,7 +385,7 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 		$network_admins = ! empty( $network_admins ) ? array_filter( $network_admins ) : array();
 
 		// Concatenate for markup.
-		echo empty( $network_admins ) ? esc_html( join( ', ', $network_admins ) ) : esc_html( '&mdash;' );
+		echo ! empty( $network_admins ) ? esc_html( join( ', ', $network_admins ) ) : esc_html( '&mdash;' );
 	}
 
 	/**
@@ -416,18 +422,33 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 		$network_home_url  = network_home_url();
 		restore_current_network();
 
-		$base_url = add_query_arg( array(
-			'page' => 'networks',
-			'id'   => $network->id,
-		) );
+		// Setup the base URL.
+		$base_url = add_query_arg(
+			array(
+				'page' => 'networks',
+				'id'   => $network->id,
+			),
+			remove_query_arg(
+				array(
+					'action',
+					'network_created',
+					'page',
+					'site_moved',
+					'success',
+				)
+			)
+		);
 
 		$actions = array();
 
 		// Edit the network.
 		if ( current_user_can( 'edit_network', $network->id ) ) {
-			$edit_network_url = add_query_arg( array(
-				'action' => 'edit_network',
-			), $base_url );
+			$edit_network_url = add_query_arg(
+				array(
+					'action' => 'edit_network',
+				),
+				$base_url
+			);
 
 			$actions['edit'] = '<span class="edit"><a href="' . esc_url( $edit_network_url ) . '">' . esc_html__( 'Edit', 'wp-multi-network' ) . '</a></span>';
 		}
@@ -442,9 +463,13 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 
 		// Delete the network.
 		if ( $this->can_delete( $network ) ) {
-			$delete_network_url = wp_nonce_url( add_query_arg( array(
-				'action' => 'delete_network',
-			), $base_url ) );
+			$delete_network_url = wp_nonce_url(
+				add_query_arg(
+					array(
+						'action' => 'delete_network',
+					), $base_url
+				)
+			);
 
 			$actions['delete'] = '<span class="delete"><a href="' . esc_url( $delete_network_url ) . '">' . esc_html__( 'Delete', 'wp-multi-network' ) . '</a></span>';
 		}
@@ -460,6 +485,7 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 		 */
 		$actions = apply_filters( 'manage_networks_action_links', array_filter( $actions ), $network->id, $network->sitename );
 
+		// Return all row actions.
 		return $this->row_actions( $actions );
 	}
 }

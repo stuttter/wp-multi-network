@@ -1,28 +1,35 @@
 <?xml version="1.0"?>
-<ruleset name="WP Multi Network PHPCS Rules">
-	<description>PHPCS ruleset for WP Multi Network</description>
+<ruleset name="WP Multi Network Coding Standards">
+	<arg name="extensions" value="php" />
+	<arg name="colors" />
+	<arg name="parallel" value="16" />
+	<arg value="s" />
 
-	<!-- Check all PHP files in directory tree by default. -->
-	<arg name="extensions" value="php"/>
-	<file>.</file>
-
-	<!-- Show progress and sniff codes in all reports. -->
-	<arg value="ps"/>
-
-	<!-- Exclude directories we don't need to check. -->
-	<exclude-pattern>*/node_modules/*</exclude-pattern>
-	<exclude-pattern>*/tests/*</exclude-pattern>
-	<exclude-pattern>*/vendor/*</exclude-pattern>
-
-	<!-- Use WPCS except its VIP restrictions. -->
-	<rule ref="WordPress">
-		<exclude name="WordPress.VIP.RestrictedFunctions"/>
+	<rule ref="WordPress-Core">
+		<exclude name="WordPress.WP.GlobalVariablesOverride.Prohibited" />
+		<exclude name="PEAR.Functions.FunctionCallSignature.ContentAfterOpenBracket" />
+		<exclude name="PEAR.Functions.FunctionCallSignature.CloseBracketLine" />
+		<exclude name="PEAR.Functions.FunctionCallSignature.MultipleArguments" />
 	</rule>
-
-	<!-- Set WPCS plugin textdomain. -->
+	<rule ref="WordPress-Extra"/>
+	<rule ref="WordPress-Docs" />
 	<rule ref="WordPress.WP.I18n">
 		<properties>
-			<property name="text_domain" type="string" value="wp-multi-network"/>
+			<property name="text_domain" type="array">
+				<element value="wp-multi-network" />
+			</property>
+			<property name="check_translator_comments" value="true" />
 		</properties>
 	</rule>
+	<rule ref="PHPCompatibilityWP" />
+
+	<config name="testVersion" value="5.6-" />
+
+	<file>.</file>
+
+	<!-- Exclude directories we don't need to check. -->
+  <exclude-pattern>*/node_modules/*</exclude-pattern>
+  <exclude-pattern>*/tests/*</exclude-pattern>
+	<exclude-pattern>*/vendor/*</exclude-pattern>
+
 </ruleset>

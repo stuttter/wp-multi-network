@@ -133,7 +133,7 @@ if ( ! function_exists( 'get_main_site_for_network' ) ) :
 		if ( ! empty( $network->blog_id ) ) {
 			$primary_id = $network->blog_id;
 		} else {
-			$primary_id = wp_cache_get( "network:{$network->id}:main_site", 'site-options' );
+			$primary_id = get_network_option( $network->id, 'main_site' );
 
 			if ( false === $primary_id ) {
 				$sites = get_sites( array(
@@ -147,7 +147,7 @@ if ( ! function_exists( 'get_main_site_for_network' ) ) :
 				$primary_id = ! empty( $sites ) ? reset( $sites ) : 0;
 
 				if ( ! empty( $primary_id ) ) {
-					wp_cache_add( "network:{$network->id}:main_site", $primary_id, 'site-options' );
+					update_network_option( $network->id, 'main_site', $primary_id );
 				}
 			}
 		}
@@ -167,7 +167,7 @@ if ( ! function_exists( 'is_main_site_for_network' ) ) :
 	 */
 	function is_main_site_for_network( $site_id ) {
 		$site = get_site( $site_id );
-		$main = get_main_site_for_network( $site->network_id );
+		$main = get_main_site_id( $site->network_id );
 
 		// Bail if no site or network was found.
 		if ( empty( $main ) ) {
@@ -254,7 +254,7 @@ if ( ! function_exists( 'switch_to_network' ) ) :
 
 		// Populate extra properties if not set already.
 		if ( ! isset( $current_site->blog_id ) ) {
-			$current_site->blog_id = get_main_site_for_network( $current_site );
+			$current_site->blog_id = get_main_site_id( $current_site->id );
 		}
 		if ( ! isset( $current_site->site_name ) ) {
 			$current_site->site_name = get_network_name();
@@ -328,25 +328,6 @@ if ( ! function_exists( 'restore_current_network' ) ) :
 	}
 endif;
 
-if ( ! function_exists( '_wp_update_network_counts' ) ) :
-	/**
-	 * Updates network counts.
-	 *
-	 * This will go away once wp_update_network_counts() no longer sucks.
-	 *
-	 * @since 2.2.0
-	 * @access private
-	 *
-	 * @param int $network_id Network ID for which to update network counts.
-	 */
-	function _wp_update_network_counts( $network_id ) {
-		switch_to_network( $network_id );
-		wp_update_network_site_counts();
-		wp_update_network_user_counts();
-		restore_current_network();
-	}
-endif;
-
 if ( ! function_exists( 'insert_network' ) ) :
 	/**
 	 * Stores basic network info in the sites table.
@@ -360,26 +341,65 @@ if ( ! function_exists( 'insert_network' ) ) :
 	 *
 	 * @param string $domain The domain of the new network.
 	 * @param string $path   The path of the new network.
-	 * @return int|bool The ID of the new network, or false on failure.
+	 * @return int|bool|WP_Error The ID of the new network, or false on failure.
 	 */
-	function insert_network( $domain, $path = '/' ) {
+	function insert_network( $domain = '', $path = '/' ) {
 		global $wpdb;
 
+		// Bail if no domain or path.
+		if ( empty( $domain ) ) {
+			return new WP_Error(
+				'network_empty',
+				esc_html__( 'Domain and path cannot be empty.', 'wp-multi-network' )
+			);
+		}
+
+		// Always end path with a slash.
 		$path = trailingslashit( $path );
 
+		// Query for networks.
+		$networks = get_networks(
+			array(
+				'domain' => $domain,
+				'path'   => $path,
+				'number' => '1',
+			)
+		);
+
+		// Bail if network already exists.
+		if ( ! empty( $networks ) ) {
+			return new WP_Error(
+				'network_exists',
+				esc_html__( 'Network already exists.', 'wp-multi-network' )
+			);
+		}
+
 		// phpcs:ignore WordPress.VIP.DirectDatabaseQuery.DirectQuery
-		$result = $wpdb->insert( $wpdb->site, array(
-			'domain' => $domain,
-			'path'   => $path,
-		) );
-		if ( empty( $result ) || is_wp_error( $result ) ) {
+		$result = $wpdb->insert(
+			$wpdb->site,
+			array(
+				'domain' => $domain,
+				'path'   => $path,
+			)
+		);
+
+		// Bail if database error.
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		// Bail if no result.
+		if ( empty( $result ) ) {
 			return false;
 		}
 
+		// Cast return value as int.
 		$network_id = (int) $wpdb->insert_id;
 
+		// Clean the network cache.
 		clean_network_cache( $network_id );
 
+		// Return network ID.
 		return $network_id;
 	}
 endif;
@@ -419,17 +439,24 @@ if ( ! function_exists( 'add_network' ) ) :
 	function add_network( $args = array() ) {
 		global $wpdb, $wp_version, $wp_db_version;
 
+		$func_args = func_get_args();
+
 		// Backward compatibility with old method of passing arguments.
-		if ( ! is_array( $args ) || func_num_args() > 1 ) {
-			_deprecated_argument( __METHOD__, '1.7.0', sprintf(
-				/* translators: 1: method name, 2: file name */
-				esc_html__( 'Arguments passed to %1$s should be in an associative array. See the inline documentation at %2$s for more details.', 'wp-multi-network' ),
+		if ( ! is_array( $args ) || count( $func_args ) > 1 ) {
+
+			// Log the deprecated arguments.
+			_deprecated_argument(
 				__METHOD__,
-				__FILE__
-			) );
+				'1.7.0',
+				sprintf(
+					/* translators: 1: method name, 2: file name */
+					esc_html__( 'Arguments passed to %1$s should be in an associative array. See the inline documentation at %2$s for more details.', 'wp-multi-network' ),
+					__METHOD__,
+					__FILE__
+				)
+			);
 
 			// Juggle function parameters.
-			$func_args     = func_get_args();
 			$old_args_keys = array(
 				0 => 'domain',
 				1 => 'path',
@@ -438,7 +465,10 @@ if ( ! function_exists( 'add_network' ) ) :
 				4 => 'options_to_clone',
 			);
 
+			// Reset arguments to empty array.
 			$args = array();
+
+			// Loop through deprecated keys and add items to array.
 			foreach ( $old_args_keys as $arg_num => $arg_key ) {
 				if ( isset( $func_args[ $arg_num ] ) ) {
 					$args[ $arg_key ] = $func_args[ $arg_num ];
@@ -446,16 +476,21 @@ if ( ! function_exists( 'add_network' ) ) :
 			}
 		}
 
+		// Get the current user ID.
 		$current_user_id = get_current_user_id();
 
-		$default_site_meta    = array(
+		// Default site meta.
+		$default_site_meta = array(
 			'public' => get_option( 'blog_public', false ),
 		);
+
+		// Default network meta.
 		$default_network_meta = array(
 			'wpmu_upgrade_site'  => $wp_db_version,
 			'initial_db_version' => $wp_db_version,
 		);
 
+		// Parse all of the arguments.
 		$r = wp_parse_args( $args, array(
 
 			// Site & network arguments.
@@ -463,12 +498,12 @@ if ( ! function_exists( 'add_network' ) ) :
 			'path'             => '/',
 
 			// Site arguments.
-			'site_name'        => __( 'New Network Site', 'wp-multi-network' ),
+			'site_name'        => esc_attr__( 'New Site', 'wp-multi-network' ),
 			'user_id'          => $current_user_id,
 			'meta'             => $default_site_meta,
 
 			// Network arguments.
-			'network_name'     => __( 'New Network', 'wp-multi-network' ),
+			'network_name'     => esc_attr__( 'New Network', 'wp-multi-network' ),
 			'network_admin_id' => $current_user_id,
 			'network_meta'     => $default_network_meta,
 			'clone_network'    => false,
@@ -477,39 +512,50 @@ if ( ! function_exists( 'add_network' ) ) :
 
 		// Bail if no user with the given ID for the site exists.
 		if ( empty( $r['user_id'] ) || ! get_userdata( $r['user_id'] ) ) {
-			return new WP_Error( 'network_user', __( 'User does not exist.', 'wp-multi-network' ) );
+			return new WP_Error(
+				'network_user',
+				esc_html__( 'User does not exist.', 'wp-multi-network' ),
+				array(
+					'status' => 403,
+				)
+			);
 		}
 
 		// Bail if no user with the given ID for the network exists.
 		if ( empty( $r['network_admin_id'] ) || ! get_userdata( $r['network_admin_id'] ) ) {
-			return new WP_Error( 'network_super_admin', __( 'User does not exist.', 'wp-multi-network' ) );
+			return new WP_Error(
+				'network_super_admin',
+				esc_html__( 'User does not exist.', 'wp-multi-network' ),
+				array(
+					'status' => 403,
+				)
+			);
 		}
 
+		// Strip spaces out of domain & path.
 		$r['domain'] = str_replace( ' ', '', strtolower( $r['domain'] ) );
 		$r['path']   = str_replace( ' ', '', strtolower( $r['path'] ) );
 
-		$networks = get_networks( array(
-			'domain' => $r['domain'],
-			'path'   => $r['path'],
-			'number' => '1',
-		) );
-
-		// Bail if network already exists.
-		if ( ! empty( $networks ) ) {
-			return new WP_Error( 'network_exists', __( 'Network already exists.', 'wp-multi-network' ) );
-		}
-
+		// Insert the new network.
 		$new_network_id = insert_network( $r['domain'], $r['path'] );
-		if ( empty( $new_network_id ) ) {
-			return false;
+
+		// Bail if insert returned an error.
+		if ( empty( $new_network_id ) || is_wp_error( $new_network_id ) ) {
+			return $new_network_id;
 		}
 
+		// Set the installation constant to true.
 		if ( ! defined( 'WP_INSTALLING' ) ) {
 			define( 'WP_INSTALLING', true );
 		}
 
+		// Switch to new network.
 		switch_to_network( $new_network_id );
+
+		// Make sure upload constants are defined.
 		ms_upload_constants();
+
+		// Attempt to create the site.
 		$new_blog_id = wpmu_create_blog(
 			$r['domain'],
 			$r['path'],
@@ -518,13 +564,31 @@ if ( ! function_exists( 'add_network' ) ) :
 			$r['meta'],
 			$new_network_id
 		);
+
+		// Grant super admin priviledges.
 		grant_super_admin( $r['network_admin_id'] );
+
+		// Restore current network.
 		restore_current_network();
 
 		// Bail if main site could not be created.
 		if ( is_wp_error( $new_blog_id ) ) {
 			return $new_blog_id;
 		}
+
+		/**
+		 * Fires after a new network blog has been added.
+		 *
+		 * @param int $new_blog_id ID of the added network blog.
+		 * @param int $new_network_id ID of the added network.
+		 * @param array $r Full associative array of network arguments.
+		 *
+		 * @since 2.5.3
+		 */
+		do_action( 'added_network_blog', $new_blog_id, $new_network_id, $r );
+    
+    // add new blog id as network meta data against the new network
+		$r['network_meta']['main_site'] = $new_blog_id;
 
 		if ( empty( $r['network_meta']['site_name'] ) ) {
 			$r['network_meta']['site_name'] = ! empty( $r['network_name'] )
@@ -572,12 +636,19 @@ if ( ! function_exists( 'add_network' ) ) :
 
 		// Clone network meta from existing network.
 		if ( ! empty( $r['clone_network'] ) && get_network( $r['clone_network'] ) ) {
+
+			// Define empty options cache array.
 			$options_cache = array();
+
+			// Get the values of options to clone.
 			foreach ( $r['options_to_clone'] as $option ) {
 				$options_cache[ $option ] = get_network_option( $r['clone_network'], $option );
 			}
 
+			// Clone options.
 			foreach ( $r['options_to_clone'] as $option ) {
+
+				// Skip if not set.
 				if ( ! isset( $options_cache[ $option ] ) ) {
 					continue;
 				}
@@ -598,8 +669,10 @@ if ( ! function_exists( 'add_network' ) ) :
 			}
 		}
 
-		_wp_update_network_counts( $new_network_id );
+		// Update network counts.
+		wp_update_network_counts( $new_network_id );
 
+		// Clean the network cache.
 		clean_network_cache( $new_network_id );
 
 		/**
@@ -612,6 +685,7 @@ if ( ! function_exists( 'add_network' ) ) :
 		 */
 		do_action( 'add_network', $new_network_id, $r );
 
+		// Return new network ID.
 		return $new_network_id;
 	}
 endif;
@@ -639,7 +713,7 @@ if ( ! function_exists( 'update_network' ) ) :
 			return new WP_Error( 'network_not_exist', __( 'Network does not exist.', 'wp-multi-network' ) );
 		}
 
-		$site_id = get_main_site_for_network( $id );
+		$site_id = get_main_site_id( $id );
 		$path    = wp_sanitize_site_path( $path );
 
 		// Bail if site URL is invalid.
@@ -698,8 +772,7 @@ if ( ! function_exists( 'update_network' ) ) :
 
 				// Loop through URL-dependent options and correct them.
 				foreach ( network_options_list() as $option_name ) {
-					// phpcs:ignore WordPress.VIP.DirectDatabaseQuery.DirectQuery,WordPress.VIP.DirectDatabaseQuery.NoCaching,WordPress.WP.PreparedSQL.NotPrepared
-					$value = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$option_table} WHERE option_name = %s", $option_name ) );
+					$value = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$option_table} WHERE option_name = %s", $option_name ) );  // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
 					if ( ! empty( $value ) && ( false !== strpos( $value->option_value, $old_path ) ) ) {
 						$new_value = str_replace( $old_path, $full_path, $value->option_value );
@@ -707,12 +780,15 @@ if ( ! function_exists( 'update_network' ) ) :
 					}
 				}
 
-				refresh_blog_details( $site->id );
+				// Clean the blog cache.
+				clean_blog_cache( $site->id );
 			}
 		}
 
-		_wp_update_network_counts( $network->id );
+		// Update network counts.
+		wp_update_network_counts( $network->id );
 
+		// Clean the network cache.
 		clean_network_cache( $network->id );
 
 		/**
@@ -783,6 +859,7 @@ if ( ! function_exists( 'delete_network' ) ) :
 		// phpcs:ignore WordPress.VIP.DirectDatabaseQuery.DirectQuery
 		$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->sitemeta} WHERE site_id = %d", $network->id ) );
 
+		// Clean the network cache.
 		clean_network_cache( $network->id );
 
 		/**
@@ -816,21 +893,26 @@ if ( ! function_exists( 'move_site' ) ) :
 
 		$site = get_site( $site_id );
 
+		// Cast network IDs to ints.
+		$old_network_id = (int) $site->network_id;
+		$new_network_id = (int) $new_network_id;
+
 		// Bail if site does not exist.
 		if ( empty( $site ) ) {
 			return new WP_Error( 'blog_not_exist', __( 'Site does not exist.', 'wp-multi-network' ) );
 		}
 
 		// Bail if site is the main site.
-		if ( is_main_site( $site->id, $site->network_id ) ) {
+		if ( is_main_site( $site->id, $old_network_id ) ) {
 			return true;
 		}
 
-		$new_network_id = (int) $new_network_id;
-		if ( $new_network_id === (int) $site->network_id ) {
+		// Bail if no change.
+		if ( $new_network_id === $old_network_id ) {
 			return true;
 		}
 
+		// Update the database entry.
 		$result = $wpdb->update( // phpcs:ignore WordPress.VIP.DirectDatabaseQuery.DirectQuery
 			$wpdb->blogs,
 			array(
@@ -840,24 +922,34 @@ if ( ! function_exists( 'move_site' ) ) :
 				'blog_id' => $site->id,
 			)
 		);
+
+		// Bail if error.
 		if ( empty( $result ) ) {
 			return new WP_Error( 'blog_not_moved', __( 'Site could not be moved.', 'wp-multi-network' ) );
 		}
 
-		if ( 0 !== $site->network_id ) {
-			_wp_update_network_counts( $site->network_id );
+		// Update old network counts.
+		if ( 0 !== $old_network_id ) {
+			wp_update_network_counts( $old_network_id );
 		}
 
+		// Update new network counts.
 		if ( 0 !== $new_network_id ) {
-			_wp_update_network_counts( $new_network_id );
+			wp_update_network_counts( $new_network_id );
 		}
 
-		refresh_blog_details( $site_id );
+		// Clean the blog cache.
+		clean_blog_cache( $site_id );
 
-		clean_network_cache( array_filter( array(
-			$site->network_id,
-			$new_network_id,
-		) ) );
+		// Clean the network caches.
+		clean_network_cache(
+			array_filter(
+				array(
+					$site->network_id,
+					$new_network_id,
+				)
+			)
+		);
 
 		/**
 		 * Fires after a site has been moved to a new network.

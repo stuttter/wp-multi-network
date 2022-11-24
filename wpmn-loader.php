@@ -6,17 +6,19 @@
  * @since 1.0.0
  *
  * @wordpress-plugin
- * Plugin Name: WP Multi-Network
- * Plugin URI:  https://wordpress.org/plugins/wp-multi-network/
- * Description: A Network Management UI for global administrators in WordPress Multisite
- * Author:      johnjamesjacoby, ddean, BrianLayman, rmccue
- * Author URI:  https://jjj.blog
- * Tags:        blog, domain, mapping, multisite, network, networks, path, site, subdomain
- * Network:     true
- * License:     GPL v2 or later
- * License URI: https://www.gnu.org/licenses/gpl-2.0.html
- * Version:     2.2.1
- * Text Domain: wp-multi-network
+ * Plugin Name:       WP Multi-Network
+ * Description:       Provides a Network Management Interface for global administrators in WordPress Multisite installations.
+ * Plugin URI:        https://wordpress.org/plugins/wp-multi-network/
+ * Author:            Triple J Software, Inc.
+ * Author URI:        https://jjj.software
+ * License:           GPLv2 or later
+ * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
+ * Text Domain:       wp-multi-network
+ * Network:           true
+ * Requires at least: 4.9
+ * Requires PHP:      5.2
+ * Tested up to:      6.1
+ * Version:           2.5.2
  */
 
 // Exit if accessed directly.
@@ -67,7 +69,7 @@ class WPMN_Loader {
 	 * @since 1.3.0
 	 * @var string
 	 */
-	public $asset_version = 201805110004;
+	public $asset_version = 202108250001;
 
 	/**
 	 * Network admin class instance.
@@ -76,6 +78,14 @@ class WPMN_Loader {
 	 * @var WP_MS_Networks_Admin
 	 */
 	public $admin;
+
+	/**
+	 * Network capabilities class instance.
+	 *
+	 * @since 2.3.0
+	 * @var WP_MS_Networks_Capabilities
+	 */
+	private $capabilities;
 
 	/**
 	 * Network admin bar class instance.
@@ -138,6 +148,8 @@ class WPMN_Loader {
 		require $this->plugin_dir . 'includes/compat.php';
 		require $this->plugin_dir . 'includes/functions.php';
 
+		require $this->plugin_dir . 'includes/classes/class-wp-ms-networks-capabilities.php';
+
 		if ( is_blog_admin() || is_network_admin() ) {
 			require $this->plugin_dir . 'includes/metaboxes/move-site.php';
 			require $this->plugin_dir . 'includes/metaboxes/edit-network.php';
@@ -149,7 +161,10 @@ class WPMN_Loader {
 
 		require $this->plugin_dir . 'includes/classes/class-wp-ms-networks-admin-bar.php';
 
-		$this->admin_bar = new WP_MS_Networks_Admin_bar();
+		$this->capabilities = new WP_MS_Networks_Capabilities();
+		$this->capabilities->add_hooks();
+
+		$this->admin_bar = new WP_MS_Networks_Admin_Bar();
 
 		if ( defined( 'WPMN_DEPRECATED' ) && ( true === WPMN_DEPRECATED ) ) {
 			require $this->plugin_dir . 'includes/deprecated.php';
@@ -157,6 +172,11 @@ class WPMN_Loader {
 
 		if ( defined( 'WP_CLI' ) && WP_CLI ) {
 			require $this->plugin_dir . 'includes/classes/class-wp-ms-network-command.php';
+		}
+
+		// REST endpoint class only load 4.7+.
+		if ( version_compare( $GLOBALS['wp_version'], '4.7', '>=' ) ) {
+			require $this->plugin_dir . 'includes/classes/class-wp-ms-rest-networks-controller.php';
 		}
 	}
 }
@@ -170,6 +190,17 @@ function setup_multi_network() {
 	wpmn();
 }
 add_action( 'muplugins_loaded', 'setup_multi_network' );
+
+/**
+ * Hook REST endpoints on rest_api_init
+ *
+ * @since 2.3.0
+ */
+function setup_multi_network_endpoints() {
+	$controller = new WP_MS_REST_Networks_Controller();
+	$controller->register_routes();
+}
+add_action( 'rest_api_init', 'setup_multi_network_endpoints', 99 );
 
 /**
  * Returns the main WP Multi Network instance.

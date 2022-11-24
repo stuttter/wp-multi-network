@@ -16,12 +16,12 @@ class WPMN_Tests_NetworkOperations extends WPMN_UnitTestCase {
 	public function test_move_site() {
 		// Grab some example data
 		$site_id = $this->factory->blog->create();
-		$site = $this->factory->blog->get_object_by_id( $site_id );
+		$site    = $this->factory->blog->get_object_by_id( $site_id );
 
 		$other_network_id = $this->factory->network->create(
 			array(
 				'domain' => 'example.com',
-				'path' => '/',
+				'path'   => '/',
 			)
 		);
 		$other_network    = $this->factory->network->get_object_by_id( $other_network_id );

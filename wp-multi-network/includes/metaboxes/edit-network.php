@@ -23,6 +23,8 @@ function wpmn_edit_network_details_metabox( $network = null ) {
 	?>
 
 	<table class="edit-network form-table">
+		<?php do_action('wpmn_edit_network_details_metabox_before_group', $network); ?>
+
 		<tr class="form-field form-required">
 			<th scope="row">
 				<label for="domain"><?php esc_html_e( 'Domain', 'wp-multi-network' ); ?></label>
@@ -43,6 +45,8 @@ function wpmn_edit_network_details_metabox( $network = null ) {
 				<p class="description"><?php esc_html_e( 'Use "/" if you are unsure.', 'wp-multi-network' ); ?></p>
 			</td>
 		</tr>
+
+		<?php do_action('wpmn_edit_network_details_metabox_after_group', $network); ?>
 	</table>
 
 	<?php
@@ -57,6 +61,8 @@ function wpmn_edit_network_new_site_metabox() {
 	?>
 
 	<table class="edit-network form-table">
+		<?php do_action('wpmn_edit_network_new_site_metabox_before_group'); ?>
+
 		<tr class="form-field form-required">
 			<th scope="row">
 				<label for="new_site"><?php esc_html_e( 'Site Name', 'wp-multi-network' ); ?>:</label>
@@ -66,6 +72,8 @@ function wpmn_edit_network_new_site_metabox() {
 				<p class="description"><?php esc_html_e( 'A new site needs to be created at the root of this network.', 'wp-multi-network' ); ?></p>
 			</td>
 		</tr>
+
+		<?php do_action('wpmn_edit_network_new_site_metabox_after_group'); ?>
 	</table>
 
 	<?php
@@ -79,14 +87,18 @@ function wpmn_edit_network_new_site_metabox() {
  * @param WP_Network $network Optional. Network object. Default null.
  */
 function wpmn_edit_network_assign_sites_metabox( $network = null ) {
-	$to = get_sites( array(
-		'site__not_in' => get_main_site_id( $network->id ),
-		'network_id'   => $network->id,
-	) );
+	$to = get_sites(
+		array(
+			'site__not_in' => get_main_site_id( $network->id ),
+			'network_id'   => $network->id,
+		)
+	);
 
-	$from = get_sites( array(
-		'network__not_in' => array( $network->id ),
-	) );
+	$from = get_sites(
+		array(
+			'network__not_in' => array( $network->id ),
+		)
+	);
 
 	?>
 
@@ -161,9 +173,13 @@ function wpmn_edit_network_publish_metabox( $network = null ) {
 		$action      = 'update';
 	}
 
-	$cancel_url = add_query_arg( array(
-		'page' => 'networks',
-	), network_admin_url( 'admin.php' ) );
+	$cancel_url = add_query_arg(
+		array(
+			'page' => 'networks',
+		),
+		network_admin_url( 'admin.php' )
+	);
+
 	?>
 
 	<div class="submitbox">
@@ -179,7 +195,7 @@ function wpmn_edit_network_publish_metabox( $network = null ) {
 							<?php
 							printf(
 								/* translators: %s: network name */
-								esc_html__( 'Name: <strong>%s</strong>', 'wp-multi-network' ),
+								__( 'Name: <strong>%s</strong>', 'wp-multi-network' ), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 								esc_html( get_network_option( $network->id, 'site_name' ) )
 							);
 							?>
@@ -190,7 +206,7 @@ function wpmn_edit_network_publish_metabox( $network = null ) {
 							<?php
 							printf(
 								/* translators: %s: network site count */
-								esc_html__( 'Sites: <strong>%s</strong>', 'wp-multi-network' ),
+								__( 'Sites: <strong>%s</strong>', 'wp-multi-network' ), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 								esc_html( get_network_option( $network->id, 'blog_count' ) )
 							);
 							?>
