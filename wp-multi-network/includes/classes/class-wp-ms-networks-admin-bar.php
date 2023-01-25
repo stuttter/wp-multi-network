@@ -37,8 +37,12 @@ class WP_MS_Networks_Admin_Bar {
 	 * icon in the menu bar.
 	 *
 	 * @since 2.2.0
+	 * @since 3.0.0 Prevent rendering of CSS if admin bar is not shown.
 	 */
 	public function admin_print_styles() {
+		if ( ! is_admin_bar_showing() ) {
+			return;
+		}
 		?>
 		<style type="text/css">
 			#wpadminbar #wp-admin-bar-my-networks > .ab-item:first-child:before {
