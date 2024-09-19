@@ -9,8 +9,8 @@ Contributors:      johnjamesjacoby, flixos90, rmccue, spacedmonkey
 Tags:              network, sites, domains, global, admin
 Requires PHP:      5.2
 Requires at least: 4.9
-Tested up to:      5.9
-Stable tag:        2.5.0
+Tested up to:      6.1
+Stable tag:        2.5.2
 
 == Description ==
 
@@ -122,6 +122,13 @@ please follow the steps in https://paulund.co.uk/wordpress-multisite-nested-path
 Not much to talk about really. Check the code for details!
 
 == Changelog ==
+= 2.5.2 =
+* Use get_main_site_id function instead of get_main_site_for_network.
+* Tested against WordPress 6.1.
+
+= 2.5.1 =
+* Save main site on network as network option. 
+
 = 2.5.0 =
 * Fix new networks sometimes not being created.
 * Fix moving sites sometimes not working.

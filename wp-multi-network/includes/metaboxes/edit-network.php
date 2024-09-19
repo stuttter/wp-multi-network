@@ -23,6 +23,8 @@ function wpmn_edit_network_details_metabox( $network = null ) {
 	?>
 
 	<table class="edit-network form-table">
+		<?php do_action('wpmn_edit_network_details_metabox_before_group', $network); ?>
+
 		<tr class="form-field form-required">
 			<th scope="row">
 				<label for="domain"><?php esc_html_e( 'Domain', 'wp-multi-network' ); ?></label>
@@ -43,6 +45,8 @@ function wpmn_edit_network_details_metabox( $network = null ) {
 				<p class="description"><?php esc_html_e( 'Use "/" if you are unsure.', 'wp-multi-network' ); ?></p>
 			</td>
 		</tr>
+
+		<?php do_action('wpmn_edit_network_details_metabox_after_group', $network); ?>
 	</table>
 
 	<?php
@@ -57,6 +61,8 @@ function wpmn_edit_network_new_site_metabox() {
 	?>
 
 	<table class="edit-network form-table">
+		<?php do_action('wpmn_edit_network_new_site_metabox_before_group'); ?>
+
 		<tr class="form-field form-required">
 			<th scope="row">
 				<label for="new_site"><?php esc_html_e( 'Site Name', 'wp-multi-network' ); ?>:</label>
@@ -66,6 +72,8 @@ function wpmn_edit_network_new_site_metabox() {
 				<p class="description"><?php esc_html_e( 'A new site needs to be created at the root of this network.', 'wp-multi-network' ); ?></p>
 			</td>
 		</tr>
+
+		<?php do_action('wpmn_edit_network_new_site_metabox_after_group'); ?>
 	</table>
 
 	<?php
