@@ -61,7 +61,7 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 			: 'ASC';
 
 		$search = ! empty( $_REQUEST['s'] )
-			? stripslashes( trim( sanitize_text_field( $_REQUEST['s'] ) ) )
+			? stripslashes( sanitize_text_field( $_REQUEST['s'] ) )
 			: '';
 
 		if ( false !== strpos( $search, '*' ) ) {
