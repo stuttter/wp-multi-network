@@ -242,8 +242,9 @@ class WP_MS_Networks_Admin {
 			wp_die( esc_html__( 'You do not have permission to access this page.', 'wp-multi-network' ) );
 		}
 
-		$action = filter_input( INPUT_GET, 'action', FILTER_SANITIZE_STRING );
-		$action = sanitize_key( $action );
+		$action = ! empty( $_GET['action'] )
+			? sanitize_key( $_GET['action'] )
+			: '';
 
 		switch ( $action ) {
 
@@ -264,11 +265,19 @@ class WP_MS_Networks_Admin {
 
 			// View the list of networks, with bulk action handling.
 			case 'all_networks':
-				$doaction = filter_input( INPUT_POST, 'action', FILTER_SANITIZE_STRING );
-				if ( empty( $doaction ) || '-1' === $doaction ) {
-					$doaction = filter_input( INPUT_POST, 'action2', FILTER_SANITIZE_STRING );
+				$doaction = ! empty( $_POST['action'] )
+					? sanitize_key( $_POST['action'] )
+					: '';
+
+				if (
+					empty( $doaction )
+					||
+					( '-1' === $doaction )
+				) {
+					$doaction = ! empty( $_POST['action2'] )
+						? sanitize_key( $_POST['action2'] )
+						: '';
 				}
-				$doaction = sanitize_key( $doaction );
 
 				switch ( $doaction ) {
 					case 'delete':
@@ -300,11 +309,15 @@ class WP_MS_Networks_Admin {
 			return;
 		}
 
-		$action = filter_input( INPUT_POST, 'action', FILTER_SANITIZE_STRING );
+		$action = ! empty( $_POST['action'] )
+			? sanitize_key( $_POST['action'] )
+			: '';
+
 		if ( empty( $action ) ) {
 			$alternative_actions = array( 'delete', 'delete_multiple', 'move' );
+
 			foreach ( $alternative_actions as $alternative_action ) {
-				if ( filter_input( INPUT_POST, $alternative_action ) ) {
+				if ( ! empty( $_POST[ $alternative_action ] ) ) {
 					$action = $alternative_action;
 					break;
 				}
@@ -434,7 +447,10 @@ class WP_MS_Networks_Admin {
 		$all_networks_url = $this->admin_url( array( 'action' => 'all_networks' ) );
 		$search_url       = $this->admin_url( array( 'action' => 'domains' ) );
 
-		$search_text = filter_input( INPUT_POST, 's', FILTER_SANITIZE_STRING );
+		$search_text = ! empty( $_POST['s'] )
+			? stripslashes( trim( sanitize_text_field( $_POST['s'] ) ) )
+			: '';
+
 		?>
 
 		<div class="wrap">
@@ -524,7 +540,7 @@ class WP_MS_Networks_Admin {
 
 			<hr class="wp-header-end">
 
-			<form method="post" action="<?php echo esc_attr( filter_input( INPUT_SERVER, 'REQUEST_URI', FILTER_SANITIZE_STRING ) ); ?>">
+			<form method="post" action="<?php echo esc_attr( $_SERVER['REQUEST_URI'] ); ?>">
 				<div id="poststuff">
 					<div id="post-body" class="metabox-holder columns-2">
 						<div id="postbox-container-1" class="postbox-container">
@@ -864,19 +880,27 @@ class WP_MS_Networks_Admin {
 		}
 
 		// Sanitize values.
-		$network_title  = wp_unslash( filter_input( INPUT_POST, 'title', FILTER_SANITIZE_STRING ) );
-		$network_domain = wp_unslash( filter_input( INPUT_POST, 'domain', FILTER_SANITIZE_STRING ) );
-		$network_path   = wp_unslash( filter_input( INPUT_POST, 'path', FILTER_SANITIZE_STRING ) );
-		$site_name      = wp_unslash( filter_input( INPUT_POST, 'new_site', FILTER_SANITIZE_STRING ) );
+		$network_title  = ! empty( $_POST['title'] )
+			? wp_unslash( $_POST['title'] )
+			: '';
+		$network_domain = ! empty( $_POST['domain'] )
+			? wp_unslash( $_POST['domain'] )
+			: '';
+		$network_path   = ! empty( $_POST['path'] )
+			? wp_unslash( $_POST['path'] )
+			: '';
+		$site_name      = ! empty( $_POST['new_site'] )
+			? wp_unslash( $_POST['new_site'] )
+			: '';
 
 		// Additional formatting.
-		$network_title  = wp_strip_all_tags( $network_title );
+		$network_title  = sanitize_text_field( $network_title );
 		$network_domain = str_replace( ' ', '', strtolower( sanitize_text_field( $network_domain ) ) );
 		$network_path   = str_replace( ' ', '', strtolower( sanitize_text_field( $network_path ) ) );
 
 		// Fallback to network title if not explicitly set.
 		$site_name = ! empty( $site_name )
-			? wp_strip_all_tags( $site_name )
+			? sanitize_text_field( $site_name )
 			: $network_title;
 
 		// Bail if missing fields.
@@ -952,13 +976,22 @@ class WP_MS_Networks_Admin {
 		}
 
 		// Sanitize values.
-		$network_title  = wp_unslash( filter_input( INPUT_POST, 'title', FILTER_SANITIZE_STRING ) );
-		$network_domain = wp_unslash( filter_input( INPUT_POST, 'domain', FILTER_SANITIZE_STRING ) );
-		$network_path   = wp_unslash( filter_input( INPUT_POST, 'path', FILTER_SANITIZE_STRING ) );
+		$network_title  = ! empty( $_POST['title'] )
+			? wp_unslash( $_POST['title'] )
+			: '';
+		$network_domain = ! empty( $_POST['domain'] )
+			? wp_unslash( $_POST['domain'] )
+			: '';
+		$network_path   = ! empty( $_POST['path'] )
+			? wp_unslash( $_POST['path'] )
+			: '';
+		$site_name      = ! empty( $_POST['new_site'] )
+			? wp_unslash( $_POST['new_site'] )
+			: '';
 
 		// Additional formatting.
 		$network_title  = sanitize_text_field( $network_title );
-		$network_domain = Requests_IDNAEncoder::encode( str_replace( ' ', '', strtolower( sanitize_text_field( $network_domain ) ) ) );
+		$network_domain = str_replace( ' ', '', strtolower( sanitize_text_field( $network_domain ) ) );
 		$network_path   = str_replace( ' ', '', strtolower( sanitize_text_field( $network_path ) ) );
 
 		// Bail if missing fields.
