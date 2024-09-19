@@ -576,6 +576,18 @@ if ( ! function_exists( 'add_network' ) ) :
 			return $new_blog_id;
 		}
 
+		/**
+		 * Fires after a new network blog has been added.
+		 *
+		 * @param int $new_blog_id ID of the added network blog.
+		 * @param int $new_network_id ID of the added network.
+		 * @param array $r Full associative array of network arguments.
+		 *
+		 * @since 2.5.3
+		 */
+		do_action( 'added_network_blog', $new_blog_id, $new_network_id, $r );
+    
+    // add new blog id as network meta data against the new network
 		$r['network_meta']['main_site'] = $new_blog_id;
 
 		if ( empty( $r['network_meta']['site_name'] ) ) {
