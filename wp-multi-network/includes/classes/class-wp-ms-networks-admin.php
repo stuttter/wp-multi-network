@@ -826,14 +826,14 @@ class WP_MS_Networks_Admin {
 								 * @param string     $network_actions Network action links, separated by pipe ( | ) characters.
 								 * @param WP_Network $network         Current network object.
 								 */
-								echo apply_filters( 'mynetworks_network_actions', $network_actions, $network ); // phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped
+								echo apply_filters( 'mynetworks_network_actions', $network_actions, $network ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 								?>
 							</p>
 						</td>
 
 						<?php
 						restore_current_network();
-						$i++;
+						++$i;
 					}
 					echo '</tr>';
 				}
