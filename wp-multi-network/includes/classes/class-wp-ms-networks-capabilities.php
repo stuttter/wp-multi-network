@@ -36,7 +36,7 @@ class WP_MS_Networks_Capabilities {
 	 * @param array  $args    Additional context for the capability check.
 	 * @return array Filtered required capabilities.
 	 */
-	public function map_meta_cap( $caps, $cap, $user_id, $args ) {
+	public function map_meta_cap( $caps, $cap, $user_id, $args ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
 
 		// Map our meta capabilities to primitive capabilities first.
 		switch ( $cap ) {

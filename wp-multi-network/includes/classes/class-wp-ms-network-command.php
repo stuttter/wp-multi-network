@@ -287,7 +287,7 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 			foreach ( $this->fetcher->get_many( $args ) as $plugin ) {
 				$status = $this->get_status( $plugin->file );
 				if ( $all && in_array( $status, array( 'active', 'active-network' ), true ) ) {
-					$needing_activation --;
+					--$needing_activation;
 					continue;
 				}
 
