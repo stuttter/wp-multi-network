@@ -186,7 +186,7 @@ class WPMN_Loader {
  *
  * @since 1.3.0
  */
-function setup_multi_network() {
+function setup_multi_network() { // phpcs:ignore Universal.Files.SeparateFunctionsFromOO.Mixed
 	wpmn();
 }
 add_action( 'muplugins_loaded', 'setup_multi_network' );
