@@ -32,14 +32,13 @@ class WP_MS_Networks_Admin {
 	 * @since 1.3.0
 	 */
 	public function __construct() {
-		$this->set_feedback_strings();
-
 		add_action( 'admin_menu', array( $this, 'admin_menu' ) );
 		add_action( 'network_admin_menu', array( $this, 'network_admin_menu' ) );
 		add_action( 'network_admin_menu', array( $this, 'network_admin_menu_separator' ) );
 
 		add_action( 'admin_init', array( $this, 'route_save_handlers' ) );
 
+		add_action( 'admin_init', array( $this, 'set_feedback_strings' ) );
 		add_action( 'network_admin_notices', array( $this, 'network_admin_notices' ) );
 
 		add_filter( 'manage_sites_action_links', array( $this, 'add_move_blog_link' ), 10, 2 );
@@ -170,7 +169,7 @@ class WP_MS_Networks_Admin {
 	 *
 	 * @since 2.1.0
 	 */
-	private function set_feedback_strings() {
+	public function set_feedback_strings() {
 		$this->feedback_strings = array(
 			'network_updated' => array(
 				'1' => esc_html__( 'Network updated.', 'wp-multi-network' ),
