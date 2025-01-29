@@ -417,7 +417,7 @@ class WP_MS_Networks_Admin {
 
 			<hr class="wp-header-end">
 
-			<form method="post" id="edit-network-form" action="">
+			<form method="post" action="" id="edit-network-form">
 				<div id="poststuff" class="poststuff">
 					<div id="post-body" class="metabox-holder columns-2">
 						<div id="post-body-content">
@@ -491,7 +491,7 @@ class WP_MS_Networks_Admin {
 				<input type="hidden" name="action" value="domains">
 			</form>
 
-			<form method="post" id="form-domain-list" action="<?php echo esc_url( $all_networks_url ); ?>">
+			<form method="post" action="<?php echo esc_url( $all_networks_url ); ?>" id="form-domain-list">
 				<?php $wp_list_table->display(); ?>
 			</form>
 		</div>
@@ -541,7 +541,9 @@ class WP_MS_Networks_Admin {
 			array( $site )
 		);
 
+		// URLs to escape.
 		$add_network_url = $this->admin_url( array( 'page' => 'add-new-network' ) );
+		$form_action_url = $this->admin_url( array( 'action' => 'move', 'blog_id' => $site_id ) );
 		?>
 
 		<div class="wrap">
@@ -559,7 +561,7 @@ class WP_MS_Networks_Admin {
 
 			<hr class="wp-header-end">
 
-			<form method="post" action="<?php echo esc_attr( $_SERVER['REQUEST_URI'] ); ?>">
+			<form method="post" action="<?php echo esc_url( $form_action_url ); ?>">
 				<div id="poststuff">
 					<div id="post-body" class="metabox-holder columns-2">
 						<div id="postbox-container-1" class="postbox-container">
@@ -618,7 +620,7 @@ class WP_MS_Networks_Admin {
 
 			<hr class="wp-header-end">
 
-			<form method="post" action="<?php echo esc_attr( remove_query_arg( 'action' ) ); ?>">
+			<form method="post" action="<?php echo esc_url( remove_query_arg( 'action' ) ); ?>">
 				<?php
 
 				if ( ! empty( $sites ) ) {
@@ -871,14 +873,14 @@ class WP_MS_Networks_Admin {
 								 * @param string     $network_actions Network action links, separated by pipe ( | ) characters.
 								 * @param WP_Network $network         Current network object.
 								 */
-								echo apply_filters( 'mynetworks_network_actions', $network_actions, $network ); // phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped
+								echo apply_filters( 'mynetworks_network_actions', $network_actions, $network ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 								?>
 							</p>
 						</td>
 
 						<?php
 						restore_current_network();
-						$i++;
+						++$i;
 					}
 					echo '</tr>';
 				}
@@ -914,7 +916,7 @@ class WP_MS_Networks_Admin {
 			$clone = get_current_site()->id;
 		}
 
-		// Sanitize values.
+		// Unslash posted values.
 		$network_title  = ! empty( $_POST['title'] )
 			? wp_unslash( $_POST['title'] )
 			: '';
@@ -928,7 +930,7 @@ class WP_MS_Networks_Admin {
 			? wp_unslash( $_POST['new_site'] )
 			: '';
 
-		// Additional formatting.
+		// Additional sanitization.
 		$network_title  = sanitize_text_field( $network_title );
 		$network_domain = str_replace( ' ', '', strtolower( sanitize_text_field( $network_domain ) ) );
 		$network_path   = str_replace( ' ', '', strtolower( sanitize_text_field( $network_path ) ) );
@@ -1012,7 +1014,7 @@ class WP_MS_Networks_Admin {
 			wp_die( esc_html__( 'Invalid network id.', 'wp-multi-network' ) );
 		}
 
-		// Sanitize values.
+		// Unslash posted values.
 		$network_title  = ! empty( $_POST['title'] )
 			? wp_unslash( $_POST['title'] )
 			: '';
@@ -1022,11 +1024,8 @@ class WP_MS_Networks_Admin {
 		$network_path   = ! empty( $_POST['path'] )
 			? wp_unslash( $_POST['path'] )
 			: '';
-		$site_name      = ! empty( $_POST['new_site'] )
-			? wp_unslash( $_POST['new_site'] )
-			: '';
 
-		// Additional formatting.
+		// Additional sanitization.
 		$network_title  = sanitize_text_field( $network_title );
 		$network_domain = str_replace( ' ', '', strtolower( sanitize_text_field( $network_domain ) ) );
 		$network_path   = str_replace( ' ', '', strtolower( sanitize_text_field( $network_path ) ) );

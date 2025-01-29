@@ -328,8 +328,8 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 
 		<strong>
 			<?php
-			echo $link; // phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped
-			echo $network_states; // phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped
+			echo $link; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			echo $network_states; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			?>
 		</strong>
 

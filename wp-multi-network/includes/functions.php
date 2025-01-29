@@ -586,8 +586,8 @@ if ( ! function_exists( 'add_network' ) ) :
 		 * @since 2.5.3
 		 */
 		do_action( 'added_network_blog', $new_blog_id, $new_network_id, $r );
-    
-    // add new blog id as network meta data against the new network
+
+		// add new blog id as network meta data against the new network.
 		$r['network_meta']['main_site'] = $new_blog_id;
 
 		if ( empty( $r['network_meta']['site_name'] ) ) {

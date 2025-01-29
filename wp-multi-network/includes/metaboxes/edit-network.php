@@ -52,7 +52,7 @@ function wpmn_edit_network_details_metabox( $network = null ) {
 			</td>
 		</tr>
 
-		<?php do_action('wpmn_edit_network_details_metabox_after_group', $network); ?>
+		<?php do_action( 'wpmn_edit_network_details_metabox_after_group', $network ); ?>
 	</table>
 
 	<?php
@@ -67,7 +67,7 @@ function wpmn_edit_network_new_site_metabox() {
 	?>
 
 	<table class="edit-network form-table">
-		<?php do_action('wpmn_edit_network_new_site_metabox_before_group'); ?>
+		<?php do_action( 'wpmn_edit_network_new_site_metabox_before_group' ); ?>
 
 		<tr class="form-field form-required">
 			<th scope="row">
@@ -79,7 +79,7 @@ function wpmn_edit_network_new_site_metabox() {
 			</td>
 		</tr>
 
-		<?php do_action('wpmn_edit_network_new_site_metabox_after_group'); ?>
+		<?php do_action( 'wpmn_edit_network_new_site_metabox_after_group' ); ?>
 	</table>
 
 	<?php
