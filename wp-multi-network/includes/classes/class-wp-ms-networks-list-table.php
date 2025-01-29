@@ -52,13 +52,13 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 		$per_page = $this->get_items_per_page( 'networks_per_page' );
 		$pagenum  = $this->get_pagenum();
 
-		$order_by = filter_input( INPUT_GET, 'orderby', FILTER_SANITIZE_STRING );
+		$order_by = filter_input( INPUT_GET, 'orderby', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 		$order_by = ! empty( $order_by ) ? sanitize_key( $order_by ) : '';
-		$order    = filter_input( INPUT_GET, 'order', FILTER_SANITIZE_STRING );
+		$order    = filter_input( INPUT_GET, 'order', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 		$order    = ! empty( $order ) ? strtoupper( $order ) : 'ASC';
-		$search   = filter_input( INPUT_GET, 's', FILTER_SANITIZE_STRING );
+		$search   = filter_input( INPUT_GET, 's', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 		if ( ! $search ) {
-			$search = filter_input( INPUT_POST, 's', FILTER_SANITIZE_STRING );
+			$search = filter_input( INPUT_POST, 's', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 		}
 
 		$search = stripslashes( trim( $search ) );

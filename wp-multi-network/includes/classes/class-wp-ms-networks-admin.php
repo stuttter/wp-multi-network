@@ -242,7 +242,7 @@ class WP_MS_Networks_Admin {
 			wp_die( esc_html__( 'You do not have permission to access this page.', 'wp-multi-network' ) );
 		}
 
-		$action = filter_input( INPUT_GET, 'action', FILTER_SANITIZE_STRING );
+		$action = filter_input( INPUT_GET, 'action', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 		$action = sanitize_key( $action );
 
 		switch ( $action ) {
@@ -264,9 +264,9 @@ class WP_MS_Networks_Admin {
 
 			// View the list of networks, with bulk action handling.
 			case 'all_networks':
-				$doaction = filter_input( INPUT_POST, 'action', FILTER_SANITIZE_STRING );
+				$doaction = filter_input( INPUT_POST, 'action', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 				if ( empty( $doaction ) || '-1' === $doaction ) {
-					$doaction = filter_input( INPUT_POST, 'action2', FILTER_SANITIZE_STRING );
+					$doaction = filter_input( INPUT_POST, 'action2', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 				}
 				$doaction = sanitize_key( $doaction );
 
@@ -300,7 +300,7 @@ class WP_MS_Networks_Admin {
 			return;
 		}
 
-		$action = filter_input( INPUT_POST, 'action', FILTER_SANITIZE_STRING );
+		$action = filter_input( INPUT_POST, 'action', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 		if ( empty( $action ) ) {
 			$alternative_actions = array( 'delete', 'delete_multiple', 'move' );
 			foreach ( $alternative_actions as $alternative_action ) {
@@ -434,7 +434,7 @@ class WP_MS_Networks_Admin {
 		$all_networks_url = $this->admin_url( array( 'action' => 'all_networks' ) );
 		$search_url       = $this->admin_url( array( 'action' => 'domains' ) );
 
-		$search_text = filter_input( INPUT_POST, 's', FILTER_SANITIZE_STRING );
+		$search_text = filter_input( INPUT_POST, 's', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 		?>
 
 		<div class="wrap">
@@ -524,7 +524,7 @@ class WP_MS_Networks_Admin {
 
 			<hr class="wp-header-end">
 
-			<form method="post" action="<?php echo esc_attr( filter_input( INPUT_SERVER, 'REQUEST_URI', FILTER_SANITIZE_STRING ) ); ?>">
+			<form method="post" action="<?php echo esc_attr( filter_input( INPUT_SERVER, 'REQUEST_URI', FILTER_SANITIZE_FULL_SPECIAL_CHARS ) ); ?>">
 				<div id="poststuff">
 					<div id="post-body" class="metabox-holder columns-2">
 						<div id="postbox-container-1" class="postbox-container">
@@ -864,10 +864,10 @@ class WP_MS_Networks_Admin {
 		}
 
 		// Sanitize values.
-		$network_title  = wp_unslash( filter_input( INPUT_POST, 'title', FILTER_SANITIZE_STRING ) );
-		$network_domain = wp_unslash( filter_input( INPUT_POST, 'domain', FILTER_SANITIZE_STRING ) );
-		$network_path   = wp_unslash( filter_input( INPUT_POST, 'path', FILTER_SANITIZE_STRING ) );
-		$site_name      = wp_unslash( filter_input( INPUT_POST, 'new_site', FILTER_SANITIZE_STRING ) );
+		$network_title  = wp_unslash( filter_input( INPUT_POST, 'title', FILTER_SANITIZE_FULL_SPECIAL_CHARS ) );
+		$network_domain = wp_unslash( filter_input( INPUT_POST, 'domain', FILTER_SANITIZE_FULL_SPECIAL_CHARS ) );
+		$network_path   = wp_unslash( filter_input( INPUT_POST, 'path', FILTER_SANITIZE_FULL_SPECIAL_CHARS ) );
+		$site_name      = wp_unslash( filter_input( INPUT_POST, 'new_site', FILTER_SANITIZE_FULL_SPECIAL_CHARS ) );
 
 		// Additional formatting.
 		$network_title  = wp_strip_all_tags( $network_title );
@@ -952,9 +952,9 @@ class WP_MS_Networks_Admin {
 		}
 
 		// Sanitize values.
-		$network_title  = wp_unslash( filter_input( INPUT_POST, 'title', FILTER_SANITIZE_STRING ) );
-		$network_domain = wp_unslash( filter_input( INPUT_POST, 'domain', FILTER_SANITIZE_STRING ) );
-		$network_path   = wp_unslash( filter_input( INPUT_POST, 'path', FILTER_SANITIZE_STRING ) );
+		$network_title  = wp_unslash( filter_input( INPUT_POST, 'title', FILTER_SANITIZE_FULL_SPECIAL_CHARS ) );
+		$network_domain = wp_unslash( filter_input( INPUT_POST, 'domain', FILTER_SANITIZE_FULL_SPECIAL_CHARS ) );
+		$network_path   = wp_unslash( filter_input( INPUT_POST, 'path', FILTER_SANITIZE_FULL_SPECIAL_CHARS ) );
 
 		// Additional formatting.
 		$network_title  = sanitize_text_field( $network_title );
