@@ -21,7 +21,7 @@
   },
   "require-dev": {
     "phpcompatibility/phpcompatibility-wp": "^2.1.0",
-    "szepeviktor/phpstan-wordpress": "^2.0",
+    "szepeviktor/phpstan-wordpress": "^1.0",
     "wp-coding-standards/wpcs": "^3.1.0",
     "yoast/wp-test-utils": "^1.2"
   },
