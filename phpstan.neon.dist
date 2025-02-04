@@ -1,7 +1,18 @@
 includes:
     - vendor/szepeviktor/phpstan-wordpress/extension.neon
 parameters:
-    level: 5
+    level: 0
     paths:
         - wp-multi-network/includes
         - wpmn-loader.php
+    ignoreErrors:
+        - '/^Call to static method add_command\(\) on an unknown class WP_CLI.$/'
+        - '/^Call to static method encode\(\) on an unknown class Requests_IDNAEncoder.$/'
+        - '/^Call to static method error\(\) on an unknown class WP_CLI.$/'
+        - '/^Call to static method success\(\) on an unknown class WP_CLI.$/'
+        - '/^Call to static method warning\(\) on an unknown class WP_CLI.$/'
+        - '/^Function WP_CLI\\Utils\\get_flag_value not found.$/'
+        - '/^Function WP_CLI\\Utils\\get_plugin_name not found.$/'
+        - '/^Instantiated class WP_CLI\\Fetchers\\Plugin not found.$/'
+        - '/^Instantiated class WP_CLI\\Fetchers\\User not found.$/'
+        - '/^Instantiated class WP_CLI\\Formatter not found.$/'

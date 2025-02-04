@@ -479,9 +479,9 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 		 *
 		 * @since 2.0.0
 		 *
-		 * @param array  Action links as $slug => $link_markup pairs.
-		 * @param int    The current network ID.
-		 * @param string The current network name.
+		 * @param array  $filtered_acions Action links as $slug => $link_markup pairs.
+		 * @param int    $network_id The current network ID.
+		 * @param string $network_sitename The current network name.
 		 */
 		$actions = apply_filters( 'manage_networks_action_links', array_filter( $actions ), $network->id, $network->sitename );
 
