@@ -1,0 +1,22 @@
+name: PHPStan CI
+
+on: [push]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        uses: php-actions/composer@v6
+        with:
+          php_version: '7.2'
+
+      - uses: php-actions/phpstan@v3
+        with:
+          version: 'composer'
+          php_version: '7.2'
+          memory_limit: 1G
