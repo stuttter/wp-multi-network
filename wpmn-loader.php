@@ -16,7 +16,7 @@
  * Text Domain:       wp-multi-network
  * Network:           true
  * Requires at least: 4.9
- * Requires PHP:      5.2
+ * Requires PHP:      7.2
  * Tested up to:      6.1
  * Version:           2.5.2
  */
