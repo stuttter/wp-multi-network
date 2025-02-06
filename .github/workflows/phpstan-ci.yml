@@ -1,21 +1,23 @@
-name: PHPStan CI
+name: Run PHPStan
 
 on: [push]
 
 jobs:
-  build-test:
+  run-phpstan:
+    name: Static Analysis
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
-      - name: Install dependencies
-        uses: php-actions/composer@v6
+        uses: actions/checkout@v4
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
         with:
-          php_version: '7.2'
-      - name: Run PHPStan
-        uses: php-actions/phpstan@v3
+          php-version: 'latest'
+          coverage: none
+          tools: composer, cs2pr
+      - name: Install PHP dependencies
+        uses: ramsey/composer-install@v2
         with:
-          version: 'composer'
-          php_version: '7.2'
-          memory_limit: 1G
+          composer-options: '--prefer-dist --no-scripts'
+      - name: PHPStan
+        run: composer phpstan
