@@ -20,18 +20,21 @@
     "composer/installers": "^1.0 || ^2.0"
   },
   "require-dev": {
+    "php-stubs/wp-cli-stubs": "^2.11",
     "phpcompatibility/phpcompatibility-wp": "^2.1.0",
+    "phpstan/extension-installer": "^1.4",
     "szepeviktor/phpstan-wordpress": "^1.0",
     "wp-coding-standards/wpcs": "^3.1.0",
     "yoast/wp-test-utils": "^1.2"
   },
   "scripts": {
-    "phpstan": "phpstan analyse --memory-limit=1G"
+    "phpstan": "vendor/bin/phpstan analyse --memory-limit=1G"
   },
   "config": {
     "allow-plugins": {
       "composer/installers": true,
-      "dealerdirect/phpcodesniffer-composer-installer": true
+      "dealerdirect/phpcodesniffer-composer-installer": true,
+      "phpstan/extension-installer": true
     },
     "sort-packages": true
   }
