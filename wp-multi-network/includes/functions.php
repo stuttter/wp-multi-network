@@ -74,9 +74,9 @@ if ( ! function_exists( 'user_has_networks' ) ) :
 		 *
 		 * @since 2.0.0
 		 *
-		 * @param array|bool|null List of network IDs or false. Anything but null will short-circuit
-		 *                        the process.
-		 * @param int             User ID for which the networks should be returned.
+		 * @param array|bool|null $my_networks List of network IDs or false. Anything but null will short-circuit
+		 *                                     the process.
+		 * @param int             $user_id User ID for which the networks should be returned.
 		 */
 		$my_networks = apply_filters( 'networks_pre_user_is_network_admin', null, $user_id );
 		if ( null !== $my_networks ) {
@@ -89,8 +89,8 @@ if ( ! function_exists( 'user_has_networks' ) ) :
 			 *
 			 * @since 2.0.0
 			 *
-			 * @param array|bool List of network IDs or false if no networks for the user.
-			 * @param int        User ID for which the networks should be returned.
+			 * @param array|bool $my_networks List of network IDs or false if no networks for the user.
+			 * @param int        $user_id User ID for which the networks should be returned.
 			 */
 			return apply_filters( 'networks_user_is_network_admin', $my_networks, $user_id );
 		}

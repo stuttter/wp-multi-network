@@ -11,7 +11,7 @@
  *
  * @since 1.3.0
  */
-class WP_MS_Network_Command extends WP_CLI_Command {
+class WP_MS_Network_Command {
 
 	/**
 	 * Default fields to display for each object.
@@ -260,7 +260,7 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 	 * @param array $assoc_args Associative CLI arguments.
 	 */
 	public function plugin( $args, $assoc_args ) {
-		$this->fetcher = new \WP_CLI\Fetchers\Plugin();
+		$fetchers_plugin = new \WP_CLI\Fetchers\Plugin();
 		$action        = array_shift( $args );
 		if ( ! in_array( $action, array( 'activate', 'deactivate' ), true ) ) {
 			WP_CLI::error( sprintf( '%s is not a supported action.', $action ) );
@@ -284,7 +284,7 @@ class WP_MS_Network_Command extends WP_CLI_Command {
 					}, array_keys( get_plugins() )
 				);
 			}
-			foreach ( $this->fetcher->get_many( $args ) as $plugin ) {
+			foreach ( $fetchers_plugin->get_many( $args ) as $plugin ) {
 				$status = $this->get_status( $plugin->file );
 				if ( $all && in_array( $status, array( 'active', 'active-network' ), true ) ) {
 					--$needing_activation;

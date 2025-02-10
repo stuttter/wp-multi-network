@@ -16,7 +16,7 @@
  * Text Domain:       wp-multi-network
  * Network:           true
  * Requires at least: 4.9
- * Requires PHP:      5.2
+ * Requires PHP:      7.2
  * Tested up to:      6.1
  * Version:           2.5.2
  */
@@ -186,7 +186,7 @@ class WPMN_Loader {
  *
  * @since 1.3.0
  */
-function setup_multi_network() {
+function setup_multi_network() { // phpcs:ignore Universal.Files.SeparateFunctionsFromOO.Mixed
 	wpmn();
 }
 add_action( 'muplugins_loaded', 'setup_multi_network' );

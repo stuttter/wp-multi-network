@@ -449,10 +449,6 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 		}
 
 		if ( ! empty( $prepared_args ) ) {
-			if ( is_wp_error( $prepared_args ) ) {
-				return $prepared_args;
-			}
-
 			$domain = $prepared_args['domain'];
 			$path   = $prepared_args['path'];
 

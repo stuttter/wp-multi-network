@@ -1,0 +1,13 @@
+parameters:
+    level: 0
+    paths:
+        - wp-multi-network/includes
+        - wpmn-loader.php
+    scanFiles:
+        - %rootDir%/../../php-stubs/wp-cli-stubs/wp-cli-stubs.php
+        - %rootDir%/../../php-stubs/wp-cli-stubs/wp-cli-commands-stubs.php
+        #- %rootDir%/../../php-stubs/wp-cli-stubs/wp-cli-i18n-stubs.php
+        #- %rootDir%/../../php-stubs/wp-cli-stubs/wp-cli-tools-stubs.php
+    ignoreErrors:
+        - '/^Call to static method encode\(\) on an unknown class Requests_IDNAEncoder.$/'
+
