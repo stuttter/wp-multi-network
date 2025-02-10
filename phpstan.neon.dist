@@ -9,5 +9,5 @@ parameters:
         #- %rootDir%/../../php-stubs/wp-cli-stubs/wp-cli-i18n-stubs.php
         #- %rootDir%/../../php-stubs/wp-cli-stubs/wp-cli-tools-stubs.php
     ignoreErrors:
-        - '/^Call to static method encode\(\) on an unknown class Requests_IDNAEncoder.$/'
-
+        - '/^Call to static method encode\(\) on an unknown class Requests_IDNAEncoder\.$/'
+        - '/^Constant WP_CONTENT_URL not found\.$/'
