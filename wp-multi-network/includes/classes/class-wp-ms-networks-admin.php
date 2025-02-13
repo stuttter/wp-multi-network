@@ -792,7 +792,7 @@ class WP_MS_Networks_Admin {
 				}
 				$num_rows = ceil( $num / $cols );
 				$split    = 0;
-				$rows     = [];
+				$rows     = array();
 				for ( $i = 1; $i <= $num_rows; $i++ ) {
 					$rows[] = array_slice( $my_networks, $split, $cols );
 					$split  = $split + $cols;

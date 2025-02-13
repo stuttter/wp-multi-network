@@ -194,7 +194,7 @@ class WP_MS_Network_Command {
 	 * @param array $args       Positional CLI arguments.
 	 * @param array $assoc_args Associative CLI arguments.
 	 */
-	public function move_site( $args, $assoc_args ) {
+	public function move_site( $args, $assoc_args ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
 		list( $site_id, $new_network_id ) = $args;
 
 		$network_id = move_site( $site_id, $new_network_id );
@@ -261,7 +261,7 @@ class WP_MS_Network_Command {
 	 */
 	public function plugin( $args, $assoc_args ) {
 		$fetchers_plugin = new \WP_CLI\Fetchers\Plugin();
-		$action        = array_shift( $args );
+		$action          = array_shift( $args );
 		if ( ! in_array( $action, array( 'activate', 'deactivate' ), true ) ) {
 			WP_CLI::error( sprintf( '%s is not a supported action.', $action ) );
 		}
