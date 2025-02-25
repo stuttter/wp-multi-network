@@ -86,12 +86,6 @@ if ( ! function_exists( 'wp_validate_site_url' ) ) :
 		$domains = substr_count( $domain, '.' ) > 1 ? (array) substr( $domain, 0, strpos( $domain, '.' ) ) : array();
 		$pieces  = array_filter( array_merge( $domains, $paths ) );
 		foreach ( $pieces as $slug ) {
-
-			// Bail if empty.
-			if ( empty( $slug ) ) {
-				return false;
-			}
-
 			// Bail if not lowercase or numbers.
 			if ( preg_match( '/[^a-z0-9]+/', $slug ) ) {
 				return false;
