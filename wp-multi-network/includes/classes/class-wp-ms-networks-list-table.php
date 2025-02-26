@@ -483,7 +483,7 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 		 * @param int    $network_id The current network ID.
 		 * @param string $network_sitename The current network name.
 		 */
-		$actions = apply_filters( 'manage_networks_action_links', array_filter( $actions ), $network->id, $network->sitename );
+		$actions = apply_filters( 'manage_networks_action_links', array_filter( $actions ), $network->id, $network->site_name );
 
 		// Return all row actions.
 		return $this->row_actions( $actions );
