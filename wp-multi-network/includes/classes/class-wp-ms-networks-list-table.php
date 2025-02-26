@@ -123,7 +123,7 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 	 *
 	 * @since 1.3.0
 	 *
-	 * @param type $which Where to display the pagination. Either 'top' or 'bottom'.
+	 * @param string $which Where to display the pagination. Either 'top' or 'bottom'.
 	 */
 	public function pagination( $which ) { // phpcs:ignore Generic.CodeAnalysis.UselessOverridingMethod.Found
 		parent::pagination( $which );
