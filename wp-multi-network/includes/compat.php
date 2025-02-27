@@ -58,7 +58,7 @@ if ( ! function_exists( 'wp_validate_site_url' ) ) :
 	 * @param string $site_id Optional. Site ID, if an existing site. Default 0.
 	 * @return bool True if the site URL is valid, false otherwise.
 	 */
-	function wp_validate_site_url( $domain, $path, $site_id = 0 ) {
+	function wp_validate_site_url( $domain, $path, $site_id = '0' ) {
 		global $wpdb;
 
 		// Ensure the domain does not already exist on the current network.

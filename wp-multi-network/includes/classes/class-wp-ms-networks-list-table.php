@@ -123,7 +123,7 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 	 *
 	 * @since 1.3.0
 	 *
-	 * @param type $which Where to display the pagination. Either 'top' or 'bottom'.
+	 * @param string $which Where to display the pagination. Either 'top' or 'bottom'.
 	 */
 	public function pagination( $which ) { // phpcs:ignore Generic.CodeAnalysis.UselessOverridingMethod.Found
 		parent::pagination( $which );
@@ -483,7 +483,7 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 		 * @param int    $network_id The current network ID.
 		 * @param string $network_sitename The current network name.
 		 */
-		$actions = apply_filters( 'manage_networks_action_links', array_filter( $actions ), $network->id, $network->sitename );
+		$actions = apply_filters( 'manage_networks_action_links', array_filter( $actions ), $network->id, $network->site_name );
 
 		// Return all row actions.
 		return $this->row_actions( $actions );
