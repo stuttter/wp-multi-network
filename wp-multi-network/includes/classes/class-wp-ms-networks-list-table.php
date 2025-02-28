@@ -414,7 +414,7 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 
 		// Bail if not primary column.
 		if ( $primary !== $column_name ) {
-			return;
+			return '';
 		}
 
 		switch_to_network( $network->id );

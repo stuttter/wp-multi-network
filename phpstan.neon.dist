@@ -1,5 +1,5 @@
 parameters:
-    level: 2
+    level: 3
     paths:
         - wp-multi-network/includes
         - wpmn-loader.php
