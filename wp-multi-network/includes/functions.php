@@ -120,7 +120,7 @@ if ( ! function_exists( 'get_main_site_for_network' ) ) :
 	 * @since 1.3.0
 	 *
 	 * @param int|WP_Network $network Optional. Network ID or object. Default is the current network.
-	 * @return int Main site ID for the network.
+	 * @return int|bool Main site ID for the network or false if network not found.
 	 */
 	function get_main_site_for_network( $network = null ) {
 		$network = get_network( $network );
