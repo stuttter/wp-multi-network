@@ -17,8 +17,14 @@ defined( 'ABSPATH' ) || exit;
  * @param WP_Network $network Optional. Network object. Default null.
  */
 function wpmn_edit_network_details_metabox( $network = null ) {
-	$domain = ! empty( $network->domain ) ? Requests_IDNAEncoder::encode( $network->domain ) : '';
-	$path   = ! empty( $network->path ) ? $network->path : '/';
+
+	$domain = ! empty( $network->domain )
+		? $network->domain
+		: '';
+
+	$path = ! empty( $network->path )
+		? $network->path
+		: '/';
 
 	?>
 
