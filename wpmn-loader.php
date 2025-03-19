@@ -165,6 +165,7 @@ class WPMN_Loader {
 		$this->capabilities->add_hooks();
 
 		$this->admin_bar = new WP_MS_Networks_Admin_Bar();
+		$this->admin_bar->add_hooks();
 
 		if ( defined( 'WPMN_DEPRECATED' ) && ( true === WPMN_DEPRECATED ) ) {
 			require $this->plugin_dir . 'includes/deprecated.php';

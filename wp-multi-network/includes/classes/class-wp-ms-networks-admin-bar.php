@@ -17,15 +17,17 @@ defined( 'ABSPATH' ) || exit;
 class WP_MS_Networks_Admin_Bar {
 
 	/**
-	 * Constructor.
+	 * Registers WordPress hooks for the plugin.
 	 *
-	 * Hooks in the necessary methods.
+	 * Adds actions to:
+	 * - Modify the admin bar menu
+	 * - Add custom styles to the admin area
+	 * - Add custom styles to the front-end
 	 *
-	 * @since 2.2.0
+	 * @return void
 	 */
-	public function __construct() {
+	public function add_hooks(): void {
 		add_action( 'admin_bar_menu', array( $this, 'admin_bar' ), 20 );
-
 		add_action( 'admin_print_styles', array( $this, 'admin_print_styles' ) );
 		add_action( 'wp_print_styles', array( $this, 'admin_print_styles' ) );
 	}
