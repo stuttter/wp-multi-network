@@ -56,6 +56,7 @@ if ( ! function_exists( 'wp_validate_site_url' ) ) :
 	 * @param string $domain  Site domain.
 	 * @param string $path    Site path.
 	 * @param string $site_id Optional. Site ID, if an existing site. Default 0.
+	 *
 	 * @return bool True if the site URL is valid, false otherwise.
 	 */
 	function wp_validate_site_url( $domain, $path, $site_id = '0' ) {
@@ -66,7 +67,8 @@ if ( ! function_exists( 'wp_validate_site_url' ) ) :
 		if ( (int) $exists === (int) $site_id ) {
 			return true;
 		}
-		if ( true === $exists ) {
+
+		if ( true === (bool) $exists ) {
 			return false;
 		}
 
