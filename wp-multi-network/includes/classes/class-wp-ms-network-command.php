@@ -86,10 +86,6 @@ class WP_MS_Network_Command {
 
 		if ( ! empty( $clone_network ) && ! get_network( $clone_network ) ) {
 			WP_CLI::error( sprintf( "Clone network %s doesn't exist.", $clone_network ) );
-
-			if ( ! empty( $assoc_args['options_to_clone'] ) ) {
-				$options_to_clone = explode( ',', $assoc_args['options_to_clone'] );
-			}
 		}
 
 		$network_id = add_network(
