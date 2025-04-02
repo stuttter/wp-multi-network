@@ -1,6 +1,5 @@
 [![WordPress plugin](https://img.shields.io/wordpress/plugin/v/wp-multi-network.svg)](https://wordpress.org/plugins/wp-multi-network/)
 [![WordPress](https://img.shields.io/wordpress/v/wp-multi-network.svg)](https://wordpress.org/plugins/wp-multi-network/)
-[![Build Status](https://api.travis-ci.org/stuttter/wp-multi-network.png?branch=master)](https://travis-ci.org/stuttter/wp-multi-network)
 [![Latest Stable Version](https://poser.pugx.org/stuttter/wp-multi-network/version)](https://packagist.org/packages/stuttter/wp-multi-network)
 [![License](https://poser.pugx.org/stuttter/wp-multi-network/license)](https://packagist.org/packages/stuttter/wp-multi-network)
 
