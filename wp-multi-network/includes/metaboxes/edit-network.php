@@ -89,7 +89,7 @@ function wpmn_edit_network_new_site_metabox() {
 function wpmn_edit_network_assign_sites_metabox( $network = null ) {
 	$to = get_sites(
 		array(
-			'site__not_in' => get_main_site_id( $network->id ),
+			'site__not_in' => array( get_main_site_id( $network->id ) ),
 			'network_id'   => $network->id,
 		)
 	);
