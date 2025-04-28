@@ -193,8 +193,8 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 			$networks[] = $this->prepare_response_for_collection( $data );
 		}
 
-		$total_networks = (int) $query->found_networks;
-		$max_pages      = (int) $query->max_num_pages;
+		$total_networks = $query->found_networks;
+		$max_pages      = $query->max_num_pages;
 
 		if ( $total_networks < 1 ) {
 			// Out-of-bounds, run the query again without LIMIT for total count.
@@ -203,13 +203,13 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 			$query                  = new WP_Network_Query();
 			$prepared_args['count'] = true;
 
-			$total_networks = $query->query( $prepared_args );
-			$max_pages      = ceil( $total_networks / $request['per_page'] );
+			$total_networks = (int) $query->query( $prepared_args );
+			$max_pages      = (int) ceil( $total_networks / $request['per_page'] );
 		}
 
 		$response = rest_ensure_response( $networks );
-		$response->header( 'X-WP-Total', $total_networks );
-		$response->header( 'X-WP-TotalPages', $max_pages );
+		$response->header( 'X-WP-Total', strval( $total_networks ) );
+		$response->header( 'X-WP-TotalPages', strval( $max_pages ) );
 
 		$base = add_query_arg( $request->get_query_params(), rest_url( sprintf( '%s/%s', $this->namespace, $this->rest_base ) ) );
 
