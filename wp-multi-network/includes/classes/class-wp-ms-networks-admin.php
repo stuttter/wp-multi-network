@@ -157,7 +157,7 @@ class WP_MS_Networks_Admin {
 			return;
 		}
 
-		wp_register_style( 'wp-multi-network', wpmn()->plugin_url . 'assets/css/wp-multi-network.css', array(), wpmn()->asset_version, false );
+		wp_register_style( 'wp-multi-network', wpmn()->plugin_url . 'assets/css/wp-multi-network.css', array(), wpmn()->asset_version );
 		wp_register_script( 'wp-multi-network', wpmn()->plugin_url . 'assets/js/wp-multi-network.js', array( 'jquery', 'post' ), wpmn()->asset_version, true );
 
 		wp_enqueue_style( 'wp-multi-network' );
