@@ -717,7 +717,7 @@ if ( ! function_exists( 'update_network' ) ) :
 		$path    = wp_sanitize_site_path( $path );
 
 		// Bail if site URL is invalid.
-		if ( ! wp_validate_site_url( $domain, $path, $site_id ) ) {
+		if ( ! wp_validate_site_url( $domain, $path, strval( $site_id ) ) ) {
 			/* translators: %s: site domain and path */
 			return new WP_Error( 'blog_bad', sprintf( __( 'The site "%s" is invalid, not available, or already exists.', 'wp-multi-network' ), $domain . $path ) );
 		}
