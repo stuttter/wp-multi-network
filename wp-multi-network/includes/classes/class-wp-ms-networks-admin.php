@@ -351,7 +351,7 @@ class WP_MS_Networks_Admin {
 	 * @since 2.0.0
 	 */
 	public function page_edit_network() {
-		$network_id = filter_input( INPUT_GET, 'id', FILTER_SANITIZE_NUMBER_INT );
+		$network_id = (int) filter_input( INPUT_GET, 'id', FILTER_SANITIZE_NUMBER_INT );
 		$network    = $network_id ? get_network( $network_id ) : null;
 
 		add_meta_box( 'wpmn-edit-network-details', esc_html__( 'Details', 'wp-multi-network' ), 'wpmn_edit_network_details_metabox', get_current_screen()->id, 'normal', 'high', array( $network ) );
@@ -475,7 +475,7 @@ class WP_MS_Networks_Admin {
 	 * @since 2.0.0
 	 */
 	private function page_move_site() {
-		$site_id = filter_input( INPUT_GET, 'blog_id', FILTER_SANITIZE_NUMBER_INT );
+		$site_id = (int) filter_input( INPUT_GET, 'blog_id', FILTER_SANITIZE_NUMBER_INT );
 		$site    = $site_id ? get_site( $site_id ) : null;
 
 		// Bail if invalid site ID.
@@ -548,7 +548,7 @@ class WP_MS_Networks_Admin {
 	 * @since 2.0.0
 	 */
 	private function page_delete_network() {
-		$network_id = filter_input( INPUT_GET, 'id', FILTER_SANITIZE_NUMBER_INT );
+		$network_id = (int) filter_input( INPUT_GET, 'id', FILTER_SANITIZE_NUMBER_INT );
 		$network    = $network_id ? get_network( $network_id ) : null;
 
 		// Bail if invalid network ID.
@@ -944,7 +944,7 @@ class WP_MS_Networks_Admin {
 	private function handle_update_network() {
 
 		// Sanitize network ID.
-		$network_id = filter_input( INPUT_POST, 'network_id', FILTER_SANITIZE_NUMBER_INT );
+		$network_id = (int) filter_input( INPUT_POST, 'network_id', FILTER_SANITIZE_NUMBER_INT );
 
 		// Bail if invalid network.
 		if ( ! get_network( $network_id ) ) {
@@ -1006,8 +1006,8 @@ class WP_MS_Networks_Admin {
 	private function handle_move_site() {
 
 		// Sanitize values.
-		$site_id     = filter_input( INPUT_GET, 'blog_id', FILTER_SANITIZE_NUMBER_INT );
-		$new_network = filter_input( INPUT_POST, 'to', FILTER_SANITIZE_NUMBER_INT );
+		$site_id     = (int) filter_input( INPUT_GET, 'blog_id', FILTER_SANITIZE_NUMBER_INT );
+		$new_network = (int) filter_input( INPUT_POST, 'to', FILTER_SANITIZE_NUMBER_INT );
 
 		// Bail if no site ID.
 		if ( empty( $site_id ) ) {
@@ -1075,7 +1075,7 @@ class WP_MS_Networks_Admin {
 		}
 
 		// Sanitize network ID.
-		$network_id = filter_input( INPUT_GET, 'id', FILTER_SANITIZE_NUMBER_INT );
+		$network_id = (int) filter_input( INPUT_GET, 'id', FILTER_SANITIZE_NUMBER_INT );
 
 		// Default to/from arrays.
 		$moving_to   = array();
@@ -1130,7 +1130,7 @@ class WP_MS_Networks_Admin {
 	private function handle_delete_network() {
 
 		// Sanitize values.
-		$network_id = filter_input( INPUT_GET, 'id', FILTER_SANITIZE_NUMBER_INT );
+		$network_id = (int) filter_input( INPUT_GET, 'id', FILTER_SANITIZE_NUMBER_INT );
 		$override   = (bool) filter_input( INPUT_POST, 'override' );
 
 		// Attempt to delete network.
