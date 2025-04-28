@@ -306,7 +306,7 @@ class WP_MS_Network_Command {
 				if ( 'activate' === $action ) {
 					activate_plugins( $plugin->file, '', $network_wide );
 				} else {
-					deactivate_plugins( $plugin->file, '', $network_wide );
+					deactivate_plugins( $plugin->file, false, $network_wide );
 				}
 
 				$this->active_output( $plugin->name, $plugin->file, $network_wide, 'activate' );
