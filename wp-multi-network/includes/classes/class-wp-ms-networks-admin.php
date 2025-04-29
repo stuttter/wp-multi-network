@@ -396,7 +396,7 @@ class WP_MS_Networks_Admin {
 						<div id="post-body-content">
 							<div id="titlediv">
 								<div id="titlewrap">
-									<label class="screen-reader-text" id="title-prompt-text" for="title"><?php echo esc_html_e( 'Enter network title here', 'wp-multi-network' ); ?></label>
+									<label class="screen-reader-text" id="title-prompt-text" for="title"><?php esc_html_e( 'Enter network title here', 'wp-multi-network' ); ?></label>
 									<input type="text" name="title" size="30" id="title" spellcheck="true" autocomplete="off" value="<?php echo esc_attr( $network_title ); ?>">
 								</div>
 							</div>
