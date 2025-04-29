@@ -30,6 +30,7 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	 * Registers the routes for the objects of the controller.
 	 *
 	 * @since 2.4.0
+	 * @return void
 	 */
 	public function register_routes() {
 
