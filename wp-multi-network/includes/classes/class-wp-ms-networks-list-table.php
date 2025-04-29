@@ -279,7 +279,7 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 		}
 
 		?>
-		<label class="screen-reader-text" for="network_<?php echo esc_attr( $network->id ); ?>">
+		<label class="screen-reader-text" for="network_<?php echo esc_attr( strval( $network->id ) ); ?>">
 			<?php
 			printf(
 				/* translators: %s: network name */
@@ -288,7 +288,7 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 			);
 			?>
 		</label>
-		<input type="checkbox" id="network_<?php echo esc_attr( $network->id ); ?>" name="all_networks[]" value="<?php echo esc_attr( $network->id ); ?>">
+		<input type="checkbox" id="network_<?php echo esc_attr( strval( $network->id ) ); ?>" name="all_networks[]" value="<?php echo esc_attr( strval( $network->id ) ); ?>">
 		<?php
 	}
 
@@ -396,7 +396,7 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 	 * @param WP_Network $network The current network object.
 	 */
 	public function column_id( $network ) {
-		echo esc_html( $network->id );
+		echo esc_html( strval( $network->id ) );
 	}
 
 	/**
