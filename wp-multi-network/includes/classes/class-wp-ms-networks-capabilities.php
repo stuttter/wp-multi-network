@@ -20,6 +20,7 @@ class WP_MS_Networks_Capabilities {
 	 * Adds hooks for networks capabilities.
 	 *
 	 * @since 2.3.0
+	 * @return void
 	 */
 	public function add_hooks() {
 		add_filter( 'map_meta_cap', array( $this, 'map_meta_cap' ), 10, 4 );
