@@ -20,7 +20,7 @@ class WP_MS_Networks_Admin {
 	 * Internal storage for feedback strings to avoid generating them multiple times.
 	 *
 	 * @since 2.0.0
-	 * @var array
+	 * @var array<string, array<int, string>>
 	 */
 	private $feedback_strings = array();
 
@@ -51,9 +51,9 @@ class WP_MS_Networks_Admin {
 	 *
 	 * @since 1.3.0
 	 *
-	 * @param array $actions Array of action links.
-	 * @param int   $blog_id Current site ID.
-	 * @return array Adjusted action links.
+	 * @param array<string, string> $actions Array of action links.
+	 * @param int                   $blog_id Current site ID.
+	 * @return array<string, string> Adjusted action links.
 	 */
 	public function add_move_blog_link( $actions = array(), $blog_id = 0 ) {
 
@@ -1208,7 +1208,7 @@ class WP_MS_Networks_Admin {
 	 *
 	 * @since 2.0.0
 	 *
-	 * @param array $args Optional. URL query arguments. Default empty array.
+	 * @param array<string, string> $args Optional. URL query arguments. Default empty array.
 	 * @return void
 	 */
 	private function handle_redirect( $args = array() ) {
@@ -1221,7 +1221,7 @@ class WP_MS_Networks_Admin {
 	 *
 	 * @since 1.3.0
 	 *
-	 * @param array $args Optional. URL query arguments. Default empty array.
+	 * @param array<string, string> $args Optional. URL query arguments. Default empty array.
 	 * @return string Absolute URL to the networks page.
 	 */
 	private function admin_url( $args = array() ) {
@@ -1258,6 +1258,7 @@ class WP_MS_Networks_Admin {
 	 * Checks the nonce for a network management form submission.
 	 *
 	 * @since 2.1.0
+	 * @return void
 	 */
 	private function check_nonce() {
 		check_admin_referer( 'edit_network', 'network_edit' );

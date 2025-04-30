@@ -108,7 +108,7 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 	 *
 	 * @since 1.3.0
 	 *
-	 * @return array Bulk actions as $slug => $label pairs.
+	 * @return array<string, string> Bulk actions as $slug => $label pairs.
 	 */
 	public function get_bulk_actions() {
 		$actions = array();
@@ -147,7 +147,7 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 	 *
 	 * @since 1.3.0
 	 *
-	 * @return array Columns as $slug => $label pairs.
+	 * @return array<string, string> Columns as $slug => $label pairs.
 	 */
 	public function get_columns() {
 		$columns = array(
@@ -174,7 +174,7 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 	 *
 	 * @since 1.3.0
 	 *
-	 * @return array Columns as $slug => $orderby_field pairs.
+	 * @return array<string, string> Columns as $slug => $orderby_field pairs.
 	 */
 	public function get_sortable_columns() {
 		return array(

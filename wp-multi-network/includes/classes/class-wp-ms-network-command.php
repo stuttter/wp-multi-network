@@ -17,7 +17,7 @@ class WP_MS_Network_Command {
 	 * Default fields to display for each object.
 	 *
 	 * @since 1.3.0
-	 * @var array
+	 * @var string[]
 	 */
 	protected $obj_fields = array(
 		'id',
@@ -54,12 +54,12 @@ class WP_MS_Network_Command {
 	 *
 	 * @since 1.3.0
 	 *
-	 * @param array $args       Positional CLI arguments.
-	 * @param array $assoc_args Associative CLI arguments.
+	 * @param string[]             $args Positional CLI arguments.
+	 * @param array<string, mixed> $assoc_args Associative CLI arguments.
 	 * @return void
 	 */
 	public function create( $args, $assoc_args ) {
-		list( $domain, $path ) = $args;
+		[ $domain, $path ] = $args;
 
 		$assoc_args = wp_parse_args(
 			$assoc_args, array(
@@ -123,19 +123,19 @@ class WP_MS_Network_Command {
 	 *
 	 * @since 1.3.0
 	 *
-	 * @param array $args       Positional CLI arguments.
-	 * @param array $assoc_args Associative CLI arguments.
+	 * @param string[]             $args Positional CLI arguments.
+	 * @param array<string, mixed> $assoc_args Associative CLI arguments.
 	 * @return void
 	 */
 	public function update( $args, $assoc_args ) {
-		list( $id, $domain ) = $args;
+		[ $id, $domain ] = $args;
 
 		$defaults   = array(
 			'path' => '',
 		);
 		$assoc_args = wp_parse_args( $assoc_args, $defaults );
 
-		$network_id = update_network( $id, $domain, $assoc_args['path'] );
+		$network_id = update_network( (int) $id, $domain, $assoc_args['path'] );
 
 		if ( is_wp_error( $network_id ) ) {
 			WP_CLI::error( $network_id );
@@ -155,12 +155,12 @@ class WP_MS_Network_Command {
 	 *
 	 * @since 1.3.0
 	 *
-	 * @param array $args       Positional CLI arguments.
-	 * @param array $assoc_args Associative CLI arguments.
+	 * @param string[]             $args Positional CLI arguments.
+	 * @param array<string, mixed> $assoc_args Associative CLI arguments.
 	 * @return void
 	 */
 	public function delete( $args, $assoc_args ) {
-		list( $id ) = $args;
+		[ $id ] = $args;
 
 		$assoc_args = wp_parse_args(
 			$assoc_args, array(
@@ -168,7 +168,7 @@ class WP_MS_Network_Command {
 			)
 		);
 
-		$network_id = delete_network( $id, $assoc_args['delete_blogs'] );
+		$network_id = delete_network( (int) $id, $assoc_args['delete_blogs'] );
 
 		if ( is_wp_error( $network_id ) ) {
 			WP_CLI::error( $network_id );
@@ -190,14 +190,14 @@ class WP_MS_Network_Command {
 	 *
 	 * @since 1.3.0
 	 *
-	 * @param array $args       Positional CLI arguments.
-	 * @param array $assoc_args Associative CLI arguments.
+	 * @param string[]             $args Positional CLI arguments.
+	 * @param array<string, mixed> $assoc_args Associative CLI arguments.
 	 * @return void
 	 */
 	public function move_site( $args, $assoc_args ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
-		list( $site_id, $new_network_id ) = $args;
+		[ $site_id, $new_network_id ] = $args;
 
-		$network_id = move_site( $site_id, $new_network_id );
+		$network_id = move_site( (int) $site_id, (int) $new_network_id );
 
 		if ( is_wp_error( $network_id ) ) {
 			WP_CLI::error( $network_id );
@@ -227,8 +227,8 @@ class WP_MS_Network_Command {
 	 *
 	 * @since 1.3.0
 	 *
-	 * @param array $args       Positional CLI arguments.
-	 * @param array $assoc_args Associative CLI arguments.
+	 * @param string[]             $args Positional CLI arguments.
+	 * @param array<string, mixed> $assoc_args Associative CLI arguments.
 	 * @return void
 	 */
 	public function list_( $args, $assoc_args ) {
@@ -257,8 +257,8 @@ class WP_MS_Network_Command {
 	 *
 	 * @since 1.3.0
 	 *
-	 * @param array $args       Positional CLI arguments.
-	 * @param array $assoc_args Associative CLI arguments.
+	 * @param string[]             $args Positional CLI arguments.
+	 * @param array<string, mixed> $assoc_args Associative CLI arguments.
 	 * @return void
 	 */
 	public function plugin( $args, $assoc_args ) {
@@ -328,7 +328,7 @@ class WP_MS_Network_Command {
 	 *
 	 * @since 1.3.0
 	 *
-	 * @param array $assoc_args Associative CLI arguments. Passed by reference.
+	 * @param array<string, mixed> $assoc_args Associative CLI arguments. Passed by reference.
 	 * @return WP_CLI\Formatter WP-CLI formatter instance.
 	 */
 	protected function get_formatter( &$assoc_args ) {

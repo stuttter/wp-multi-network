@@ -605,7 +605,7 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	 *
 	 * @param WP_Network $network Network object.
 	 *
-	 * @return array Links for the given network.
+	 * @return array<string, array<string, string>> Links for the given network.
 	 */
 	protected function prepare_links( $network ) {
 		$links = array(
@@ -649,7 +649,7 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	 *
 	 * @param WP_REST_Request $request Request object.
 	 *
-	 * @return array|WP_Error Prepared network, otherwise WP_Error object.
+	 * @return array<string, string>|WP_Error Prepared network, otherwise WP_Error object.
 	 */
 	protected function prepare_item_for_database( $request ) {
 		$prepared_network = array();
@@ -684,7 +684,7 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	 *
 	 * @since 2.4.0
 	 *
-	 * @return array
+	 * @return array<string, mixed>
 	 */
 	public function get_item_schema() {
 		$schema = array(
@@ -732,7 +732,7 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	 *
 	 * @since 2.4.0
 	 *
-	 * @return array Networks collection parameters.
+	 * @return array<string, mixed> Networks collection parameters.
 	 */
 	public function get_collection_params() {
 		$query_params = parent::get_collection_params();
