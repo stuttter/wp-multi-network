@@ -100,7 +100,8 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	 *
 	 * @since 2.4.0
 	 *
-	 * @param WP_REST_Request $request Full details about the request.
+	 * @template T of WP_REST_Request
+	 * @param T $request Full details about the request.
 	 *
 	 * @return WP_Error|bool True if the request has read access, error object otherwise.
 	 */
@@ -113,7 +114,8 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	 *
 	 * @since 2.4.0
 	 *
-	 * @param WP_REST_Request $request Full details about the request.
+	 * @template T of WP_REST_Request
+	 * @param T $request Full details about the request.
 	 *
 	 * @return WP_Error|WP_REST_Response Response object on success, or error object on failure.
 	 */
@@ -268,7 +270,8 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	 *
 	 * @since 2.4.0
 	 *
-	 * @param WP_REST_Request $request Full details about the request.
+	 * @template T of WP_REST_Request
+	 * @param T $request Full details about the request.
 	 *
 	 * @return WP_Error|bool True if the request has read access for the item, error object otherwise.
 	 */
@@ -286,7 +289,8 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	 *
 	 * @since 2.4.0
 	 *
-	 * @param WP_REST_Request $request Full details about the request.
+	 * @template T of WP_REST_Request
+	 * @param T $request Full details about the request.
 	 *
 	 * @return WP_Error|WP_REST_Response Response object on success, or error object on failure.
 	 */
@@ -307,7 +311,8 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	 *
 	 * @since 2.4.0
 	 *
-	 * @param WP_REST_Request $request Full details about the request.
+	 * @template T of WP_REST_Request
+	 * @param T $request Full details about the request.
 	 *
 	 * @return WP_Error|bool True if the request has access to create items, error object otherwise.
 	 */
@@ -320,7 +325,8 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	 *
 	 * @since 2.4.0
 	 *
-	 * @param WP_REST_Request $request Full details about the request.
+	 * @template T of WP_REST_Request
+	 * @param T $request Full details about the request.
 	 *
 	 * @return WP_Error|WP_REST_Response Response object on success, or error object on failure.
 	 */
@@ -405,7 +411,8 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	 *
 	 * @since 2.4.0
 	 *
-	 * @param WP_REST_Request $request Full details about the request.
+	 * @template T of WP_REST_Request
+	 * @param T $request Full details about the request.
 	 *
 	 * @return WP_Error|bool True if the request has access to update the item, error object otherwise.
 	 */
@@ -431,7 +438,8 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	 *
 	 * @since 2.4.0
 	 *
-	 * @param WP_REST_Request $request Full details about the request.
+	 * @template T of WP_REST_Request
+	 * @param T $request Full details about the request.
 	 *
 	 * @return WP_Error|WP_REST_Response Response object on success, or error object on failure.
 	 */
@@ -489,7 +497,8 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	 *
 	 * @since 2.4.0
 	 *
-	 * @param WP_REST_Request $request Full details about the request.
+	 * @template T of WP_REST_Request
+	 * @param T $request Full details about the request.
 	 *
 	 * @return WP_Error|bool True if the request has access to delete the item, error object otherwise.
 	 */
@@ -507,7 +516,8 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	 *
 	 * @since 2.4.0
 	 *
-	 * @param WP_REST_Request $request Full details about the request.
+	 * @template T of WP_REST_Request
+	 * @param T $request Full details about the request.
 	 *
 	 * @return WP_Error|WP_REST_Response Response object on success, or error object on failure.
 	 */
@@ -560,8 +570,9 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	 *
 	 * @since 2.4.0
 	 *
-	 * @param WP_Network      $network Network object.
-	 * @param WP_REST_Request $request Request object.
+	 * @template T of WP_REST_Request
+	 * @param WP_Network $network Network object.
+	 * @param T          $request Request object.
 	 *
 	 * @return WP_REST_Response Response object.
 	 */
@@ -647,7 +658,8 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	 *
 	 * @since 2.4.0
 	 *
-	 * @param WP_REST_Request $request Request object.
+	 * @template T of WP_REST_Request
+	 * @param T $request Request object.
 	 *
 	 * @return array<string, string>|WP_Error Prepared network, otherwise WP_Error object.
 	 */
@@ -838,8 +850,9 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	 *
 	 * @since 2.4.0
 	 *
-	 * @param WP_Network      $network Network object.
-	 * @param WP_REST_Request $request Request data to check.
+	 * @template T of WP_REST_Request
+	 * @param WP_Network $network Network object.
+	 * @param T          $request Request data to check.
 	 *
 	 * @return bool Whether the network can be read.
 	 */
