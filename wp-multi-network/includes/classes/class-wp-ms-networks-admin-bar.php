@@ -40,6 +40,7 @@ class WP_MS_Networks_Admin_Bar {
 	 *
 	 * @since 2.2.0
 	 * @since 3.0.0 Prevent rendering of CSS if admin bar is not shown.
+	 * @return void
 	 */
 	public function admin_print_styles() {
 		if ( ! is_admin_bar_showing() ) {
@@ -61,6 +62,7 @@ class WP_MS_Networks_Admin_Bar {
 	 * @since 2.2.0
 	 *
 	 * @param WP_Admin_Bar $wp_admin_bar Admin bar instance.
+	 * @return void
 	 */
 	public function admin_bar( $wp_admin_bar ) {
 

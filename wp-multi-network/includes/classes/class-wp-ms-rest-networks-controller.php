@@ -30,6 +30,7 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	 * Registers the routes for the objects of the controller.
 	 *
 	 * @since 2.4.0
+	 * @return void
 	 */
 	public function register_routes() {
 
@@ -99,7 +100,8 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	 *
 	 * @since 2.4.0
 	 *
-	 * @param WP_REST_Request $request Full details about the request.
+	 * @template T of WP_REST_Request
+	 * @param T $request Full details about the request.
 	 *
 	 * @return WP_Error|bool True if the request has read access, error object otherwise.
 	 */
@@ -112,7 +114,8 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	 *
 	 * @since 2.4.0
 	 *
-	 * @param WP_REST_Request $request Full details about the request.
+	 * @template T of WP_REST_Request
+	 * @param T $request Full details about the request.
 	 *
 	 * @return WP_Error|WP_REST_Response Response object on success, or error object on failure.
 	 */
@@ -267,7 +270,8 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	 *
 	 * @since 2.4.0
 	 *
-	 * @param WP_REST_Request $request Full details about the request.
+	 * @template T of WP_REST_Request
+	 * @param T $request Full details about the request.
 	 *
 	 * @return WP_Error|bool True if the request has read access for the item, error object otherwise.
 	 */
@@ -285,7 +289,8 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	 *
 	 * @since 2.4.0
 	 *
-	 * @param WP_REST_Request $request Full details about the request.
+	 * @template T of WP_REST_Request
+	 * @param T $request Full details about the request.
 	 *
 	 * @return WP_Error|WP_REST_Response Response object on success, or error object on failure.
 	 */
@@ -306,7 +311,8 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	 *
 	 * @since 2.4.0
 	 *
-	 * @param WP_REST_Request $request Full details about the request.
+	 * @template T of WP_REST_Request
+	 * @param T $request Full details about the request.
 	 *
 	 * @return WP_Error|bool True if the request has access to create items, error object otherwise.
 	 */
@@ -319,7 +325,8 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	 *
 	 * @since 2.4.0
 	 *
-	 * @param WP_REST_Request $request Full details about the request.
+	 * @template T of WP_REST_Request
+	 * @param T $request Full details about the request.
 	 *
 	 * @return WP_Error|WP_REST_Response Response object on success, or error object on failure.
 	 */
@@ -404,7 +411,8 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	 *
 	 * @since 2.4.0
 	 *
-	 * @param WP_REST_Request $request Full details about the request.
+	 * @template T of WP_REST_Request
+	 * @param T $request Full details about the request.
 	 *
 	 * @return WP_Error|bool True if the request has access to update the item, error object otherwise.
 	 */
@@ -430,7 +438,8 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	 *
 	 * @since 2.4.0
 	 *
-	 * @param WP_REST_Request $request Full details about the request.
+	 * @template T of WP_REST_Request
+	 * @param T $request Full details about the request.
 	 *
 	 * @return WP_Error|WP_REST_Response Response object on success, or error object on failure.
 	 */
@@ -488,7 +497,8 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	 *
 	 * @since 2.4.0
 	 *
-	 * @param WP_REST_Request $request Full details about the request.
+	 * @template T of WP_REST_Request
+	 * @param T $request Full details about the request.
 	 *
 	 * @return WP_Error|bool True if the request has access to delete the item, error object otherwise.
 	 */
@@ -506,7 +516,8 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	 *
 	 * @since 2.4.0
 	 *
-	 * @param WP_REST_Request $request Full details about the request.
+	 * @template T of WP_REST_Request
+	 * @param T $request Full details about the request.
 	 *
 	 * @return WP_Error|WP_REST_Response Response object on success, or error object on failure.
 	 */
@@ -559,8 +570,9 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	 *
 	 * @since 2.4.0
 	 *
-	 * @param WP_Network      $network Network object.
-	 * @param WP_REST_Request $request Request object.
+	 * @template T of WP_REST_Request
+	 * @param WP_Network $network Network object.
+	 * @param T          $request Request object.
 	 *
 	 * @return WP_REST_Response Response object.
 	 */
@@ -604,7 +616,7 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	 *
 	 * @param WP_Network $network Network object.
 	 *
-	 * @return array Links for the given network.
+	 * @return array<string, array<string, string>> Links for the given network.
 	 */
 	protected function prepare_links( $network ) {
 		$links = array(
@@ -646,9 +658,10 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	 *
 	 * @since 2.4.0
 	 *
-	 * @param WP_REST_Request $request Request object.
+	 * @template T of WP_REST_Request
+	 * @param T $request Request object.
 	 *
-	 * @return array|WP_Error Prepared network, otherwise WP_Error object.
+	 * @return array<string, string>|WP_Error Prepared network, otherwise WP_Error object.
 	 */
 	protected function prepare_item_for_database( $request ) {
 		$prepared_network = array();
@@ -683,7 +696,7 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	 *
 	 * @since 2.4.0
 	 *
-	 * @return array
+	 * @return array<string, mixed>
 	 */
 	public function get_item_schema() {
 		$schema = array(
@@ -731,7 +744,7 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	 *
 	 * @since 2.4.0
 	 *
-	 * @return array Networks collection parameters.
+	 * @return array<string, mixed> Networks collection parameters.
 	 */
 	public function get_collection_params() {
 		$query_params = parent::get_collection_params();
@@ -837,8 +850,9 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	 *
 	 * @since 2.4.0
 	 *
-	 * @param WP_Network      $network Network object.
-	 * @param WP_REST_Request $request Request data to check.
+	 * @template T of WP_REST_Request
+	 * @param WP_Network $network Network object.
+	 * @param T          $request Request data to check.
 	 *
 	 * @return bool Whether the network can be read.
 	 */

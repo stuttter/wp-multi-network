@@ -20,6 +20,7 @@ class WP_MS_Networks_Capabilities {
 	 * Adds hooks for networks capabilities.
 	 *
 	 * @since 2.3.0
+	 * @return void
 	 */
 	public function add_hooks() {
 		add_filter( 'map_meta_cap', array( $this, 'map_meta_cap' ), 10, 4 );
@@ -30,11 +31,11 @@ class WP_MS_Networks_Capabilities {
 	 *
 	 * @since 2.3.0
 	 *
-	 * @param array  $caps    Array of required capabilities.
-	 * @param string $cap     Capability to map.
-	 * @param int    $user_id User ID.
-	 * @param array  $args    Additional context for the capability check.
-	 * @return array Filtered required capabilities.
+	 * @param string[] $caps Array of required capabilities.
+	 * @param string   $cap Capability to map.
+	 * @param int      $user_id User ID.
+	 * @param mixed[]  $args Additional context for the capability check.
+	 * @return string[] Filtered required capabilities.
 	 */
 	public function map_meta_cap( $caps, $cap, $user_id, $args ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
 
@@ -67,7 +68,7 @@ class WP_MS_Networks_Capabilities {
 	 *
 	 * @since 2.3.0
 	 *
-	 * @return array List of primitive global capabilities.
+	 * @return string[] List of primitive global capabilities.
 	 */
 	private function get_global_capabilities() {
 		$global_capabilities = array(

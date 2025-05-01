@@ -36,6 +36,7 @@ if ( ! function_exists( 'wpmn_fix_subsite_upload_path' ) ) {
 	 *
 	 * @param string $value   Upload path option value.
 	 * @param int    $blog_id Site ID.
+	 * @return string
 	 */
 	function wpmn_fix_subsite_upload_path( $value, $blog_id ) {
 		global $current_site, $wp_version;

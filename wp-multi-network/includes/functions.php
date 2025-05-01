@@ -54,7 +54,7 @@ if ( ! function_exists( 'user_has_networks' ) ) :
 	 * @since 1.3.0
 	 *
 	 * @param int $user_id Optional. User ID. Default is the current user.
-	 * @return array|bool Array of network IDs, or false if none.
+	 * @return int[]|bool Array of network IDs, or false if none.
 	 */
 	function user_has_networks( $user_id = 0 ) {
 		global $wpdb;
@@ -412,7 +412,7 @@ if ( ! function_exists( 'add_network' ) ) :
 	 *
 	 * @global wpdb $wpdb WordPress database abstraction object.
 	 *
-	 * @param array $args  {
+	 * @param array<string, mixed> $args  {
 	 *     Array of network arguments.
 	 *
 	 *     @type string  $domain           Domain name for new network - for VHOST=no,
@@ -973,7 +973,7 @@ if ( ! function_exists( 'network_options_list' ) ) :
 	 *
 	 * @since 1.3.0
 	 *
-	 * @return array List of network option names.
+	 * @return string[] List of network option names.
 	 */
 	function network_options_list() {
 		$network_options = array(
@@ -998,7 +998,7 @@ if ( ! function_exists( 'network_options_to_copy' ) ) :
 	 *
 	 * @since 1.3.0
 	 *
-	 * @return array List of network $option_name => $option_label pairs.
+	 * @return array<string, string> List of network $option_name => $option_label pairs.
 	 */
 	function network_options_to_copy() {
 		$network_options = array(

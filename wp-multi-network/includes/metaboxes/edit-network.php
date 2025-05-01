@@ -15,6 +15,7 @@ defined( 'ABSPATH' ) || exit;
  * @since 1.7.0
  *
  * @param WP_Network $network Optional. Network object. Default null.
+ * @return void
  */
 function wpmn_edit_network_details_metabox( $network = null ) {
 	$domain = ! empty( $network->domain ) ? Requests_IDNAEncoder::encode( $network->domain ) : '';
@@ -56,6 +57,7 @@ function wpmn_edit_network_details_metabox( $network = null ) {
  * Renders the metabox for defining the main site for a new network.
  *
  * @since 1.7.0
+ * @return void
  */
 function wpmn_edit_network_new_site_metabox() {
 	?>
@@ -85,6 +87,7 @@ function wpmn_edit_network_new_site_metabox() {
  * @since 1.7.0
  *
  * @param WP_Network $network Optional. Network object. Default null.
+ * @return void
  */
 function wpmn_edit_network_assign_sites_metabox( $network = null ) {
 	$to = get_sites(
@@ -161,6 +164,7 @@ function wpmn_edit_network_assign_sites_metabox( $network = null ) {
  * @since 1.7.0
  *
  * @param WP_Network $network Optional. Network object. Default null.
+ * @return void
  */
 function wpmn_edit_network_publish_metabox( $network = null ) {
 	if ( empty( $network ) ) {

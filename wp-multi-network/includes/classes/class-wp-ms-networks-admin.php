@@ -20,7 +20,7 @@ class WP_MS_Networks_Admin {
 	 * Internal storage for feedback strings to avoid generating them multiple times.
 	 *
 	 * @since 2.0.0
-	 * @var array
+	 * @var array<string, array<int, string>>
 	 */
 	private $feedback_strings = array();
 
@@ -51,9 +51,9 @@ class WP_MS_Networks_Admin {
 	 *
 	 * @since 1.3.0
 	 *
-	 * @param array $actions Array of action links.
-	 * @param int   $blog_id Current site ID.
-	 * @return array Adjusted action links.
+	 * @param array<string, string> $actions Array of action links.
+	 * @param int                   $blog_id Current site ID.
+	 * @return array<string, string> Adjusted action links.
 	 */
 	public function add_move_blog_link( $actions = array(), $blog_id = 0 ) {
 
@@ -83,6 +83,7 @@ class WP_MS_Networks_Admin {
 	 * permissions on the current site.
 	 *
 	 * @since 1.3.0
+	 * @return void
 	 */
 	public function admin_menu() {
 
@@ -101,6 +102,7 @@ class WP_MS_Networks_Admin {
 	 * WP_MS_Networks_List_Table class also.
 	 *
 	 * @since 1.3.0
+	 * @return void
 	 */
 	public function network_admin_menu() {
 		$page = add_menu_page( esc_html__( 'Networks', 'wp-multi-network' ), esc_html__( 'Networks', 'wp-multi-network' ), 'manage_networks', 'networks', array( $this, 'route_pages' ), 'dashicons-networking', -1 );
@@ -118,6 +120,7 @@ class WP_MS_Networks_Admin {
 	 * network dashboard.
 	 *
 	 * @since 1.5.2
+	 * @return void
 	 */
 	public function network_admin_menu_separator() {
 		$GLOBALS['menu']['-2'] = array( '', 'read', 'separator', '', 'wp-menu-separator' ); // phpcs:ignore WordPress.Variables.GlobalVariables.OverrideProhibited
@@ -131,6 +134,7 @@ class WP_MS_Networks_Admin {
 	 *
 	 * @global string $plugin_page
 	 * @global string $submenu_file
+	 * @return void
 	 */
 	public function fix_menu_highlight_for_move_page() {
 		global $plugin_page, $submenu_file;
@@ -149,6 +153,7 @@ class WP_MS_Networks_Admin {
 	 * @since 2.0.0
 	 *
 	 * @param string $page Optional. Current page hook. Default empty string.
+	 * @return void
 	 */
 	public function enqueue_scripts( $page = '' ) {
 
@@ -168,6 +173,7 @@ class WP_MS_Networks_Admin {
 	 * Sets feedback strings for network admin actions.
 	 *
 	 * @since 2.1.0
+	 * @return void
 	 */
 	public function set_feedback_strings() {
 		$this->feedback_strings = array(
@@ -194,6 +200,7 @@ class WP_MS_Networks_Admin {
 	 * Prints feedback notices for network admin actions as necessary.
 	 *
 	 * @since 1.3.0
+	 * @return void
 	 */
 	public function network_admin_notices() {
 		$message = '';
@@ -233,6 +240,7 @@ class WP_MS_Networks_Admin {
 	 * Routes the current request to the correct page.
 	 *
 	 * @since 2.0.0
+	 * @return void
 	 */
 	public function route_pages() {
 
@@ -290,6 +298,7 @@ class WP_MS_Networks_Admin {
 	 * Handles network management form submissions.
 	 *
 	 * @since 2.0.0
+	 * @return void
 	 */
 	public function route_save_handlers() {
 
@@ -349,6 +358,7 @@ class WP_MS_Networks_Admin {
 	 * Renders the new network creation dashboard page.
 	 *
 	 * @since 2.0.0
+	 * @return void
 	 */
 	public function page_edit_network() {
 		$network_id = (int) filter_input( INPUT_GET, 'id', FILTER_SANITIZE_NUMBER_INT );
@@ -396,7 +406,7 @@ class WP_MS_Networks_Admin {
 						<div id="post-body-content">
 							<div id="titlediv">
 								<div id="titlewrap">
-									<label class="screen-reader-text" id="title-prompt-text" for="title"><?php echo esc_html_e( 'Enter network title here', 'wp-multi-network' ); ?></label>
+									<label class="screen-reader-text" id="title-prompt-text" for="title"><?php esc_html_e( 'Enter network title here', 'wp-multi-network' ); ?></label>
 									<input type="text" name="title" size="30" id="title" spellcheck="true" autocomplete="off" value="<?php echo esc_attr( $network_title ); ?>">
 								</div>
 							</div>
@@ -424,6 +434,7 @@ class WP_MS_Networks_Admin {
 	 * @since 2.0.0
 	 *
 	 * @uses WP_MS_Networks_List_Table List_Table iterator for networks
+	 * @return void
 	 */
 	private function page_all_networks() {
 		$wp_list_table = new WP_MS_Networks_List_Table();
@@ -473,6 +484,7 @@ class WP_MS_Networks_Admin {
 	 * Renders the dashboard screen for moving sites -- accessed from the "Sites" screen.
 	 *
 	 * @since 2.0.0
+	 * @return void
 	 */
 	private function page_move_site() {
 		$site_id = (int) filter_input( INPUT_GET, 'blog_id', FILTER_SANITIZE_NUMBER_INT );
@@ -546,6 +558,7 @@ class WP_MS_Networks_Admin {
 	 * Renders the delete network page.
 	 *
 	 * @since 2.0.0
+	 * @return void
 	 */
 	private function page_delete_network() {
 		$network_id = (int) filter_input( INPUT_GET, 'id', FILTER_SANITIZE_NUMBER_INT );
@@ -637,6 +650,7 @@ class WP_MS_Networks_Admin {
 	 * Renders the delete multiple networks page.
 	 *
 	 * @since 2.0.0
+	 * @return void
 	 */
 	private function page_delete_networks() {
 		$network_id   = get_main_network_id();
@@ -756,6 +770,7 @@ class WP_MS_Networks_Admin {
 	 * @since 2.0.0
 	 *
 	 * @global wpdb $wpdb WordPress database abstraction object.
+	 * @return void
 	 */
 	public function page_my_networks() {
 		global $wpdb;
@@ -848,6 +863,7 @@ class WP_MS_Networks_Admin {
 	 * Handles the request to add a new network.
 	 *
 	 * @since 2.0.0
+	 * @return void
 	 */
 	private function handle_add_network() {
 
@@ -940,6 +956,7 @@ class WP_MS_Networks_Admin {
 	 * Handles the request to update a network.
 	 *
 	 * @since 2.0.0
+	 * @return void
 	 */
 	private function handle_update_network() {
 
@@ -1002,6 +1019,7 @@ class WP_MS_Networks_Admin {
 	 * Handles the request to move a site to another network.
 	 *
 	 * @since 2.0.0
+	 * @return void
 	 */
 	private function handle_move_site() {
 
@@ -1062,6 +1080,7 @@ class WP_MS_Networks_Admin {
 	 * Handles the request to reassign sites to another network.
 	 *
 	 * @since 2.0.0
+	 * @return void
 	 */
 	private function handle_reassign_sites() {
 
@@ -1126,6 +1145,7 @@ class WP_MS_Networks_Admin {
 	 * Handles the request to delete a network.
 	 *
 	 * @since 2.0.0
+	 * @return void
 	 */
 	private function handle_delete_network() {
 
@@ -1153,6 +1173,7 @@ class WP_MS_Networks_Admin {
 	 * Handles the request to delete multiple networks.
 	 *
 	 * @since 2.0.0
+	 * @return void
 	 */
 	private function handle_delete_networks() {
 
@@ -1187,7 +1208,8 @@ class WP_MS_Networks_Admin {
 	 *
 	 * @since 2.0.0
 	 *
-	 * @param array $args Optional. URL query arguments. Default empty array.
+	 * @param array<string, string> $args Optional. URL query arguments. Default empty array.
+	 * @return void
 	 */
 	private function handle_redirect( $args = array() ) {
 		wp_safe_redirect( $this->admin_url( $args ) );
@@ -1199,7 +1221,7 @@ class WP_MS_Networks_Admin {
 	 *
 	 * @since 1.3.0
 	 *
-	 * @param array $args Optional. URL query arguments. Default empty array.
+	 * @param array<string, string> $args Optional. URL query arguments. Default empty array.
 	 * @return string Absolute URL to the networks page.
 	 */
 	private function admin_url( $args = array() ) {
@@ -1236,6 +1258,7 @@ class WP_MS_Networks_Admin {
 	 * Checks the nonce for a network management form submission.
 	 *
 	 * @since 2.1.0
+	 * @return void
 	 */
 	private function check_nonce() {
 		check_admin_referer( 'edit_network', 'network_edit' );
