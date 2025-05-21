@@ -15,6 +15,7 @@ defined( 'ABSPATH' ) || exit;
  * @since 1.7.0
  *
  * @param WP_Site $site Optional. Site object. Default null.
+ * @return void
  */
 function wpmn_move_site_list_metabox( $site = null ) {
 
@@ -77,6 +78,7 @@ function wpmn_move_site_list_metabox( $site = null ) {
  * @since 1.7.0
  *
  * @param WP_Site $site Optional. Site object. Default null.
+ * @return void
  */
 function wpmn_move_site_assign_metabox( $site = null ) {
 	?>

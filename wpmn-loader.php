@@ -110,6 +110,7 @@ class WPMN_Loader {
 	 * Sets up constants used by the plugin if they are not already defined.
 	 *
 	 * @since 1.3.0
+	 * @return void
 	 */
 	private function constants() {
 		if ( ! defined( 'RESCUE_ORPHANED_BLOGS' ) ) {
@@ -125,6 +126,7 @@ class WPMN_Loader {
 	 * Sets up the global properties used by the plugin.
 	 *
 	 * @since 1.3.0
+	 * @return void
 	 */
 	private function setup_globals() {
 		$this->file       = __FILE__;
@@ -137,6 +139,7 @@ class WPMN_Loader {
 	 * Includes the required files to run the plugin.
 	 *
 	 * @since 1.3.0
+	 * @return void
 	 */
 	private function includes() {
 
@@ -186,6 +189,7 @@ class WPMN_Loader {
  * Hooks loader into muplugins_loaded, in order to load early.
  *
  * @since 1.3.0
+ * @return void
  */
 function setup_multi_network() { // phpcs:ignore Universal.Files.SeparateFunctionsFromOO.Mixed
 	wpmn();
@@ -196,6 +200,7 @@ add_action( 'muplugins_loaded', 'setup_multi_network' );
  * Hook REST endpoints on rest_api_init
  *
  * @since 2.3.0
+ * @return void
  */
 function setup_multi_network_endpoints() {
 	$controller = new WP_MS_REST_Networks_Controller();
@@ -209,7 +214,6 @@ add_action( 'rest_api_init', 'setup_multi_network_endpoints', 99 );
  * It will be instantiated if not available yet.
  *
  * @since 1.7.0
- *
  * @return WPMN_Loader WP Multi Network instance to use.
  */
 function wpmn() {
