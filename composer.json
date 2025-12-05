@@ -16,7 +16,7 @@
     "source": "https://github.com/stuttter/wp-multi-network"
   },
   "require": {
-    "php": ">=7.4",
+    "php": ">=7.2",
     "composer/installers": "^1.0 || ^2.0"
   },
   "require-dev": {
