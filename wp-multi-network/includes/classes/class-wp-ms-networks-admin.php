@@ -1295,7 +1295,7 @@ class WP_MS_Networks_Admin {
 	 *
 	 * @since 2.0.0
 	 *
-	 * @param array<string, string> $args Optional. URL query arguments. Default empty array.
+	 * @param array<string, int|string> $args Optional. URL query arguments. Default empty array.
 	 * @return void
 	 */
 	private function handle_redirect( $args = array() ) {
@@ -1308,7 +1308,7 @@ class WP_MS_Networks_Admin {
 	 *
 	 * @since 1.3.0
 	 *
-	 * @param array<string, string> $args Optional. URL query arguments. Default empty array.
+	 * @param array<string, int|string> $args Optional. URL query arguments. Default empty array.
 	 * @return string Absolute URL to the networks page.
 	 */
 	private function admin_url( $args = array() ) {

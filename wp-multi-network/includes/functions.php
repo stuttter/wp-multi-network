@@ -612,7 +612,7 @@ if ( ! function_exists( 'add_network' ) ) :
 			// so we have to replace the hostname the hard way.
 			$current_siteurl = get_option( 'siteurl' );
 			$new_siteurl     = untrailingslashit( get_blogaddress_by_id( $new_blog_id ) );
-			$upload_url      = str_replace( $current_siteurl, $new_siteurl, WP_CONTENT_URL );
+			$upload_url      = str_replace( $current_siteurl, $new_siteurl, content_url() );
 			$upload_url      = $upload_url . '/uploads';
 
 			$upload_dir = WP_CONTENT_DIR;
@@ -842,15 +842,13 @@ if ( ! function_exists( 'delete_network' ) ) :
 				return new WP_Error( 'network_not_empty', __( 'Cannot delete network with sites.', 'wp-multi-network' ) );
 			}
 
-			if ( true === $delete_blogs ) {
-				foreach ( $sites as $site ) {
-					if ( wp_should_rescue_orphaned_sites() ) {
-						move_site( $site->id, 0 );
-						continue;
-					}
-
-					wpmu_delete_blog( $site->id, true );
+			foreach ( $sites as $site ) {
+				if ( wp_should_rescue_orphaned_sites() ) {
+					move_site( $site->id, 0 );
+					continue;
 				}
+
+				wpmu_delete_blog( $site->id, true );
 			}
 		}
 

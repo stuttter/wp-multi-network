@@ -10,8 +10,12 @@ parameters:
         #- %rootDir%/../../php-stubs/wp-cli-stubs/wp-cli-tools-stubs.php
     ignoreErrors:
         - '/^Call to static method encode\(\) on an unknown class Requests_IDNAEncoder\.$/'
-        - '/^Constant WP_CONTENT_URL not found\.$/'
         # WP_Network::$blog_id is a private property that can be accessed via magic methods.
         - '/^Access to an undefined property WP_Network::\$blog_id\.$/'
         # WP_CLI\Fetchers\User::get() returns WP_User without root namespace.
-        - '/^Access to property \$ID on an unknown class WP_CLI\\Fetchers\\WP_User\.$/'
+        - '/^Cannot access property \$ID on WP_CLI\\Fetchers\\WP_User\|false\.$/'
+        # Backward compatibility with old method of passing arguments.
+        - '/^Call to function is_array\(\) with array<string, mixed> will always evaluate to true\.$/'
+        # Associative CLI arguments. Passed by reference.
+        - '/^Parameter \&\$assoc_args by-ref type of method WP_MS_Network_Command::get_formatter\(\) expects array<string, mixed>, array given\.$/'
+
