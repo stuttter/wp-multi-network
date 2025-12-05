@@ -21,7 +21,7 @@
   },
   "require-dev": {
     "php-stubs/wp-cli-stubs": "^2.12",
-    "phpcompatibility/php-compatibility": "^9.3.5",
+    "phpcompatibility/phpcompatibility-wp": "^2.1",
     "phpstan/extension-installer": "^1.4.3",
     "phpstan/phpstan": "^2.1.32",
     "szepeviktor/phpstan-wordpress": "^2.0.3",
@@ -30,11 +30,7 @@
   },
   "scripts": {
     "phpstan": "vendor/bin/phpstan analyse --memory-limit=1G",
-    "php72": "vendor/bin/phpcs -p ./*.php wp-multi-network/ --standard=vendor/phpcompatibility/php-compatibility/PHPCompatibility --runtime-set testVersion 7.2",
-    "php74": "vendor/bin/phpcs -p ./*.php wp-multi-network/ --standard=vendor/phpcompatibility/php-compatibility/PHPCompatibility --runtime-set testVersion 7.4",
-    "php83": "vendor/bin/phpcs -p ./*.php wp-multi-network/ --standard=vendor/phpcompatibility/php-compatibility/PHPCompatibility --runtime-set testVersion 8.3",
-    "php84": "vendor/bin/phpcs -p ./*.php wp-multi-network/ --standard=vendor/phpcompatibility/php-compatibility/PHPCompatibility --runtime-set testVersion 8.4",
-    "php85": "vendor/bin/phpcs -p ./*.php wp-multi-network/ --standard=vendor/phpcompatibility/php-compatibility/PHPCompatibility --runtime-set testVersion 8.5"
+    "phpcs": "vendor/bin/phpcs -ps wpmn-loader.php wp-multi-network/includes --standard=PHPCompatibilityWP --runtime-set testVersion 7.2-"
   },
   "config": {
     "allow-plugins": {
