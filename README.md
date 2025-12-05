@@ -1,9 +1,9 @@
+# WP Multi Network
+
 [![WordPress plugin](https://img.shields.io/wordpress/plugin/v/wp-multi-network.svg)](https://wordpress.org/plugins/wp-multi-network/)
 [![WordPress](https://img.shields.io/wordpress/v/wp-multi-network.svg)](https://wordpress.org/plugins/wp-multi-network/)
 [![Latest Stable Version](https://poser.pugx.org/stuttter/wp-multi-network/version)](https://packagist.org/packages/stuttter/wp-multi-network)
 [![License](https://poser.pugx.org/stuttter/wp-multi-network/license)](https://packagist.org/packages/stuttter/wp-multi-network)
-
-# WP Multi Network
 
 Provides a Network Management Interface for global administrators in WordPress Multisite installations.
 
@@ -16,7 +16,7 @@ Turn your WordPress Multisite installation into many multisite networks, surroun
 * Allows global administrators to create new networks with their own sites and domain arrangements.
 * Group sites into logical networks using nearly any combination of domain (example.org) and path (/site/).
 
-# Installation
+## Installation
 
 * Download and install using the built in WordPress plugin installer.
 * Activate in the "Plugins" network admin panel using the "Network Activate" link.
@@ -71,11 +71,11 @@ define( 'WP_HOME',    'https://' . $_SERVER['HTTP_HOST'] );
 define( 'WP_SITEURL', 'https://' . $_SERVER['HTTP_HOST'] );
 ```
 
-### Single Sign-on
+## Single Sign-on
 
 Single Sign-on is a way to keep registered users signed into your installation regardless of what domain, subdomain, and path they are viewing. This functionality is outside the scope of what WP Multi Network hopes to provide, but a dedicated SSO plugin made specifically for WP Multi Network is in development.
 
-# FAQ
+## FAQ
 
 ### Can I have separate domains?
 

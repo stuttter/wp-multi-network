@@ -140,7 +140,10 @@ class WP_MS_Networks_Admin {
 		global $plugin_page, $submenu_file;
 
 		if ( 'networks' === $plugin_page ) {
-			$action = filter_input( INPUT_GET, 'action' );
+			$action = ! empty( $_GET['action'] )
+				? sanitize_key( $_GET['action'] )
+				: '';
+
 			if ( 'move' === $action ) {
 				$submenu_file = 'sites.php'; // phpcs:ignore WordPress.Variables.GlobalVariables.OverrideProhibited
 			}
@@ -205,8 +208,12 @@ class WP_MS_Networks_Admin {
 	public function network_admin_notices() {
 		$message = '';
 		$type    = '';
+
 		foreach ( $this->feedback_strings as $slug => $messages ) {
-			$passed = filter_input( INPUT_GET, $slug );
+
+			$passed = ! empty( $_GET[ $slug ] )
+				? sanitize_key( $_GET[ $slug ] )
+				: '';
 
 			if ( is_string( $passed ) ) {
 				if ( '1' === $passed ) {
@@ -249,8 +256,9 @@ class WP_MS_Networks_Admin {
 			wp_die( esc_html__( 'You do not have permission to access this page.', 'wp-multi-network' ) );
 		}
 
-		$action = filter_input( INPUT_GET, 'action', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
-		$action = sanitize_key( $action );
+		$action = ! empty( $_GET['action'] )
+			? sanitize_key( $_GET['action'] )
+			: '';
 
 		switch ( $action ) {
 
@@ -271,11 +279,19 @@ class WP_MS_Networks_Admin {
 
 			// View the list of networks, with bulk action handling.
 			case 'all_networks':
-				$doaction = filter_input( INPUT_POST, 'action', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
-				if ( empty( $doaction ) || '-1' === $doaction ) {
-					$doaction = filter_input( INPUT_POST, 'action2', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+				$doaction = ! empty( $_POST['action'] )
+					? sanitize_key( $_POST['action'] )
+					: '';
+
+				if (
+					empty( $doaction )
+					||
+					( '-1' === $doaction )
+				) {
+					$doaction = ! empty( $_POST['action2'] )
+						? sanitize_key( $_POST['action2'] )
+						: '';
 				}
-				$doaction = sanitize_key( $doaction );
 
 				switch ( $doaction ) {
 					case 'delete':
@@ -308,11 +324,15 @@ class WP_MS_Networks_Admin {
 			return;
 		}
 
-		$action = filter_input( INPUT_POST, 'action', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+		$action = ! empty( $_POST['action'] )
+			? sanitize_key( $_POST['action'] )
+			: '';
+
 		if ( empty( $action ) ) {
 			$alternative_actions = array( 'delete', 'delete_multiple', 'move' );
+
 			foreach ( $alternative_actions as $alternative_action ) {
-				if ( filter_input( INPUT_POST, $alternative_action ) ) {
+				if ( ! empty( $_POST[ $alternative_action ] ) ) {
 					$action = $alternative_action;
 					break;
 				}
@@ -361,8 +381,14 @@ class WP_MS_Networks_Admin {
 	 * @return void
 	 */
 	public function page_edit_network() {
-		$network_id = (int) filter_input( INPUT_GET, 'id', FILTER_SANITIZE_NUMBER_INT );
-		$network    = $network_id ? get_network( $network_id ) : null;
+
+		$network_id = ! empty( $_GET['id'] ) && is_numeric( $_GET['id'] )
+			? (int) $_GET['id']
+			: 0;
+
+		$network = ! empty( $network_id )
+			? get_network( $network_id )
+			: null;
 
 		add_meta_box( 'wpmn-edit-network-details', esc_html__( 'Details', 'wp-multi-network' ), 'wpmn_edit_network_details_metabox', get_current_screen()->id, 'normal', 'high', array( $network ) );
 		add_meta_box( 'wpmn-edit-network-publish', esc_html__( 'Network', 'wp-multi-network' ), 'wpmn_edit_network_publish_metabox', get_current_screen()->id, 'side', 'high', array( $network ) );
@@ -400,7 +426,7 @@ class WP_MS_Networks_Admin {
 
 			<hr class="wp-header-end">
 
-			<form method="post" id="edit-network-form" action="">
+			<form method="post" action="" id="edit-network-form">
 				<div id="poststuff" class="poststuff">
 					<div id="post-body" class="metabox-holder columns-2">
 						<div id="post-body-content">
@@ -444,7 +470,10 @@ class WP_MS_Networks_Admin {
 		$all_networks_url = $this->admin_url( array( 'action' => 'all_networks' ) );
 		$search_url       = $this->admin_url( array( 'action' => 'domains' ) );
 
-		$search_text = filter_input( INPUT_POST, 's', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+		$search_text = ! empty( $_POST['s'] )
+			? stripslashes( trim( sanitize_text_field( $_POST['s'] ) ) )
+			: '';
+
 		?>
 
 		<div class="wrap">
@@ -472,7 +501,7 @@ class WP_MS_Networks_Admin {
 				<input type="hidden" name="action" value="domains">
 			</form>
 
-			<form method="post" id="form-domain-list" action="<?php echo esc_url( $all_networks_url ); ?>">
+			<form method="post" action="<?php echo esc_url( $all_networks_url ); ?>" id="form-domain-list">
 				<?php $wp_list_table->display(); ?>
 			</form>
 		</div>
@@ -487,8 +516,14 @@ class WP_MS_Networks_Admin {
 	 * @return void
 	 */
 	private function page_move_site() {
-		$site_id = (int) filter_input( INPUT_GET, 'blog_id', FILTER_SANITIZE_NUMBER_INT );
-		$site    = $site_id ? get_site( $site_id ) : null;
+
+		$site_id = ! empty( $_GET['blog_id'] ) && is_numeric( $_GET['blog_id'] )
+			? (int) $_GET['blog_id']
+			: 0;
+
+		$site = ! empty( $site_id )
+			? get_site( $site_id )
+			: null;
 
 		// Bail if invalid site ID.
 		if ( empty( $site ) ) {
@@ -517,7 +552,9 @@ class WP_MS_Networks_Admin {
 			array( $site )
 		);
 
+		// URLs to escape.
 		$add_network_url = $this->admin_url( array( 'page' => 'add-new-network' ) );
+		$form_action_url = $this->admin_url( array( 'action' => 'move', 'blog_id' => $site_id ) );
 		?>
 
 		<div class="wrap">
@@ -535,7 +572,7 @@ class WP_MS_Networks_Admin {
 
 			<hr class="wp-header-end">
 
-			<form method="post" action="<?php echo esc_attr( filter_input( INPUT_SERVER, 'REQUEST_URI', FILTER_SANITIZE_FULL_SPECIAL_CHARS ) ); ?>">
+			<form method="post" action="<?php echo esc_url( $form_action_url ); ?>">
 				<div id="poststuff">
 					<div id="post-body" class="metabox-holder columns-2">
 						<div id="postbox-container-1" class="postbox-container">
@@ -561,8 +598,14 @@ class WP_MS_Networks_Admin {
 	 * @return void
 	 */
 	private function page_delete_network() {
-		$network_id = (int) filter_input( INPUT_GET, 'id', FILTER_SANITIZE_NUMBER_INT );
-		$network    = $network_id ? get_network( $network_id ) : null;
+
+		$network_id = ! empty( $_GET['id'] ) && is_numeric( $_GET['id'] )
+			? (int) $_GET['id']
+			: 0;
+
+		$network = ! empty( $network_id )
+			? get_network( $network_id )
+			: null;
 
 		// Bail if invalid network ID.
 		if ( empty( $network ) ) {
@@ -589,7 +632,7 @@ class WP_MS_Networks_Admin {
 
 			<hr class="wp-header-end">
 
-			<form method="post" action="<?php echo esc_attr( remove_query_arg( 'action' ) ); ?>">
+			<form method="post" action="<?php echo esc_url( remove_query_arg( 'action' ) ); ?>">
 				<?php
 
 				if ( ! empty( $sites ) ) {
@@ -653,9 +696,13 @@ class WP_MS_Networks_Admin {
 	 * @return void
 	 */
 	private function page_delete_networks() {
+
 		$network_id   = get_main_network_id();
-		$all_networks = filter_input( INPUT_POST, 'all_networks', FILTER_SANITIZE_NUMBER_INT, FILTER_FORCE_ARRAY );
-		$all_networks = array_map( 'absint', $all_networks );
+
+		$all_networks = ! empty( $_POST['all_networks'] ) && is_array( $_POST['all_networks'] )
+			? wp_parse_id_list( (array) $_POST['all_networks'] )
+			: array();
+
 		$all_networks = array_diff( $all_networks, array( $network_id ) );
 
 		$networks = get_networks(
@@ -868,31 +915,45 @@ class WP_MS_Networks_Admin {
 	private function handle_add_network() {
 
 		// Sanitize options to clone.
-		$options_to_clone = filter_input( INPUT_POST, 'options_to_clone', FILTER_DEFAULT, FILTER_FORCE_ARRAY );
+		$options_to_clone = ! empty( $_POST['options_to_clone'] ) && is_array( $_POST['options_to_clone'] )
+			? $_POST['options_to_clone']
+			: array();
+
 		$options_to_clone = ! empty( $options_to_clone )
 			? array_keys( $options_to_clone )
 			: array_keys( network_options_to_copy() );
 
 		// Sanitize network ID to clone.
-		$clone = filter_input( INPUT_POST, 'clone_network', FILTER_SANITIZE_NUMBER_INT );
+		$clone = ! empty( $_GET['clone_network'] )
+			? (int) $_GET['clone_network']
+			: 0;
+
 		if ( empty( $clone ) ) {
 			$clone = get_current_site()->id;
 		}
 
-		// Sanitize values.
-		$network_title  = wp_unslash( filter_input( INPUT_POST, 'title', FILTER_SANITIZE_FULL_SPECIAL_CHARS ) );
-		$network_domain = wp_unslash( filter_input( INPUT_POST, 'domain', FILTER_SANITIZE_FULL_SPECIAL_CHARS ) );
-		$network_path   = wp_unslash( filter_input( INPUT_POST, 'path', FILTER_SANITIZE_FULL_SPECIAL_CHARS ) );
-		$site_name      = wp_unslash( filter_input( INPUT_POST, 'new_site', FILTER_SANITIZE_FULL_SPECIAL_CHARS ) );
+		// Unslash posted values.
+		$network_title  = ! empty( $_POST['title'] )
+			? wp_unslash( $_POST['title'] )
+			: '';
+		$network_domain = ! empty( $_POST['domain'] )
+			? wp_unslash( $_POST['domain'] )
+			: '';
+		$network_path   = ! empty( $_POST['path'] )
+			? wp_unslash( $_POST['path'] )
+			: '';
+		$site_name      = ! empty( $_POST['new_site'] )
+			? wp_unslash( $_POST['new_site'] )
+			: '';
 
-		// Additional formatting.
-		$network_title  = wp_strip_all_tags( $network_title );
+		// Additional sanitization.
+		$network_title  = sanitize_text_field( $network_title );
 		$network_domain = str_replace( ' ', '', strtolower( sanitize_text_field( $network_domain ) ) );
 		$network_path   = str_replace( ' ', '', strtolower( sanitize_text_field( $network_path ) ) );
 
 		// Fallback to network title if not explicitly set.
 		$site_name = ! empty( $site_name )
-			? wp_strip_all_tags( $site_name )
+			? sanitize_text_field( $site_name )
 			: $network_title;
 
 		// Bail if missing fields.
@@ -961,21 +1022,29 @@ class WP_MS_Networks_Admin {
 	private function handle_update_network() {
 
 		// Sanitize network ID.
-		$network_id = (int) filter_input( INPUT_POST, 'network_id', FILTER_SANITIZE_NUMBER_INT );
+		$network_id = ! empty( $_GET['id'] ) && is_numeric( $_GET['id'] )
+			? (int) $_GET['id']
+			: 0;
 
 		// Bail if invalid network.
 		if ( ! get_network( $network_id ) ) {
 			wp_die( esc_html__( 'Invalid network id.', 'wp-multi-network' ) );
 		}
 
-		// Sanitize values.
-		$network_title  = wp_unslash( filter_input( INPUT_POST, 'title', FILTER_SANITIZE_FULL_SPECIAL_CHARS ) );
-		$network_domain = wp_unslash( filter_input( INPUT_POST, 'domain', FILTER_SANITIZE_FULL_SPECIAL_CHARS ) );
-		$network_path   = wp_unslash( filter_input( INPUT_POST, 'path', FILTER_SANITIZE_FULL_SPECIAL_CHARS ) );
+		// Unslash posted values.
+		$network_title  = ! empty( $_POST['title'] )
+			? wp_unslash( $_POST['title'] )
+			: '';
+		$network_domain = ! empty( $_POST['domain'] )
+			? wp_unslash( $_POST['domain'] )
+			: '';
+		$network_path   = ! empty( $_POST['path'] )
+			? wp_unslash( $_POST['path'] )
+			: '';
 
-		// Additional formatting.
+		// Additional sanitization.
 		$network_title  = sanitize_text_field( $network_title );
-		$network_domain = Requests_IDNAEncoder::encode( str_replace( ' ', '', strtolower( sanitize_text_field( $network_domain ) ) ) );
+		$network_domain = str_replace( ' ', '', strtolower( sanitize_text_field( $network_domain ) ) );
 		$network_path   = str_replace( ' ', '', strtolower( sanitize_text_field( $network_path ) ) );
 
 		// Bail if missing fields.
@@ -1024,8 +1093,13 @@ class WP_MS_Networks_Admin {
 	private function handle_move_site() {
 
 		// Sanitize values.
-		$site_id     = (int) filter_input( INPUT_GET, 'blog_id', FILTER_SANITIZE_NUMBER_INT );
-		$new_network = (int) filter_input( INPUT_POST, 'to', FILTER_SANITIZE_NUMBER_INT );
+		$site_id     = ! empty( $_GET['blog_id'] ) && is_numeric( $_GET['blog_id'] )
+			? (int) $_GET['blog_id']
+			: 0;
+
+		$new_network = ! empty( $_POST['to'] ) && is_numeric( $_POST['to'] )
+			? (int) $_POST['to']
+			: 0;
 
 		// Bail if no site ID.
 		if ( empty( $site_id ) ) {
@@ -1085,8 +1159,13 @@ class WP_MS_Networks_Admin {
 	private function handle_reassign_sites() {
 
 		// Sanitize values.
-		$to   = array_map( 'absint', (array) filter_input( INPUT_POST, 'to', FILTER_SANITIZE_NUMBER_INT, FILTER_FORCE_ARRAY ) );
-		$from = array_map( 'absint', (array) filter_input( INPUT_POST, 'from', FILTER_SANITIZE_NUMBER_INT, FILTER_FORCE_ARRAY ) );
+		$to = ! empty( $_POST['to'] ) && is_array( $_POST['to'] )
+			? wp_parse_id_list( (array) $_POST['to'] )
+			: array();
+
+		$from = ! empty( $_POST['from'] ) && is_array( $_POST['from'] )
+			? wp_parse_id_list( (array) $_POST['from'] )
+			: array();
 
 		// Bail early if no movement.
 		if ( empty( $to ) && empty( $from ) ) {
@@ -1094,7 +1173,9 @@ class WP_MS_Networks_Admin {
 		}
 
 		// Sanitize network ID.
-		$network_id = (int) filter_input( INPUT_GET, 'id', FILTER_SANITIZE_NUMBER_INT );
+		$network_id = ! empty( $_GET['id'] ) && is_numeric( $_GET['id'] )
+			? (int) $_GET['id']
+			: 0;
 
 		// Default to/from arrays.
 		$moving_to   = array();
@@ -1150,8 +1231,11 @@ class WP_MS_Networks_Admin {
 	private function handle_delete_network() {
 
 		// Sanitize values.
-		$network_id = (int) filter_input( INPUT_GET, 'id', FILTER_SANITIZE_NUMBER_INT );
-		$override   = (bool) filter_input( INPUT_POST, 'override' );
+		$network_id = ! empty( $_GET['id'] ) && is_numeric( $_GET['id'] )
+			? (int) $_GET['id']
+			: 0;
+
+		$override = ! empty( $_POST['override'] );
 
 		// Attempt to delete network.
 		$result = delete_network( $network_id, $override );
@@ -1178,8 +1262,11 @@ class WP_MS_Networks_Admin {
 	private function handle_delete_networks() {
 
 		// Sanitize values.
-		$deleted_networks = array_map( 'absint', filter_input( INPUT_POST, 'deleted_networks', FILTER_SANITIZE_NUMBER_INT, FILTER_FORCE_ARRAY ) );
-		$override         = (bool) filter_input( INPUT_POST, 'override' );
+		$deleted_networks = ! empty( $_POST['deleted_networks'] ) && is_array( $_POST['deleted_networks'] )
+			? wp_parse_id_list( (array) $_POST['deleted_networks'] )
+			: array();
+
+		$override = (bool) ! empty( $_POST['override'] );
 
 		// Loop through deleted networks.
 		if ( ! empty( $deleted_networks ) ) {
