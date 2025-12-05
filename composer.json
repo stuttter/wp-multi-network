@@ -31,7 +31,7 @@
   },
   "scripts": {
     "phpstan": "vendor/bin/phpstan analyse --memory-limit=1G",
-    "phpcs": "vendor/bin/phpcs -q --report=checkstyle --runtime-set ignore_errors_on_exit 1 --runtime-set ignore_warnings_on_exit 1 --runtime-set testVersion 7.2- | vendor/bin/cs2pr --graceful-warnings"
+    "phpcs": "vendor/bin/phpcs -q --report=checkstyle --runtime-set ignore_errors_on_exit 1 --runtime-set ignore_warnings_on_exit 1 | vendor/bin/cs2pr --graceful-warnings"
   },
   "config": {
     "allow-plugins": {
