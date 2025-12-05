@@ -54,7 +54,7 @@ if ( ! function_exists( 'user_has_networks' ) ) :
 	 * @since 1.3.0
 	 *
 	 * @param int $user_id Optional. User ID. Default is the current user.
-	 * @return array|bool Array of network IDs, or false if none.
+	 * @return int[]|bool Array of network IDs, or false if none.
 	 */
 	function user_has_networks( $user_id = 0 ) {
 		global $wpdb;
@@ -120,7 +120,7 @@ if ( ! function_exists( 'get_main_site_for_network' ) ) :
 	 * @since 1.3.0
 	 *
 	 * @param int|WP_Network $network Optional. Network ID or object. Default is the current network.
-	 * @return int Main site ID for the network.
+	 * @return int|bool Main site ID for the network or false if network not found.
 	 */
 	function get_main_site_for_network( $network = null ) {
 		$network = get_network( $network );
@@ -412,7 +412,7 @@ if ( ! function_exists( 'add_network' ) ) :
 	 *
 	 * @global wpdb $wpdb WordPress database abstraction object.
 	 *
-	 * @param array $args  {
+	 * @param array<string, mixed> $args  {
 	 *     Array of network arguments.
 	 *
 	 *     @type string  $domain           Domain name for new network - for VHOST=no,
@@ -616,8 +616,9 @@ if ( ! function_exists( 'add_network' ) ) :
 			$upload_url      = $upload_url . '/uploads';
 
 			$upload_dir = WP_CONTENT_DIR;
-			if ( 0 === strpos( $upload_dir, ABSPATH ) ) {
-				$upload_dir = substr( $upload_dir, strlen( ABSPATH ) );
+			$needle     = strval( ABSPATH );
+			if ( 0 === strpos( $upload_dir, $needle ) ) {
+				$upload_dir = substr( $upload_dir, strlen( $needle ) );
 			}
 			$upload_dir .= '/uploads';
 
@@ -717,7 +718,7 @@ if ( ! function_exists( 'update_network' ) ) :
 		$path    = wp_sanitize_site_path( $path );
 
 		// Bail if site URL is invalid.
-		if ( ! wp_validate_site_url( $domain, $path, $site_id ) ) {
+		if ( ! wp_validate_site_url( $domain, $path, strval( $site_id ) ) ) {
 			/* translators: %s: site domain and path */
 			return new WP_Error( 'blog_bad', sprintf( __( 'The site "%s" is invalid, not available, or already exists.', 'wp-multi-network' ), $domain . $path ) );
 		}
@@ -972,7 +973,7 @@ if ( ! function_exists( 'network_options_list' ) ) :
 	 *
 	 * @since 1.3.0
 	 *
-	 * @return array List of network option names.
+	 * @return string[] List of network option names.
 	 */
 	function network_options_list() {
 		$network_options = array(
@@ -997,7 +998,7 @@ if ( ! function_exists( 'network_options_to_copy' ) ) :
 	 *
 	 * @since 1.3.0
 	 *
-	 * @return array List of network $option_name => $option_label pairs.
+	 * @return array<string, string> List of network $option_name => $option_label pairs.
 	 */
 	function network_options_to_copy() {
 		$network_options = array(
