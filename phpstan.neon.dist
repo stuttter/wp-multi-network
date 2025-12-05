@@ -16,4 +16,6 @@ parameters:
         - '/^Cannot access property \$ID on WP_CLI\\Fetchers\\WP_User\|false\.$/'
         # Backward compatibility with old method of passing arguments.
         - '/^Call to function is_array\(\) with array<string, mixed> will always evaluate to true\.$/'
+        # Associative CLI arguments. Passed by reference.
+        - '/^Parameter \&\$assoc_args by-ref type of method WP_MS_Network_Command::get_formatter\(\) expects array<string, mixed>, array given\.$/'
 
