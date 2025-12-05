@@ -612,7 +612,7 @@ if ( ! function_exists( 'add_network' ) ) :
 			// so we have to replace the hostname the hard way.
 			$current_siteurl = get_option( 'siteurl' );
 			$new_siteurl     = untrailingslashit( get_blogaddress_by_id( $new_blog_id ) );
-			$upload_url      = str_replace( $current_siteurl, $new_siteurl, WP_CONTENT_URL );
+			$upload_url      = str_replace( $current_siteurl, $new_siteurl, content_url() );
 			$upload_url      = $upload_url . '/uploads';
 
 			$upload_dir = WP_CONTENT_DIR;
