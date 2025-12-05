@@ -20,17 +20,18 @@
     "composer/installers": "^1.0 || ^2.0"
   },
   "require-dev": {
-    "php-stubs/wp-cli-stubs": "^2.12",
-    "phpcompatibility/phpcompatibility-wp": "^2.1",
+    "php-stubs/wp-cli-stubs": "^2.12.0",
+    "phpcompatibility/phpcompatibility-wp": "^2.1.8",
     "phpstan/extension-installer": "^1.4.3",
-    "phpstan/phpstan": "^2.1.32",
+    "phpstan/phpstan": "^2.1.33",
+    "staabm/annotate-pull-request-from-checkstyle": "^1.8.6",
     "szepeviktor/phpstan-wordpress": "^2.0.3",
     "wp-coding-standards/wpcs": "^3.3.0",
     "yoast/wp-test-utils": "^1.2.0"
   },
   "scripts": {
     "phpstan": "vendor/bin/phpstan analyse --memory-limit=1G",
-    "phpcs": "vendor/bin/phpcs -ps wpmn-loader.php wp-multi-network/includes --standard=PHPCompatibilityWP --runtime-set testVersion 7.2-"
+    "phpcs": "vendor/bin/phpcs -q --report=checkstyle --runtime-set ignore_errors_on_exit 1 --runtime-set ignore_warnings_on_exit 1 --runtime-set testVersion 7.2- | vendor/bin/cs2pr --graceful-warnings"
   },
   "config": {
     "allow-plugins": {
