@@ -842,15 +842,13 @@ if ( ! function_exists( 'delete_network' ) ) :
 				return new WP_Error( 'network_not_empty', __( 'Cannot delete network with sites.', 'wp-multi-network' ) );
 			}
 
-			if ( true === $delete_blogs ) {
-				foreach ( $sites as $site ) {
-					if ( wp_should_rescue_orphaned_sites() ) {
-						move_site( $site->id, 0 );
-						continue;
-					}
-
-					wpmu_delete_blog( $site->id, true );
+			foreach ( $sites as $site ) {
+				if ( wp_should_rescue_orphaned_sites() ) {
+					move_site( $site->id, 0 );
+					continue;
 				}
+
+				wpmu_delete_blog( $site->id, true );
 			}
 		}
 
