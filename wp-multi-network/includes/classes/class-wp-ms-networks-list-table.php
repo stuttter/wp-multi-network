@@ -47,6 +47,7 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 	 * Prepares the list table items.
 	 *
 	 * @since 1.3.0
+	 * @return void
 	 */
 	public function prepare_items() {
 		$per_page = $this->get_items_per_page( 'networks_per_page' );
@@ -98,6 +99,7 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 	 * Outputs the message to show when no list items are found.
 	 *
 	 * @since 1.3.0
+	 * @return void
 	 */
 	public function no_items() {
 		esc_html_e( 'No networks found.', 'wp-multi-network' );
@@ -108,7 +110,7 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 	 *
 	 * @since 1.3.0
 	 *
-	 * @return array Bulk actions as $slug => $label pairs.
+	 * @return array<string, string> Bulk actions as $slug => $label pairs.
 	 */
 	public function get_bulk_actions() {
 		$actions = array();
@@ -125,7 +127,7 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 	 *
 	 * @since 1.3.0
 	 *
-	 * @param type $which Where to display the pagination. Either 'top' or 'bottom'.
+	 * @param string $which Where to display the pagination. Either 'top' or 'bottom'.
 	 */
 	public function pagination( $which ) { // phpcs:ignore Generic.CodeAnalysis.UselessOverridingMethod.Found
 		parent::pagination( $which );
@@ -147,7 +149,7 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 	 *
 	 * @since 1.3.0
 	 *
-	 * @return array Columns as $slug => $label pairs.
+	 * @return array<string, string> Columns as $slug => $label pairs.
 	 */
 	public function get_columns() {
 		$columns = array(
@@ -174,7 +176,7 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 	 *
 	 * @since 1.3.0
 	 *
-	 * @return array Columns as $slug => $orderby_field pairs.
+	 * @return array<string, string> Columns as $slug => $orderby_field pairs.
 	 */
 	public function get_sortable_columns() {
 		return array(
@@ -190,6 +192,7 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 	 * @since 2.3.0
 	 *
 	 * @param object $network The current network item.
+	 * @return void
 	 */
 	public function single_row( $network ) {
 		$class = (int) get_current_site()->id === (int) $network->id ? 'current' : 'not-current';
@@ -272,6 +275,7 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 	 * @since 2.0.0
 	 *
 	 * @param WP_Network $network The current network object.
+	 * @return void
 	 */
 	public function column_cb( $network ) {
 
@@ -281,7 +285,7 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 		}
 
 		?>
-		<label class="screen-reader-text" for="network_<?php echo esc_attr( $network->id ); ?>">
+		<label class="screen-reader-text" for="network_<?php echo esc_attr( strval( $network->id ) ); ?>">
 			<?php
 			printf(
 				/* translators: %s: network name */
@@ -290,7 +294,7 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 			);
 			?>
 		</label>
-		<input type="checkbox" id="network_<?php echo esc_attr( $network->id ); ?>" name="all_networks[]" value="<?php echo esc_attr( $network->id ); ?>">
+		<input type="checkbox" id="network_<?php echo esc_attr( strval( $network->id ) ); ?>" name="all_networks[]" value="<?php echo esc_attr( strval( $network->id ) ); ?>">
 		<?php
 	}
 
@@ -300,6 +304,7 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 	 * @since 2.0.0
 	 *
 	 * @param WP_Network $network The current network object.
+	 * @return void
 	 */
 	public function column_title( $network ) {
 		$network_states = $this->get_states( $network );
@@ -342,6 +347,7 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 	 * @since 2.0.0
 	 *
 	 * @param WP_Network $network The current network object.
+	 * @return void
 	 */
 	public function column_domain( $network ) {
 		echo esc_html( $network->domain );
@@ -353,6 +359,7 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 	 * @since 2.0.0
 	 *
 	 * @param WP_Network $network The current network object.
+	 * @return void
 	 */
 	public function column_path( $network ) {
 		echo esc_html( $network->path );
@@ -364,6 +371,7 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 	 * @since 2.0.0
 	 *
 	 * @param WP_Network $network The current network object.
+	 * @return void
 	 */
 	public function column_blogs( $network ) {
 		$sites = get_network_option( $network->id, 'blog_count' );
@@ -381,6 +389,7 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 	 * @since 2.0.0
 	 *
 	 * @param WP_Network $network The current network object.
+	 * @return void
 	 */
 	public function column_admins( $network ) {
 		$network_admins = (array) get_network_option( $network->id, 'site_admins', array() );
@@ -396,9 +405,10 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 	 * @since 2.0.0
 	 *
 	 * @param WP_Network $network The current network object.
+	 * @return void
 	 */
 	public function column_id( $network ) {
-		echo esc_html( $network->id );
+		echo esc_html( strval( $network->id ) );
 	}
 
 	/**
@@ -416,7 +426,7 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 
 		// Bail if not primary column.
 		if ( $primary !== $column_name ) {
-			return;
+			return '';
 		}
 
 		switch_to_network( $network->id );
@@ -485,7 +495,7 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 		 * @param int    $network_id The current network ID.
 		 * @param string $network_sitename The current network name.
 		 */
-		$actions = apply_filters( 'manage_networks_action_links', array_filter( $actions ), $network->id, $network->sitename );
+		$actions = apply_filters( 'manage_networks_action_links', array_filter( $actions ), $network->id, $network->site_name );
 
 		// Return all row actions.
 		return $this->row_actions( $actions );

@@ -17,7 +17,7 @@ class WP_MS_Network_Command {
 	 * Default fields to display for each object.
 	 *
 	 * @since 1.3.0
-	 * @var array
+	 * @var string[]
 	 */
 	protected $obj_fields = array(
 		'id',
@@ -54,11 +54,12 @@ class WP_MS_Network_Command {
 	 *
 	 * @since 1.3.0
 	 *
-	 * @param array $args       Positional CLI arguments.
-	 * @param array $assoc_args Associative CLI arguments.
+	 * @param string[]             $args Positional CLI arguments.
+	 * @param array<string, mixed> $assoc_args Associative CLI arguments.
+	 * @return void
 	 */
 	public function create( $args, $assoc_args ) {
-		list( $domain, $path ) = $args;
+		[ $domain, $path ] = $args;
 
 		$assoc_args = wp_parse_args(
 			$assoc_args, array(
@@ -74,7 +75,7 @@ class WP_MS_Network_Command {
 			$users = new \WP_CLI\Fetchers\User();
 			$user  = $users->get( $assoc_args['network_admin'] );
 			if ( ! $user ) {
-				return new WP_Error( 'network_super_admin', 'Super user does not exist.' );
+				WP_CLI::error( 'Super user does not exist.' );
 			}
 			$network_admin_id = $user->ID;
 		} else {
@@ -86,10 +87,6 @@ class WP_MS_Network_Command {
 
 		if ( ! empty( $clone_network ) && ! get_network( $clone_network ) ) {
 			WP_CLI::error( sprintf( "Clone network %s doesn't exist.", $clone_network ) );
-
-			if ( ! empty( $assoc_args['options_to_clone'] ) ) {
-				$options_to_clone = explode( ',', $assoc_args['options_to_clone'] );
-			}
 		}
 
 		$network_id = add_network(
@@ -126,18 +123,19 @@ class WP_MS_Network_Command {
 	 *
 	 * @since 1.3.0
 	 *
-	 * @param array $args       Positional CLI arguments.
-	 * @param array $assoc_args Associative CLI arguments.
+	 * @param string[]             $args Positional CLI arguments.
+	 * @param array<string, mixed> $assoc_args Associative CLI arguments.
+	 * @return void
 	 */
 	public function update( $args, $assoc_args ) {
-		list( $id, $domain ) = $args;
+		[ $id, $domain ] = $args;
 
 		$defaults   = array(
 			'path' => '',
 		);
 		$assoc_args = wp_parse_args( $assoc_args, $defaults );
 
-		$network_id = update_network( $id, $domain, $assoc_args['path'] );
+		$network_id = update_network( (int) $id, $domain, $assoc_args['path'] );
 
 		if ( is_wp_error( $network_id ) ) {
 			WP_CLI::error( $network_id );
@@ -157,11 +155,12 @@ class WP_MS_Network_Command {
 	 *
 	 * @since 1.3.0
 	 *
-	 * @param array $args       Positional CLI arguments.
-	 * @param array $assoc_args Associative CLI arguments.
+	 * @param string[]             $args Positional CLI arguments.
+	 * @param array<string, mixed> $assoc_args Associative CLI arguments.
+	 * @return void
 	 */
 	public function delete( $args, $assoc_args ) {
-		list( $id ) = $args;
+		[ $id ] = $args;
 
 		$assoc_args = wp_parse_args(
 			$assoc_args, array(
@@ -169,7 +168,7 @@ class WP_MS_Network_Command {
 			)
 		);
 
-		$network_id = delete_network( $id, $assoc_args['delete_blogs'] );
+		$network_id = delete_network( (int) $id, $assoc_args['delete_blogs'] );
 
 		if ( is_wp_error( $network_id ) ) {
 			WP_CLI::error( $network_id );
@@ -191,13 +190,14 @@ class WP_MS_Network_Command {
 	 *
 	 * @since 1.3.0
 	 *
-	 * @param array $args       Positional CLI arguments.
-	 * @param array $assoc_args Associative CLI arguments.
+	 * @param string[]             $args Positional CLI arguments.
+	 * @param array<string, mixed> $assoc_args Associative CLI arguments.
+	 * @return void
 	 */
-	public function move_site( $args, $assoc_args ) {
-		list( $site_id, $new_network_id ) = $args;
+	public function move_site( $args, $assoc_args ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
+		[ $site_id, $new_network_id ] = $args;
 
-		$network_id = move_site( $site_id, $new_network_id );
+		$network_id = move_site( (int) $site_id, (int) $new_network_id );
 
 		if ( is_wp_error( $network_id ) ) {
 			WP_CLI::error( $network_id );
@@ -227,8 +227,9 @@ class WP_MS_Network_Command {
 	 *
 	 * @since 1.3.0
 	 *
-	 * @param array $args       Positional CLI arguments.
-	 * @param array $assoc_args Associative CLI arguments.
+	 * @param string[]             $args Positional CLI arguments.
+	 * @param array<string, mixed> $assoc_args Associative CLI arguments.
+	 * @return void
 	 */
 	public function list_( $args, $assoc_args ) {
 		$items     = get_networks();
@@ -256,12 +257,13 @@ class WP_MS_Network_Command {
 	 *
 	 * @since 1.3.0
 	 *
-	 * @param array $args       Positional CLI arguments.
-	 * @param array $assoc_args Associative CLI arguments.
+	 * @param string[]             $args Positional CLI arguments.
+	 * @param array<string, mixed> $assoc_args Associative CLI arguments.
+	 * @return void
 	 */
 	public function plugin( $args, $assoc_args ) {
 		$fetchers_plugin = new \WP_CLI\Fetchers\Plugin();
-		$action        = array_shift( $args );
+		$action          = array_shift( $args );
 		if ( ! in_array( $action, array( 'activate', 'deactivate' ), true ) ) {
 			WP_CLI::error( sprintf( '%s is not a supported action.', $action ) );
 		}
@@ -280,7 +282,7 @@ class WP_MS_Network_Command {
 			if ( $all ) {
 				$args = array_map(
 					function ( $file ) {
-							return \WP_CLI\Utils\get_plugin_name( $file );
+						return \WP_CLI\Utils\get_plugin_name( $file );
 					}, array_keys( get_plugins() )
 				);
 			}
@@ -310,7 +312,7 @@ class WP_MS_Network_Command {
 				if ( 'activate' === $action ) {
 					activate_plugins( $plugin->file, '', $network_wide );
 				} else {
-					deactivate_plugins( $plugin->file, '', $network_wide );
+					deactivate_plugins( $plugin->file, false, $network_wide );
 				}
 
 				$this->active_output( $plugin->name, $plugin->file, $network_wide, 'activate' );
@@ -326,7 +328,7 @@ class WP_MS_Network_Command {
 	 *
 	 * @since 1.3.0
 	 *
-	 * @param array $assoc_args Associative CLI arguments. Passed by reference.
+	 * @param array<string, mixed> $assoc_args Associative CLI arguments. Passed by reference.
 	 * @return WP_CLI\Formatter WP-CLI formatter instance.
 	 */
 	protected function get_formatter( &$assoc_args ) {
@@ -377,6 +379,7 @@ class WP_MS_Network_Command {
 	 * @param string $file         Plugin main file path relative to the plugins directory.
 	 * @param bool   $network_wide Whether to check network-wide or not.
 	 * @param string $action       Action performed.
+	 * @return void
 	 */
 	private function active_output( $name, $file, $network_wide, $action ) {
 		$network_wide = $network_wide || ( is_multisite() && is_network_only_plugin( $file ) );
