@@ -17,17 +17,19 @@ jobs:
       matrix:
         php: ['7.2', '7.3', '7.4', '8.0', '8.1', '8.2']
         wp: ['latest']
+        experimental: [false]
         include:
           # Test with older WordPress version
           - php: '7.2'
             wp: '4.9'
+            experimental: false
           - php: '8.0'
             wp: '4.9'
-          # Test with WordPress trunk/master
+            experimental: false
+          # Test with WordPress trunk/master (allow failures)
           - php: '8.2'
             wp: 'trunk'
-        # Allow failures for nightly/trunk
-        experimental: [false]
+            experimental: true
     
     continue-on-error: ${{ matrix.experimental }}
     
@@ -58,7 +60,7 @@ jobs:
         run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
       
       - name: Setup Composer cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
@@ -82,12 +84,15 @@ jobs:
             WP_VERSION="master"
           fi
           
+          # Get plugin slug from repository name
+          PLUGIN_SLUG=$(basename "$GITHUB_WORKSPACE")
+          
           # Clone WordPress
           git clone --depth=1 --branch="$WP_VERSION" https://github.com/WordPress/wordpress-develop.git /tmp/wordpress
           
           # Setup plugin directory
           mkdir -p /tmp/wordpress/src/wp-content/mu-plugins
-          cp -r "$GITHUB_WORKSPACE" /tmp/wordpress/src/wp-content/mu-plugins/wp-multi-network
+          cp -r "$GITHUB_WORKSPACE" "/tmp/wordpress/src/wp-content/mu-plugins/$PLUGIN_SLUG"
           
           # Configure tests
           cd /tmp/wordpress
@@ -99,5 +104,6 @@ jobs:
       
       - name: Run PHPUnit tests
         run: |
-          cd /tmp/wordpress/src/wp-content/mu-plugins/wp-multi-network
+          PLUGIN_SLUG=$(basename "$GITHUB_WORKSPACE")
+          cd "/tmp/wordpress/src/wp-content/mu-plugins/$PLUGIN_SLUG"
           vendor/bin/phpunit -c phpunit.xml.dist
