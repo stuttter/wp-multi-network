@@ -165,8 +165,12 @@ class WP_MS_Networks_Admin {
 			return;
 		}
 
-		wp_register_style( 'wp-multi-network', wpmn()->plugin_url . 'assets/css/wp-multi-network.css', array(), wpmn()->asset_version );
-		wp_register_script( 'wp-multi-network', wpmn()->plugin_url . 'assets/js/wp-multi-network.js', array( 'jquery', 'post' ), wpmn()->asset_version, true );
+		// Determine if we should load source or minified assets based on WP_SCRIPT_DEBUG.
+		$suffix         = ( defined( 'WP_SCRIPT_DEBUG' ) && WP_SCRIPT_DEBUG ) ? '' : '.min';
+		$asset_version  = ( defined( 'WP_SCRIPT_DEBUG' ) && WP_SCRIPT_DEBUG ) ? time() : wpmn()->asset_version;
+
+		wp_register_style( 'wp-multi-network', wpmn()->plugin_url . 'assets/css/wp-multi-network' . $suffix . '.css', array(), $asset_version );
+		wp_register_script( 'wp-multi-network', wpmn()->plugin_url . 'assets/js/wp-multi-network' . $suffix . '.js', array( 'jquery', 'post' ), $asset_version, true );
 
 		wp_enqueue_style( 'wp-multi-network' );
 		wp_enqueue_script( 'wp-multi-network' );

@@ -28,6 +28,7 @@ const path = require( 'path' );
  */
 function getCssFilename( pathData, suffix = '' ) {
 	if ( pathData.chunk && pathData.chunk.name ) {
+		// The chunk name includes '.min', so we just add the suffix and extension
 		return 'css/' + pathData.chunk.name + suffix + '.css';
 	}
 	return 'css/[name]' + suffix + '.css';
@@ -36,7 +37,7 @@ function getCssFilename( pathData, suffix = '' ) {
 module.exports = {
 	...defaultConfig,
 	entry: {
-		'wp-multi-network': path.resolve( process.cwd(), 'src/js/index.js' ),
+		'wp-multi-network.min': path.resolve( process.cwd(), 'src/js/index.js' ),
 	},
 	output: {
 		path: path.resolve( process.cwd(), 'wp-multi-network/assets' ),

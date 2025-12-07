@@ -1,1 +1,42 @@
-(()=>{"use strict";var e,o={178:()=>{jQuery(document).ready(function(e){function o(e,o){jQuery("#"+e).children("option:selected").each(function(){jQuery("#"+o).append(jQuery(this).clone()),jQuery(this).remove()})}e(".if-js-closed").removeClass("if-js-closed").addClass("closed"),e(".postbox").children("h3").click(function(){e(this.parentNode).hasClass("closed")?e(this.parentNode).removeClass("closed"):e(this.parentNode).addClass("closed")}),e("input[name=assign]").click(function(){o("from","to")}),e("input[name=unassign]").click(function(){o("to","from")}),e("#edit-network-form").submit(function(){e("#to").children("option:enabled").attr("selected",!0),e("#from").children("option:enabled").attr("selected",!0)})})}},r={};function t(e){var n=r[e];if(void 0!==n)return n.exports;var i=r[e]={exports:{}};return o[e](i,i.exports,t),i.exports}t.m=o,e=[],t.O=(o,r,n,i)=>{if(!r){var s=1/0;for(d=0;d<e.length;d++){for(var[r,n,i]=e[d],l=!0,a=0;a<r.length;a++)(!1&i||s>=i)&&Object.keys(t.O).every(e=>t.O[e](r[a]))?r.splice(a--,1):(l=!1,i<s&&(s=i));if(l){e.splice(d--,1);var c=n();void 0!==c&&(o=c)}}return o}i=i||0;for(var d=e.length;d>0&&e[d-1][2]>i;d--)e[d]=e[d-1];e[d]=[r,n,i]},t.o=(e,o)=>Object.prototype.hasOwnProperty.call(e,o),(()=>{var e={95:0,790:0};t.O.j=o=>0===e[o];var o=(o,r)=>{var n,i,[s,l,a]=r,c=0;if(s.some(o=>0!==e[o])){for(n in l)t.o(l,n)&&(t.m[n]=l[n]);if(a)var d=a(t)}for(o&&o(r);c<s.length;c++)i=s[c],t.o(e,i)&&e[i]&&e[i][0](),e[i]=0;return t.O(d)},r=globalThis.webpackChunkwp_multi_network=globalThis.webpackChunkwp_multi_network||[];r.forEach(o.bind(null,0)),r.push=o.bind(null,r.push.bind(r))})();var n=t.O(void 0,[790],()=>t(178));n=t.O(n)})();
+/**
+ * WP Multi Network Admin Script
+ */
+
+
+jQuery( document ).ready( function ( $ ) {
+	$( '.if-js-closed' ).removeClass( 'if-js-closed' ).addClass( 'closed' );
+
+	$( '.postbox' )
+		.children( 'h3' )
+		.click( function () {
+			if ( $( this.parentNode ).hasClass( 'closed' ) ) {
+				$( this.parentNode ).removeClass( 'closed' );
+			} else {
+				$( this.parentNode ).addClass( 'closed' );
+			}
+		} );
+
+	/* Handle clicks to add/remove sites to/from selected list */
+	$( 'input[name=assign]' ).click( function () {
+		move( 'from', 'to' );
+	} );
+
+	$( 'input[name=unassign]' ).click( function () {
+		move( 'to', 'from' );
+	} );
+
+	/* Select all sites in "selected" box when submitting */
+	$( '#edit-network-form' ).submit( function () {
+		$( '#to' ).children( 'option:enabled' ).attr( 'selected', true );
+		$( '#from' ).children( 'option:enabled' ).attr( 'selected', true );
+	} );
+
+	function move( from, to ) {
+		jQuery( '#' + from )
+			.children( 'option:selected' )
+			.each( function () {
+				jQuery( '#' + to ).append( jQuery( this ).clone() );
+				jQuery( this ).remove();
+			} );
+	}
+} );
