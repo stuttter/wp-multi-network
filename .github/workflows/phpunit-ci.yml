@@ -1,0 +1,103 @@
+name: PHPUnit Tests
+
+on:
+  push:
+    branches:
+      - master
+      - release/*
+  pull_request:
+
+jobs:
+  test:
+    name: PHP ${{ matrix.php }} - WP ${{ matrix.wp }}
+    runs-on: ubuntu-latest
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['7.2', '7.3', '7.4', '8.0', '8.1', '8.2']
+        wp: ['latest']
+        include:
+          # Test with older WordPress version
+          - php: '7.2'
+            wp: '4.9'
+          - php: '8.0'
+            wp: '4.9'
+          # Test with WordPress trunk/master
+          - php: '8.2'
+            wp: 'trunk'
+        # Allow failures for nightly/trunk
+        experimental: [false]
+    
+    continue-on-error: ${{ matrix.experimental }}
+    
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_DATABASE: wordpress_tests
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mysqli
+          coverage: none
+          tools: composer
+      
+      - name: Get Composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+      
+      - name: Setup Composer cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+      
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-progress --no-interaction
+      
+      - name: PHP Lint
+        run: find -L . -path ./vendor -prune -o -name '*.php' -not -name 'class-wp-ms-network-command.php' -print0 | xargs -0 -n 1 -P 4 php -l
+      
+      - name: Setup WordPress test environment
+        env:
+          WP_VERSION: ${{ matrix.wp }}
+        run: |
+          if [[ "$WP_VERSION" == "latest" ]]; then
+            WP_VERSION=$(curl -s http://api.wordpress.org/core/version-check/1.7/ | grep -o '"version":"[^"]*' | sed 's/"version":"//' | head -1)
+          fi
+          if [[ "$WP_VERSION" == "trunk" ]]; then
+            WP_VERSION="master"
+          fi
+          
+          # Clone WordPress
+          git clone --depth=1 --branch="$WP_VERSION" https://github.com/WordPress/wordpress-develop.git /tmp/wordpress
+          
+          # Setup plugin directory
+          mkdir -p /tmp/wordpress/src/wp-content/mu-plugins
+          cp -r "$GITHUB_WORKSPACE" /tmp/wordpress/src/wp-content/mu-plugins/wp-multi-network
+          
+          # Configure tests
+          cd /tmp/wordpress
+          cp wp-tests-config-sample.php wp-tests-config.php
+          sed -i "s/youremptytestdbnamehere/wordpress_tests/" wp-tests-config.php
+          sed -i "s/yourusernamehere/root/" wp-tests-config.php
+          sed -i "s/yourpasswordhere//" wp-tests-config.php
+          sed -i "s/localhost/127.0.0.1:3306/" wp-tests-config.php
+      
+      - name: Run PHPUnit tests
+        run: |
+          cd /tmp/wordpress/src/wp-content/mu-plugins/wp-multi-network
+          vendor/bin/phpunit -c phpunit.xml.dist
