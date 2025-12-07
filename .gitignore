@@ -43,3 +43,9 @@ vendor/
 
 logs
 *.log
+
+############
+## Build artifacts
+############
+
+*.map
