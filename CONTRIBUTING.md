@@ -30,6 +30,21 @@ It is recommended to run integration tests and PHPCodeSniffer locally before com
 * `vendor/bin/phpunit`: Run the integration tests.
 * `vendor/bin/phpcs`: Check against the WordPress Coding Standards.
 
+### JavaScript and CSS Build Pipeline
+
+This plugin uses [@wordpress/scripts](https://developer.wordpress.org/block-editor/reference-guides/packages/packages-scripts/) for building, linting, and minifying JavaScript and CSS assets. The source files are located in the `src/` directory, and the built files are output to `wp-multi-network/assets/`.
+
+To work with JavaScript and CSS:
+
+* `npm install`: Install Node.js dependencies (Node.js 20+ required)
+* `npm run build`: Build and minify production-ready assets
+* `npm run start`: Start development mode with file watching and hot reload
+* `npm run lint:js`: Lint JavaScript files
+* `npm run lint:css`: Lint CSS files
+* `npm run format`: Auto-format JavaScript files
+
+**Important:** Always edit source files in the `src/` directory, not the built files in `wp-multi-network/assets/`. The built files are automatically generated from the source files and should not be edited directly.
+
 ### Writing Integration Tests
 
 * Integration tests go into the `tests/integration/tests` directory.

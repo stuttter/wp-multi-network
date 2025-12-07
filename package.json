@@ -1,0 +1,24 @@
+{
+  "name": "wp-multi-network",
+  "version": "2.7.0",
+  "description": "A Network Management Interface for global administrators in WordPress Multisite installations",
+  "private": true,
+  "scripts": {
+    "build": "wp-scripts build && npm run rename-assets",
+    "rename-assets": "mv wp-multi-network/assets/css/style-wp-multi-network.css wp-multi-network/assets/css/wp-multi-network.css 2>/dev/null || true && mv wp-multi-network/assets/css/style-wp-multi-network-rtl.css wp-multi-network/assets/css/wp-multi-network-rtl.css 2>/dev/null || true",
+    "start": "wp-scripts start",
+    "lint:js": "wp-scripts lint-js",
+    "lint:css": "wp-scripts lint-style",
+    "format": "wp-scripts format",
+    "check-engines": "wp-scripts check-engines",
+    "check-licenses": "wp-scripts check-licenses"
+  },
+  "devDependencies": {
+    "@babel/runtime": "^7.28.4",
+    "@wordpress/scripts": "^28.0.0"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  }
+}
