@@ -12,6 +12,9 @@ jobs:
     name: PHP ${{ matrix.php }} - WP ${{ matrix.wp }}
     runs-on: ubuntu-latest
     
+    permissions:
+      contents: read
+    
     strategy:
       fail-fast: false
       matrix:
