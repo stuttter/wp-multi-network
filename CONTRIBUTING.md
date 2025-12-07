@@ -17,7 +17,7 @@ When contributing code specifically, please keep the following in mind:
 This project provides workflows for:
 
 * running integration tests (using PHPUnit)
-* checking coding and documentation standards (using PHPCodeSniffer)
+* checking coding and documentation standards (using PHPCodeSniffer).
 * static analysis (using PHPStan).
 
 It is also integrated with GitHub Actions to ensure those always pass.
