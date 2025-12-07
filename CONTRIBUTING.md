@@ -18,8 +18,9 @@ This project provides workflows for:
 
 * running integration tests (using PHPUnit)
 * checking coding and documentation standards (using PHPCodeSniffer).
+* static analysis (using PHPStan).
 
-It is also integrated with Travis-CI to ensure those always pass.
+It is also integrated with GitHub Actions to ensure those always pass.
 
 ### PHPUnit and PHPCS Workflows
 
