@@ -4,7 +4,6 @@
 .git
 .gitignore
 .gitattributes
-.travis.yml
 .DS_Store
 .wordpress-org
 .github
