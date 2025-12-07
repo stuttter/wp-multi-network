@@ -18,12 +18,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php: ['7.2', '7.3', '7.4', '8.0', '8.1', '8.2']
+        php: ['7.4', '8.0', '8.1', '8.2']
         wp: ['latest']
         experimental: [false]
         include:
           # Test with older WordPress version
-          - php: '7.2'
+          - php: '7.4'
             wp: '4.9'
             experimental: false
           - php: '8.0'
