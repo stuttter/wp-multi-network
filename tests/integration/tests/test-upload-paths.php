@@ -17,15 +17,33 @@ class WPMN_Tests_Upload_Paths extends WPMN_UnitTestCase {
 	protected static $network_id;
 
 	/**
-	 * Set up before class to create a shared test network.
+	 * User ID for network operations.
+	 *
+	 * @var int
 	 */
-	public static function wpSetUpBeforeClass() {
+	protected static $user_id;
+
+	/**
+	 * Set up before class to create a shared test network.
+	 *
+	 * @param WP_UnitTest_Factory $factory Test factory.
+	 */
+	public static function wpSetUpBeforeClass( $factory ) {
+		// Create a user for network operations.
+		self::$user_id = $factory->user->create(
+			array(
+				'role' => 'administrator',
+			)
+		);
+
 		self::$network_id = add_network(
 			array(
-				'domain'       => 'shared-test.example',
-				'path'         => '/',
-				'site_name'    => 'Shared Test Network',
-				'network_name' => 'Shared Test Network',
+				'domain'           => 'shared-test.example',
+				'path'             => '/',
+				'site_name'        => 'Shared Test Network',
+				'network_name'     => 'Shared Test Network',
+				'user_id'          => self::$user_id,
+				'network_admin_id' => self::$user_id,
 			)
 		);
 	}
@@ -36,6 +54,10 @@ class WPMN_Tests_Upload_Paths extends WPMN_UnitTestCase {
 	public static function wpTearDownAfterClass() {
 		if ( ! empty( self::$network_id ) ) {
 			delete_network( self::$network_id, true );
+		}
+
+		if ( ! empty( self::$user_id ) ) {
+			self::delete_user( self::$user_id );
 		}
 	}
 
@@ -76,10 +98,12 @@ class WPMN_Tests_Upload_Paths extends WPMN_UnitTestCase {
 		// Create a new network.
 		$network_id = add_network(
 			array(
-				'domain'       => 'example.org',
-				'path'         => '/',
-				'site_name'    => 'Test Network',
-				'network_name' => 'Test Network',
+				'domain'           => 'example.org',
+				'path'             => '/',
+				'site_name'        => 'Test Network',
+				'network_name'     => 'Test Network',
+				'user_id'          => self::$user_id,
+				'network_admin_id' => self::$user_id,
 			)
 		);
 
@@ -110,10 +134,12 @@ class WPMN_Tests_Upload_Paths extends WPMN_UnitTestCase {
 		// Create a new network.
 		$network_id = add_network(
 			array(
-				'domain'       => 'example.net',
-				'path'         => '/',
-				'site_name'    => 'Test Network with Rewriting',
-				'network_name' => 'Test Network with Rewriting',
+				'domain'           => 'example.net',
+				'path'             => '/',
+				'site_name'        => 'Test Network with Rewriting',
+				'network_name'     => 'Test Network with Rewriting',
+				'user_id'          => self::$user_id,
+				'network_admin_id' => self::$user_id,
 			)
 		);
 
@@ -147,10 +173,12 @@ class WPMN_Tests_Upload_Paths extends WPMN_UnitTestCase {
 		// Create a new network.
 		$network_id = add_network(
 			array(
-				'domain'       => 'multisite.test',
-				'path'         => '/',
-				'site_name'    => 'Multisite Test',
-				'network_name' => 'Multisite Test',
+				'domain'           => 'multisite.test',
+				'path'             => '/',
+				'site_name'        => 'Multisite Test',
+				'network_name'     => 'Multisite Test',
+				'user_id'          => self::$user_id,
+				'network_admin_id' => self::$user_id,
 			)
 		);
 
@@ -186,10 +214,12 @@ class WPMN_Tests_Upload_Paths extends WPMN_UnitTestCase {
 		// Create a new network.
 		$network_id = add_network(
 			array(
-				'domain'       => 'no-rewrite.test',
-				'path'         => '/',
-				'site_name'    => 'No Rewrite Test',
-				'network_name' => 'No Rewrite Test',
+				'domain'           => 'no-rewrite.test',
+				'path'             => '/',
+				'site_name'        => 'No Rewrite Test',
+				'network_name'     => 'No Rewrite Test',
+				'user_id'          => self::$user_id,
+				'network_admin_id' => self::$user_id,
 			)
 		);
 
@@ -229,10 +259,12 @@ class WPMN_Tests_Upload_Paths extends WPMN_UnitTestCase {
 		// Create a new network.
 		$network_id = add_network(
 			array(
-				'domain'       => 'structure.test',
-				'path'         => '/',
-				'site_name'    => 'Structure Test',
-				'network_name' => 'Structure Test',
+				'domain'           => 'structure.test',
+				'path'             => '/',
+				'site_name'        => 'Structure Test',
+				'network_name'     => 'Structure Test',
+				'user_id'          => self::$user_id,
+				'network_admin_id' => self::$user_id,
 			)
 		);
 
@@ -271,10 +303,12 @@ class WPMN_Tests_Upload_Paths extends WPMN_UnitTestCase {
 		// Create a new network.
 		$network_id = add_network(
 			array(
-				'domain'       => 'preserve.test',
-				'path'         => '/',
-				'site_name'    => 'Preserve Test',
-				'network_name' => 'Preserve Test',
+				'domain'           => 'preserve.test',
+				'path'             => '/',
+				'site_name'        => 'Preserve Test',
+				'network_name'     => 'Preserve Test',
+				'user_id'          => self::$user_id,
+				'network_admin_id' => self::$user_id,
 			)
 		);
 
@@ -306,10 +340,12 @@ class WPMN_Tests_Upload_Paths extends WPMN_UnitTestCase {
 		// Create a network with a subdirectory path.
 		$network_id = add_network(
 			array(
-				'domain'       => 'subdir.example.com',
-				'path'         => '/subdir/',
-				'site_name'    => 'Subdirectory Network',
-				'network_name' => 'Subdirectory Network',
+				'domain'           => 'subdir.example.com',
+				'path'             => '/subdir/',
+				'site_name'        => 'Subdirectory Network',
+				'network_name'     => 'Subdirectory Network',
+				'user_id'          => self::$user_id,
+				'network_admin_id' => self::$user_id,
 			)
 		);
 
@@ -342,7 +378,7 @@ class WPMN_Tests_Upload_Paths extends WPMN_UnitTestCase {
 				'site' . $i . '.shared-test.example',
 				'/',
 				'Test Site ' . $i,
-				get_current_user_id(),
+				self::$user_id,
 				array(),
 				self::$network_id
 			);
@@ -370,10 +406,12 @@ class WPMN_Tests_Upload_Paths extends WPMN_UnitTestCase {
 	public function test_upload_url_path_consistency() {
 		$network_id = add_network(
 			array(
-				'domain'       => 'url-test.example',
-				'path'         => '/',
-				'site_name'    => 'URL Test Network',
-				'network_name' => 'URL Test Network',
+				'domain'           => 'url-test.example',
+				'path'             => '/',
+				'site_name'        => 'URL Test Network',
+				'network_name'     => 'URL Test Network',
+				'user_id'          => self::$user_id,
+				'network_admin_id' => self::$user_id,
 			)
 		);
 
@@ -411,10 +449,12 @@ class WPMN_Tests_Upload_Paths extends WPMN_UnitTestCase {
 		// Create a source network.
 		$source_network_id = add_network(
 			array(
-				'domain'       => 'source.example.com',
-				'path'         => '/',
-				'site_name'    => 'Source Network',
-				'network_name' => 'Source Network',
+				'domain'           => 'source.example.com',
+				'path'             => '/',
+				'site_name'        => 'Source Network',
+				'network_name'     => 'Source Network',
+				'user_id'          => self::$user_id,
+				'network_admin_id' => self::$user_id,
 			)
 		);
 
@@ -423,11 +463,13 @@ class WPMN_Tests_Upload_Paths extends WPMN_UnitTestCase {
 		// Create a cloned network.
 		$cloned_network_id = add_network(
 			array(
-				'domain'        => 'cloned.example.com',
-				'path'          => '/',
-				'site_name'     => 'Cloned Network',
-				'network_name'  => 'Cloned Network',
-				'clone_network' => $source_network_id,
+				'domain'           => 'cloned.example.com',
+				'path'             => '/',
+				'site_name'        => 'Cloned Network',
+				'network_name'     => 'Cloned Network',
+				'clone_network'    => $source_network_id,
+				'user_id'          => self::$user_id,
+				'network_admin_id' => self::$user_id,
 			)
 		);
 
