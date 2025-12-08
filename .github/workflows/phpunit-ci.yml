@@ -1,0 +1,226 @@
+name: PHP - PHPUnit Tests
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  phpunit:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Test matrix covering WordPress, PHP, and PHPUnit version combinations
+        # Based on WordPress version requirements and PHP compatibility
+        # Note: WordPress officially only supports PHPUnit up to 7.x
+        include:
+          # WordPress 6.7+ (latest) - PHP 7.2+
+          - wordpress: "latest"
+            php: "8.3"
+            phpunit: "9"
+            wp-version: "6.7"
+          - wordpress: "latest"
+            php: "8.2"
+            phpunit: "9"
+            wp-version: "6.7"
+          - wordpress: "latest"
+            php: "8.1"
+            phpunit: "9"
+            wp-version: "6.7"
+          - wordpress: "latest"
+            php: "8.0"
+            phpunit: "9"
+            wp-version: "6.7"
+
+          # WordPress 6.4-6.6 - PHP 7.2+
+          - wordpress: "6.6"
+            php: "8.3"
+            phpunit: "9"
+            wp-version: "6.6"
+          - wordpress: "6.5"
+            php: "8.2"
+            phpunit: "9"
+            wp-version: "6.5"
+          - wordpress: "6.4"
+            php: "8.1"
+            phpunit: "9"
+            wp-version: "6.4"
+
+          # WordPress 6.0-6.3 - PHP 7.2+
+          - wordpress: "6.3"
+            php: "8.0"
+            phpunit: "9"
+            wp-version: "6.3"
+          - wordpress: "6.2"
+            php: "7.4"
+            phpunit: "9"
+            wp-version: "6.2"
+          - wordpress: "6.1"
+            php: "7.4"
+            phpunit: "9"
+            wp-version: "6.1"
+          - wordpress: "6.0"
+            php: "7.4"
+            phpunit: "9"
+            wp-version: "6.0"
+
+          # WordPress 5.9 - PHP 7.2+
+          - wordpress: "5.9"
+            php: "7.4"
+            phpunit: "9"
+            wp-version: "5.9"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up PHP ${{ matrix.php }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mbstring, zip, xml, curl
+          tools: composer:v2
+          coverage: none
+
+      - name: Validate PHP
+        run: php -v
+
+      - name: Restore Composer cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/composer
+            vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Install Composer dependencies
+        run: |
+          # For PHP < 7.4, we need to ignore platform requirements since some dev dependencies require PHP 7.4+
+          if [[ "${{ matrix.php }}" =~ ^7\.[0-3]$ ]]; then
+            composer install --no-interaction --prefer-dist --no-progress --ignore-platform-req=php
+          else
+            composer install --no-interaction --prefer-dist --no-progress
+          fi
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y subversion
+
+      - name: Set up MySQL
+        run: |
+          sudo systemctl start mysql.service
+          mysql -e "CREATE DATABASE IF NOT EXISTS wordpress_test;" -uroot -proot
+          mysql -e "CREATE USER IF NOT EXISTS 'wp'@'localhost' IDENTIFIED BY 'wp';" -uroot -proot
+          mysql -e "GRANT ALL PRIVILEGES ON wordpress_test.* TO 'wp'@'localhost';" -uroot -proot
+          mysql -e "FLUSH PRIVILEGES;" -uroot -proot
+
+      - name: Install job-specific PHPUnit
+        # Install PHPUnit based on the version specified in the matrix
+        # PHPUnit 9 requires PHP 7.3+, PHPUnit 8 supports PHP 7.2+
+        run: |
+          set -e
+          echo "Installing PHPUnit ${{ matrix.phpunit }}"
+
+          # Determine the exact PHPUnit version to install
+          case "${{ matrix.phpunit }}" in
+            "9")
+              PHPUNIT_VERSION="^9.6"
+              ;;
+            "8")
+              PHPUNIT_VERSION="^8.5"
+              ;;
+            "7")
+              PHPUNIT_VERSION="^7.5"
+              ;;
+            *)
+              PHPUNIT_VERSION="${{ matrix.phpunit }}"
+              ;;
+          esac
+
+          echo "Resolved PHPUnit version: ${PHPUNIT_VERSION}"
+
+          # Try to install via composer
+          # For PHP < 7.4, use platform override to allow installation of packages with higher PHP requirements
+          COMPOSER_OPTS=""
+          if [[ "${{ matrix.php }}" =~ ^7\.[0-3]$ ]]; then
+            COMPOSER_OPTS="--ignore-platform-req=php"
+          fi
+
+          composer require --dev --no-interaction --prefer-dist --update-with-dependencies ${COMPOSER_OPTS} "phpunit/phpunit:${PHPUNIT_VERSION}" || {
+            echo "Composer install failed, attempting PHAR fallback"
+
+            # Determine PHAR version
+            case "${{ matrix.phpunit }}" in
+              "9")
+                PHAR_VERSION="9.6.21"
+                ;;
+              "8")
+                PHAR_VERSION="8.5.40"
+                ;;
+              "7")
+                PHAR_VERSION="7.5.20"
+                ;;
+              *)
+                PHAR_VERSION="${{ matrix.phpunit }}.0"
+                ;;
+            esac
+
+            PHAR_URL="https://phar.phpunit.de/phpunit-${PHAR_VERSION}.phar"
+            echo "Downloading ${PHAR_URL}"
+            curl -fsSL -o phpunit.phar "${PHAR_URL}"
+            chmod +x phpunit.phar
+            echo "Using phpunit.phar version ${PHAR_VERSION}"
+          }
+
+      - name: Install WordPress test suite
+        run: |
+          bash tests/integration/bin/install-wp-tests.sh wordpress_test wp wp localhost ${{ matrix.wordpress }} true
+
+      - name: Verify test environment
+        run: |
+          echo "=== Test Configuration ==="
+          echo "WordPress: ${{ matrix.wordpress }} (v${{ matrix.wp-version }})"
+          echo "PHP: ${{ matrix.php }}"
+          echo "PHPUnit: ${{ matrix.phpunit }}"
+          echo ""
+          echo "=== PHP Version ==="
+          php -v
+          echo ""
+          echo "=== PHPUnit Version ==="
+          if [ -x ./vendor/bin/phpunit ]; then
+            ./vendor/bin/phpunit --version
+          elif [ -f phpunit.phar ]; then
+            php phpunit.phar --version
+          fi
+          echo ""
+          echo "=== Database Connection ==="
+          mysql -e "SELECT VERSION();" -uwp -pwp wordpress_test
+
+      - name: Select PHPUnit configuration
+        run: |
+          # Use legacy config for PHPUnit 7-8, modern config for PHPUnit 9+
+          if [ "${{ matrix.phpunit }}" = "7" ] || [ "${{ matrix.phpunit }}" = "8" ]; then
+            echo "PHPUNIT_CONFIG=phpunit.xml.legacy" >> $GITHUB_ENV
+            echo "Using legacy PHPUnit configuration (phpunit.xml.legacy)"
+          else
+            echo "PHPUNIT_CONFIG=phpunit.xml.dist" >> $GITHUB_ENV
+            echo "Using modern PHPUnit configuration (phpunit.xml.dist)"
+          fi
+
+      - name: Run tests
+        run: |
+          if [ -x ./vendor/bin/phpunit ]; then
+            ./vendor/bin/phpunit --configuration $PHPUNIT_CONFIG --verbose
+          elif [ -f phpunit.phar ]; then
+            php phpunit.phar --configuration $PHPUNIT_CONFIG --verbose
+          else
+            echo "No phpunit available (vendor/bin/phpunit or phpunit.phar). Failing." >&2
+            exit 1
+          fi

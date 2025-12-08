@@ -1,0 +1,20 @@
+parameters:
+    level: 6
+    paths:
+        - wp-multi-network/includes
+        - wpmn-loader.php
+    scanFiles:
+        - %rootDir%/../../php-stubs/wp-cli-stubs/wp-cli-stubs.php
+        - %rootDir%/../../php-stubs/wp-cli-stubs/wp-cli-commands-stubs.php
+        #- %rootDir%/../../php-stubs/wp-cli-stubs/wp-cli-i18n-stubs.php
+        #- %rootDir%/../../php-stubs/wp-cli-stubs/wp-cli-tools-stubs.php
+    ignoreErrors:
+        # WP_Network::$blog_id is a private property that can be accessed via magic methods.
+        - '/^Access to an undefined property WP_Network::\$blog_id\.$/'
+        # WP_CLI\Fetchers\User::get() returns WP_User without root namespace.
+        - '/^Cannot access property \$ID on WP_CLI\\Fetchers\\WP_User\|false\.$/'
+        # Backward compatibility with old method of passing arguments.
+        - '/^Call to function is_array\(\) with array<string, mixed> will always evaluate to true\.$/'
+        # Associative CLI arguments. Passed by reference.
+        - '/^Parameter \&\$assoc_args by-ref type of method WP_MS_Network_Command::get_formatter\(\) expects array<string, mixed>, array given\.$/'
+

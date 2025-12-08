@@ -1,29 +1,44 @@
 {
   "name": "stuttter/wp-multi-network",
   "description": "Provides a Network Management Interface for global administrators in WordPress Multisite installations.",
-  "homepage": "https://wordpress.org/plugins/wp-multi-network/",
-  "type": "wordpress-plugin",
   "license": "GPL-2.0-or-later",
+  "type": "wordpress-plugin",
   "authors": [
     {
       "name": "John James Jacoby",
       "email": "johnjamesjacoby@me.com"
     }
   ],
+  "homepage": "https://wordpress.org/plugins/wp-multi-network/",
   "support": {
-    "source": "https://github.com/stuttter/wp-multi-network",
     "issues": "https://github.com/stuttter/wp-multi-network/issues",
-    "forum": "https://github.com/stuttter/wp-multi-network/discussions"
+    "forum": "https://github.com/stuttter/wp-multi-network/discussions",
+    "source": "https://github.com/stuttter/wp-multi-network"
   },
   "require": {
-    "php": ">=5.2",
-    "composer/installers": "^1.0"
+    "php": ">=7.2",
+    "composer/installers": "^1.0 || ^2.0"
   },
   "require-dev": {
-    "phpunit/phpunit": ">4.8.20 <6.0",
-    "squizlabs/php_codesniffer": "3.*",
-    "wp-coding-standards/wpcs": "^2.2",
-    "phpcompatibility/phpcompatibility-wp": "^2.1",
-    "dealerdirect/phpcodesniffer-composer-installer": "^0.7.1"
+    "php-stubs/wp-cli-stubs": "^2.12.0",
+    "phpcompatibility/phpcompatibility-wp": "^2.1.8",
+    "phpstan/extension-installer": "^1.4.3",
+    "phpstan/phpstan": "^2.1.33",
+    "staabm/annotate-pull-request-from-checkstyle": "^1.8.6",
+    "szepeviktor/phpstan-wordpress": "^2.0.3",
+    "wp-coding-standards/wpcs": "^3.3.0",
+    "yoast/wp-test-utils": "^1.2.0"
+  },
+  "scripts": {
+    "phpstan": "vendor/bin/phpstan analyse --memory-limit=1G",
+    "phpcs": "vendor/bin/phpcs -q --report=checkstyle --runtime-set ignore_errors_on_exit 1 --runtime-set ignore_warnings_on_exit 1 | vendor/bin/cs2pr --graceful-warnings"
+  },
+  "config": {
+    "allow-plugins": {
+      "composer/installers": true,
+      "dealerdirect/phpcodesniffer-composer-installer": true,
+      "phpstan/extension-installer": true
+    },
+    "sort-packages": true
   }
 }
