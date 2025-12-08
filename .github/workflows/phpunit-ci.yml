@@ -2,9 +2,10 @@ name: PHPUnit Tests
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - master
+      - release/*
   pull_request:
-    branches: [ main ]
 
 jobs:
   phpunit:
