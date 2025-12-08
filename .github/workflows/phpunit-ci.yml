@@ -113,7 +113,13 @@ jobs:
             ${{ runner.os }}-composer-
 
       - name: Install Composer dependencies
-        run: composer install --no-interaction --prefer-dist --no-progress
+        run: |
+          # For PHP 7.2, we need to ignore platform requirements since some dev dependencies require PHP 7.4+
+          if [ "${{ matrix.php }}" = "7.2" ]; then
+            composer install --no-interaction --prefer-dist --no-progress --ignore-platform-req=php
+          else
+            composer install --no-interaction --prefer-dist --no-progress
+          fi
 
       - name: Install system dependencies
         run: |
@@ -154,7 +160,13 @@ jobs:
           echo "Resolved PHPUnit version: ${PHPUNIT_VERSION}"
 
           # Try to install via composer
-          composer require --dev --no-interaction --prefer-dist --update-with-dependencies "phpunit/phpunit:${PHPUNIT_VERSION}" || {
+          # For PHP 7.2, use platform override to allow installation of packages with higher PHP requirements
+          COMPOSER_OPTS=""
+          if [ "${{ matrix.php }}" = "7.2" ]; then
+            COMPOSER_OPTS="--ignore-platform-req=php"
+          fi
+
+          composer require --dev --no-interaction --prefer-dist --update-with-dependencies ${COMPOSER_OPTS} "phpunit/phpunit:${PHPUNIT_VERSION}" || {
             echo "Composer install failed, attempting PHAR fallback"
 
             # Determine PHAR version
