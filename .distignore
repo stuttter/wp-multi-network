@@ -24,4 +24,3 @@ node_modules
 src
 webpack.config.js
 .eslintrc.js
-.prettierrc.js
