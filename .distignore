@@ -4,7 +4,6 @@
 .git
 .gitignore
 .gitattributes
-.travis.yml
 .DS_Store
 .wordpress-org
 .github
@@ -17,4 +16,12 @@ LICENSE.md
 license.txt
 phpcs.xml.dist
 phpunit.xml.dist
+phpstan.neon.dist
 README.md
+package.json
+package-lock.json
+node_modules
+src
+webpack.config.js
+.eslintrc.js
+.prettierrc.js

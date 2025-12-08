@@ -15,14 +15,23 @@ defined( 'ABSPATH' ) || exit;
  * @since 1.7.0
  *
  * @param WP_Network $network Optional. Network object. Default null.
+ * @return void
  */
 function wpmn_edit_network_details_metabox( $network = null ) {
-	$domain = ! empty( $network->domain ) ? Requests_IDNAEncoder::encode( $network->domain ) : '';
-	$path   = ! empty( $network->path ) ? $network->path : '/';
+
+	$domain = ! empty( $network->domain )
+		? $network->domain
+		: '';
+
+	$path = ! empty( $network->path )
+		? $network->path
+		: '/';
 
 	?>
 
 	<table class="edit-network form-table">
+		<?php do_action( 'wpmn_edit_network_details_metabox_before_group', $network ); ?>
+
 		<tr class="form-field form-required">
 			<th scope="row">
 				<label for="domain"><?php esc_html_e( 'Domain', 'wp-multi-network' ); ?></label>
@@ -43,6 +52,8 @@ function wpmn_edit_network_details_metabox( $network = null ) {
 				<p class="description"><?php esc_html_e( 'Use "/" if you are unsure.', 'wp-multi-network' ); ?></p>
 			</td>
 		</tr>
+
+		<?php do_action( 'wpmn_edit_network_details_metabox_after_group', $network ); ?>
 	</table>
 
 	<?php
@@ -52,11 +63,14 @@ function wpmn_edit_network_details_metabox( $network = null ) {
  * Renders the metabox for defining the main site for a new network.
  *
  * @since 1.7.0
+ * @return void
  */
 function wpmn_edit_network_new_site_metabox() {
 	?>
 
 	<table class="edit-network form-table">
+		<?php do_action( 'wpmn_edit_network_new_site_metabox_before_group' ); ?>
+
 		<tr class="form-field form-required">
 			<th scope="row">
 				<label for="new_site"><?php esc_html_e( 'Site Name', 'wp-multi-network' ); ?>:</label>
@@ -66,6 +80,8 @@ function wpmn_edit_network_new_site_metabox() {
 				<p class="description"><?php esc_html_e( 'A new site needs to be created at the root of this network.', 'wp-multi-network' ); ?></p>
 			</td>
 		</tr>
+
+		<?php do_action( 'wpmn_edit_network_new_site_metabox_after_group' ); ?>
 	</table>
 
 	<?php
@@ -77,6 +93,7 @@ function wpmn_edit_network_new_site_metabox() {
  * @since 1.7.0
  *
  * @param WP_Network $network Optional. Network object. Default null.
+ * @return void
  */
 function wpmn_edit_network_assign_sites_metabox( $network = null ) {
 
@@ -162,7 +179,7 @@ function wpmn_edit_network_assign_sites_metabox( $network = null ) {
 							?>
 
 							<option value="<?php echo esc_attr( $site->id ); ?>">
-								<?php echo esc_html( sprintf( '%1$s - %2$s%3$s%4$s', get_blog_option( $site->id, 'blog_ame' ), $site->domain, $site->path, $main_text ) ); ?>
+								<?php echo esc_html( sprintf( '%1$s - %2$s%3$s%4$s', get_blog_option( $site->id, 'blogname' ), $site->domain, $site->path, $main_text ) ); ?>
 							</option>
 
 							<?php
@@ -186,6 +203,7 @@ function wpmn_edit_network_assign_sites_metabox( $network = null ) {
  * @since 1.7.0
  *
  * @param WP_Network $network Optional. Network object. Default null.
+ * @return void
  */
 function wpmn_edit_network_publish_metabox( $network = null ) {
 	if ( empty( $network ) ) {
@@ -201,8 +219,10 @@ function wpmn_edit_network_publish_metabox( $network = null ) {
 	$cancel_url = add_query_arg(
 		array(
 			'page' => 'networks',
-		), network_admin_url( 'admin.php' )
+		),
+		network_admin_url( 'admin.php' )
 	);
+
 	?>
 
 	<div class="submitbox">
@@ -264,7 +284,7 @@ function wpmn_edit_network_publish_metabox( $network = null ) {
 
 				?>
 				<input type="hidden" name="action" value="<?php echo esc_attr( $action ); ?>">
-				<input type="hidden" name="network_id" value="<?php echo esc_attr( $network_id ); ?>">
+				<input type="hidden" name="network_id" value="<?php echo esc_attr( strval( $network_id ) ); ?>">
 			</div>
 			<div class="clear"></div>
 		</div>

@@ -41,9 +41,9 @@ td.column-domain {
 	font: normal 20px/1 dashicons;
 	speak: none;
 	display: inline-block;
-	padding: 0 2px 0 0;
+	padding: 0 0 0 2px;
 	top: 0;
-	left: -1px;
+	right: -1px;
 	position: relative;
 	vertical-align: top;
 	-webkit-font-smoothing: antialiased;
@@ -81,7 +81,7 @@ table.assign-sites thead th {
 }
 
 .networks .current th.check-column {
-	border-left: 4px solid #00a0d2;
+	border-right: 4px solid #00a0d2;
 }
 
 .networks .current td,
@@ -108,20 +108,20 @@ table.assign-sites td.column-actions {
 }
 
 table.assign-sites td.column-actions .assign {
-	float: left;
+	float: right;
 	content: "\f341";
 }
 
 table.assign-sites td.column-actions .unassign {
-	float: right;
+	float: left;
 }
 
 table.assign-sites td.column-available {
-	padding-right: 0;
+	padding-left: 0;
 }
 
 table.assign-sites td.column-assigned {
-	padding-left: 0;
+	padding-right: 0;
 }
 table.assign-sites td.column-available,
 table.assign-sites td.column-assigned {
@@ -129,12 +129,12 @@ table.assign-sites td.column-assigned {
 }
 
 table.assign-sites td.column-assigned {
-	text-align: right;
+	text-align: left;
 }
 
 div.network-delete {
 	background: #fff;
-	border-left: 4px solid #dc3232;
+	border-right: 4px solid #dc3232;
 	-webkit-box-shadow: 0 1px 1px 0 rgba( 0, 0, 0, 0.1 );
 	box-shadow: 0 1px 1px 0 rgba( 0, 0, 0, 0.1 );
 	margin: 5px 0 2px;

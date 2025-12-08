@@ -1,16 +1,15 @@
 === WP Multi Network ===
 Author:            Triple J Software, Inc.
 Author URI:        https://jjj.software
-Donate link:       https://buy.stripe.com/7sI3cd2tK1Cy2lydQR
 Plugin URI:        https://wordpress.org/plugins/wp-multi-network/
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
 License:           GPLv2 or later
 Contributors:      johnjamesjacoby, flixos90, rmccue, spacedmonkey
 Tags:              network, sites, domains, global, admin
 Requires PHP:      5.2
-Requires at least: 4.9
-Tested up to:      5.9
-Stable tag:        2.4.2
+Requires at least: 5.0
+Tested up to:      6.6
+Stable tag:        2.5.2
 
 == Description ==
 
@@ -55,7 +54,7 @@ You can activate it, but it won't do anything. You need to have the multisite fu
 
 = Where can I get support? =
 
-The WordPress support forums: https://wordpress.org/support/plugin/wp-multi-network/
+Create a GitHub issue: https://github.com/stuttter/wp-multi-network/issues/new
 
 = What about multisite constants? =
 
@@ -122,6 +121,26 @@ please follow the steps in https://paulund.co.uk/wordpress-multisite-nested-path
 Not much to talk about really. Check the code for details!
 
 == Changelog ==
+
+= 2.5.3 =
+* Remove filter_input usages
+
+= 2.5.2 =
+* Use get_main_site_id function instead of get_main_site_for_network.
+* Tested against WordPress 6.1.
+
+= 2.5.1 =
+* Save main site on network as network option.
+
+= 2.5.0 =
+* Fix new networks sometimes not being created.
+* Fix moving sites sometimes not working.
+* Fix network name always being "New Network".
+* Fix several debug notices related to filter_input().
+* Fix several redirection & admin-notice issues.
+* Allow networks to be created with empty network name & site name.
+* Update author link & plugin meta data.
+
 = 2.4.2 =
 * Update code for WordPress coding standards.
 * Other small bug fixes.
