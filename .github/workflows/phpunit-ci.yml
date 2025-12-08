@@ -24,10 +24,10 @@ jobs:
         include:
           # Test with older WordPress version
           - php: '7.4'
-            wp: '4.9'
+            wp: 5.5'
             experimental: false
           - php: '8.0'
-            wp: '4.9'
+            wp: '5.5'
             experimental: false
           # Test with WordPress trunk/master (allow failures)
           - php: '8.2'

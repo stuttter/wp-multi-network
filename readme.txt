@@ -7,8 +7,8 @@ License:           GPLv2 or later
 Contributors:      johnjamesjacoby, flixos90, rmccue, spacedmonkey
 Tags:              network, sites, domains, global, admin
 Requires PHP:      5.2
-Requires at least: 5.0
-Tested up to:      6.6
+Requires at least: 5.5
+Tested up to:      7.0
 Stable tag:        2.5.2
 
 == Description ==
