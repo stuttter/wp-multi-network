@@ -37,7 +37,7 @@ function getCssFilename( pathData, suffix = '' ) {
 module.exports = {
 	...defaultConfig,
 	entry: {
-		'wp-multi-network.min': path.resolve( process.cwd(), 'src/js/index.js' ),
+		'wp-multi-network.min': path.resolve( process.cwd(), '.build-script.js' ),
 	},
 	output: {
 		path: path.resolve( process.cwd(), 'wp-multi-network/assets' ),

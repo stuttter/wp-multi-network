@@ -50,3 +50,7 @@ logs
 
 *.map
 *.asset.php
+.build-entry.js
+.build-script.js
+.backup-source.js
+.backup-source.css
