@@ -621,17 +621,17 @@ if ( ! function_exists( 'add_network' ) ) :
 			}
 			$upload_dir .= '/uploads';
 
-			if ( defined( 'MULTISITE' ) ) {
-				$ms_dir = '/sites/' . $new_blog_id;
-			} else {
-				$ms_dir = '/' . $new_blog_id;
+			// Check if wpmu_create_blog() already set the site-specific path.
+			$existing_upload_path = get_blog_option( $new_blog_id, 'upload_path' );
+			$site_path_suffix     = defined( 'MULTISITE' ) ? '/sites/' . $new_blog_id : '/' . $new_blog_id;
+
+			// Only add the site-specific path if it's not already present.
+			if ( empty( $existing_upload_path ) || false === strpos( $existing_upload_path, $site_path_suffix ) ) {
+				$upload_dir .= $site_path_suffix;
+				$upload_url .= $site_path_suffix;
+				update_blog_option( $new_blog_id, 'upload_path', $upload_dir );
+				update_blog_option( $new_blog_id, 'upload_url_path', $upload_url );
 			}
-
-			$upload_dir .= $ms_dir;
-			$upload_url .= $ms_dir;
-
-			update_blog_option( $new_blog_id, 'upload_path', $upload_dir );
-			update_blog_option( $new_blog_id, 'upload_url_path', $upload_url );
 		}
 
 		// Clone network meta from existing network.
