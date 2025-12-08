@@ -15,6 +15,7 @@ defined( 'ABSPATH' ) || exit;
  * @since 1.7.0
  *
  * @param WP_Site $site Optional. Site object. Default null.
+ * @return void
  */
 function wpmn_move_site_list_metabox( $site = null ) {
 
@@ -77,6 +78,7 @@ function wpmn_move_site_list_metabox( $site = null ) {
  * @since 1.7.0
  *
  * @param WP_Site $site Optional. Site object. Default null.
+ * @return void
  */
 function wpmn_move_site_assign_metabox( $site = null ) {
 	?>
@@ -138,7 +140,7 @@ function wpmn_move_site_assign_metabox( $site = null ) {
 
 				?>
 				<input type="hidden" name="action" value="move">
-				<input type="hidden" name="from" value="<?php echo esc_attr( $site->network_id ); ?>">
+				<input type="hidden" name="from" value="<?php echo esc_attr( strval( $site->network_id ) ); ?>">
 			</div>
 			<div class="clear"></div>
 		</div>

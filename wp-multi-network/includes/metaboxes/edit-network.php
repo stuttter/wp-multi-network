@@ -15,15 +15,22 @@ defined( 'ABSPATH' ) || exit;
  * @since 1.7.0
  *
  * @param WP_Network $network Optional. Network object. Default null.
+ * @return void
  */
 function wpmn_edit_network_details_metabox( $network = null ) {
-	$domain = ! empty( $network->domain ) ? Requests_IDNAEncoder::encode( $network->domain ) : '';
-	$path   = ! empty( $network->path ) ? $network->path : '/';
+
+	$domain = ! empty( $network->domain )
+		? $network->domain
+		: '';
+
+	$path = ! empty( $network->path )
+		? $network->path
+		: '/';
 
 	?>
 
 	<table class="edit-network form-table">
-		<?php do_action('wpmn_edit_network_details_metabox_before_group', $network); ?>
+		<?php do_action( 'wpmn_edit_network_details_metabox_before_group', $network ); ?>
 
 		<tr class="form-field form-required">
 			<th scope="row">
@@ -46,7 +53,7 @@ function wpmn_edit_network_details_metabox( $network = null ) {
 			</td>
 		</tr>
 
-		<?php do_action('wpmn_edit_network_details_metabox_after_group', $network); ?>
+		<?php do_action( 'wpmn_edit_network_details_metabox_after_group', $network ); ?>
 	</table>
 
 	<?php
@@ -56,12 +63,13 @@ function wpmn_edit_network_details_metabox( $network = null ) {
  * Renders the metabox for defining the main site for a new network.
  *
  * @since 1.7.0
+ * @return void
  */
 function wpmn_edit_network_new_site_metabox() {
 	?>
 
 	<table class="edit-network form-table">
-		<?php do_action('wpmn_edit_network_new_site_metabox_before_group'); ?>
+		<?php do_action( 'wpmn_edit_network_new_site_metabox_before_group' ); ?>
 
 		<tr class="form-field form-required">
 			<th scope="row">
@@ -73,7 +81,7 @@ function wpmn_edit_network_new_site_metabox() {
 			</td>
 		</tr>
 
-		<?php do_action('wpmn_edit_network_new_site_metabox_after_group'); ?>
+		<?php do_action( 'wpmn_edit_network_new_site_metabox_after_group' ); ?>
 	</table>
 
 	<?php
@@ -85,11 +93,12 @@ function wpmn_edit_network_new_site_metabox() {
  * @since 1.7.0
  *
  * @param WP_Network $network Optional. Network object. Default null.
+ * @return void
  */
 function wpmn_edit_network_assign_sites_metabox( $network = null ) {
 	$to = get_sites(
 		array(
-			'site__not_in' => get_main_site_id( $network->id ),
+			'site__not_in' => array( get_main_site_id( $network->id ) ),
 			'network_id'   => $network->id,
 		)
 	);
@@ -118,8 +127,8 @@ function wpmn_edit_network_assign_sites_metabox( $network = null ) {
 
 						<?php if ( ( (int) $site->network_id !== (int) $network->id ) && ! is_main_site_for_network( $site->id ) ) : ?>
 
-							<option value="<?php echo esc_attr( $site->id ); ?>">
-								<?php echo esc_html( sprintf( '%1$s (%2$s%3$s)', $site->name, $site->domain, $site->path ) ); ?>
+							<option value="<?php echo esc_attr( strval( $site->id ) ); ?>">
+								<?php echo esc_html( sprintf( '%1$s (%2$s%3$s)', $site->blogname, $site->domain, $site->path ) ); ?>
 							</option>
 
 						<?php endif; ?>
@@ -139,8 +148,8 @@ function wpmn_edit_network_assign_sites_metabox( $network = null ) {
 
 						<?php if ( (int) $site->network_id === (int) $network->id ) : ?>
 
-							<option value="<?php echo esc_attr( $site->id ); ?>" <?php disabled( is_main_site_for_network( $site->id ) ); ?>>
-								<?php echo esc_html( sprintf( '%1$s (%2$s%3$s)', $site->name, $site->domain, $site->path ) ); ?>
+							<option value="<?php echo esc_attr( strval( $site->id ) ); ?>" <?php disabled( is_main_site_for_network( $site->id ) ); ?>>
+								<?php echo esc_html( sprintf( '%1$s (%2$s%3$s)', $site->blogname, $site->domain, $site->path ) ); ?>
 							</option>
 
 						<?php endif; ?>
@@ -161,6 +170,7 @@ function wpmn_edit_network_assign_sites_metabox( $network = null ) {
  * @since 1.7.0
  *
  * @param WP_Network $network Optional. Network object. Default null.
+ * @return void
  */
 function wpmn_edit_network_publish_metabox( $network = null ) {
 	if ( empty( $network ) ) {
@@ -241,7 +251,7 @@ function wpmn_edit_network_publish_metabox( $network = null ) {
 
 				?>
 				<input type="hidden" name="action" value="<?php echo esc_attr( $action ); ?>">
-				<input type="hidden" name="network_id" value="<?php echo esc_attr( $network_id ); ?>">
+				<input type="hidden" name="network_id" value="<?php echo esc_attr( strval( $network_id ) ); ?>">
 			</div>
 			<div class="clear"></div>
 		</div>
