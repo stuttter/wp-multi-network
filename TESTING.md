@@ -111,6 +111,54 @@ bash bin/install-wp-tests.sh wordpress_test wp wp localhost $WP_VERSION
 ./vendor/bin/phpunit
 ```
 
+### Running Specific Test Groups
+
+Tests are organized using PHPUnit groups for easy filtering:
+
+**Run all upload path tests:**
+
+```bash
+./vendor/bin/phpunit --group=upload
+```
+
+**Run tests by ticket number:**
+
+```bash
+./vendor/bin/phpunit --group=136
+```
+
+**Run specific test groups:**
+
+```bash
+# Files rewriting tests
+./vendor/bin/phpunit --group=files-rewriting
+
+# Multisite configuration tests
+./vendor/bin/phpunit --group=multisite
+
+# Subdirectory installation tests
+./vendor/bin/phpunit --group=subdirectory
+```
+
+**Run a single test class:**
+
+```bash
+./vendor/bin/phpunit tests/integration/tests/test-upload-paths.php
+```
+
+**Run a specific test method:**
+
+```bash
+./vendor/bin/phpunit --filter test_upload_path_without_duplication
+```
+
+**Verbose and debug output:**
+
+```bash
+./vendor/bin/phpunit --group=upload --verbose
+./vendor/bin/phpunit --group=upload --debug
+```
+
 ### Testing with Docker
 
 You can test different PHP versions using Docker:
