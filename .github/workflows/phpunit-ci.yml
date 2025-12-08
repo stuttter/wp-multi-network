@@ -2,114 +2,219 @@ name: PHPUnit Tests
 
 on:
   push:
-    branches:
-      - master
-      - release/*
+    branches: [ main ]
   pull_request:
+    branches: [ main ]
 
 jobs:
-  test:
-    name: PHP ${{ matrix.php }} - WP ${{ matrix.wp }}
+  phpunit:
     runs-on: ubuntu-latest
-    
-    permissions:
-      contents: read
-    
     strategy:
       fail-fast: false
       matrix:
-        php: ['7.4', '8.0', '8.1', '8.2']
-        wp: ['latest']
-        experimental: [false]
+        # Test matrix covering WordPress, PHP, and PHPUnit version combinations
+        # Based on WordPress version requirements and PHP compatibility
         include:
-          # Test with older WordPress version
-          - php: '7.4'
-            wp: '5.5'
-            experimental: false
-          - php: '8.0'
-            wp: '5.5'
-            experimental: false
-          # Test with WordPress trunk/master (allow failures)
-          - php: '8.2'
-            wp: 'trunk'
-            experimental: true
-    
-    continue-on-error: ${{ matrix.experimental }}
-    
-    services:
-      mysql:
-        image: mysql:5.7
-        env:
-          MYSQL_ALLOW_EMPTY_PASSWORD: yes
-          MYSQL_DATABASE: wordpress_tests
-        ports:
-          - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
-    
+          # WordPress 6.7+ (latest) - PHP 7.2+
+          - wordpress: "latest"
+            php: "8.3"
+            phpunit: "9"
+            wp-version: "6.7"
+          - wordpress: "latest"
+            php: "8.2"
+            phpunit: "9"
+            wp-version: "6.7"
+          - wordpress: "latest"
+            php: "8.1"
+            phpunit: "9"
+            wp-version: "6.7"
+          - wordpress: "latest"
+            php: "8.0"
+            phpunit: "9"
+            wp-version: "6.7"
+
+          # WordPress 6.4-6.6 - PHP 7.2+
+          - wordpress: "6.6"
+            php: "8.3"
+            phpunit: "9"
+            wp-version: "6.6"
+          - wordpress: "6.5"
+            php: "8.2"
+            phpunit: "9"
+            wp-version: "6.5"
+          - wordpress: "6.4"
+            php: "8.1"
+            phpunit: "9"
+            wp-version: "6.4"
+
+          # WordPress 6.0-6.3 - PHP 7.2+
+          - wordpress: "6.3"
+            php: "8.0"
+            phpunit: "9"
+            wp-version: "6.3"
+          - wordpress: "6.2"
+            php: "7.4"
+            phpunit: "9"
+            wp-version: "6.2"
+          - wordpress: "6.1"
+            php: "7.4"
+            phpunit: "9"
+            wp-version: "6.1"
+          - wordpress: "6.0"
+            php: "7.4"
+            phpunit: "9"
+            wp-version: "6.0"
+
+          # WordPress 5.9 - PHP 7.2+
+          - wordpress: "5.9"
+            php: "7.4"
+            phpunit: "9"
+            wp-version: "5.9"
+          - wordpress: "5.9"
+            php: "7.3"
+            phpunit: "9"
+            wp-version: "5.9"
+          - wordpress: "5.9"
+            php: "7.2"
+            phpunit: "8"
+            wp-version: "5.9"
+
+          # Minimum supported WordPress (5.5) - PHP 7.2+
+          - wordpress: "5.5"
+            php: "7.2"
+            phpunit: "8"
+            wp-version: "5.5"
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+
+      - name: Set up PHP ${{ matrix.php }}
+        uses: shivammathur/setup-php@v4
         with:
           php-version: ${{ matrix.php }}
-          extensions: mysqli
+          extensions: mbstring, zip, xml, curl
+          tools: composer:v2
           coverage: none
-          tools: composer
-      
-      - name: Get Composer cache directory
-        id: composer-cache
-        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
-      
-      - name: Setup Composer cache
+
+      - name: Validate PHP
+        run: php -v
+
+      - name: Restore Composer cache
         uses: actions/cache@v4
         with:
-          path: ${{ steps.composer-cache.outputs.dir }}
+          path: |
+            ~/.cache/composer
+            vendor
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: |
             ${{ runner.os }}-composer-
-      
-      - name: Install PHPUnit
-        run: composer require --dev phpunit/phpunit:^7
-      
+
       - name: Install Composer dependencies
-        run: composer install --prefer-dist --no-progress --no-interaction
-      
-      - name: PHP Lint
-        run: find -L . -path ./vendor -prune -o -name '*.php' -not -name 'class-wp-ms-network-command.php' -print0 | xargs -0 -n 1 -P 4 php -l
-      
-      - name: Setup WordPress test environment
-        env:
-          WP_VERSION: ${{ matrix.wp }}
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Set up MySQL
         run: |
-          if [[ "$WP_VERSION" == "latest" ]]; then
-            WP_VERSION=$(curl -s http://api.wordpress.org/core/version-check/1.7/ | grep -o '"version":"[^"]*' | sed 's/"version":"//' | head -1)
-          fi
-          if [[ "$WP_VERSION" == "trunk" ]]; then
-            WP_VERSION="master"
-          fi
-          
-          # Get plugin slug from repository name
-          PLUGIN_SLUG=$(basename "$GITHUB_WORKSPACE")
-          
-          # Clone WordPress
-          git clone --depth=1 --branch="$WP_VERSION" https://github.com/WordPress/wordpress-develop.git /tmp/wordpress
-          
-          # Setup plugin directory
-          mkdir -p /tmp/wordpress/src/wp-content/mu-plugins
-          cp -r "$GITHUB_WORKSPACE" "/tmp/wordpress/src/wp-content/mu-plugins/$PLUGIN_SLUG"
-          
-          # Configure tests
-          cd /tmp/wordpress
-          cp wp-tests-config-sample.php wp-tests-config.php
-          sed -i "s/youremptytestdbnamehere/wordpress_tests/" wp-tests-config.php
-          sed -i "s/yourusernamehere/root/" wp-tests-config.php
-          sed -i "s/yourpasswordhere//" wp-tests-config.php
-          sed -i "s/localhost/127.0.0.1/" wp-tests-config.php
-      
-      - name: Run PHPUnit tests
+          sudo systemctl start mysql.service
+          mysql -e "CREATE DATABASE IF NOT EXISTS wordpress_test;" -uroot -proot
+          mysql -e "CREATE USER IF NOT EXISTS 'wp'@'localhost' IDENTIFIED BY 'wp';" -uroot -proot
+          mysql -e "GRANT ALL PRIVILEGES ON wordpress_test.* TO 'wp'@'localhost';" -uroot -proot
+          mysql -e "FLUSH PRIVILEGES;" -uroot -proot
+
+      - name: Install job-specific PHPUnit
+        # Install PHPUnit based on the version specified in the matrix
+        # PHPUnit 9 requires PHP 7.3+, PHPUnit 8 supports PHP 7.2+
         run: |
-          PLUGIN_SLUG=$(basename "$GITHUB_WORKSPACE")
-          cd "/tmp/wordpress/src/wp-content/mu-plugins/$PLUGIN_SLUG"
-          vendor/bin/phpunit -c phpunit.xml.dist
+          set -e
+          echo "Installing PHPUnit ${{ matrix.phpunit }}"
+
+          # Determine the exact PHPUnit version to install
+          case "${{ matrix.phpunit }}" in
+            "9")
+              PHPUNIT_VERSION="^9.6"
+              ;;
+            "8")
+              PHPUNIT_VERSION="^8.5"
+              ;;
+            "7")
+              PHPUNIT_VERSION="^7.5"
+              ;;
+            *)
+              PHPUNIT_VERSION="${{ matrix.phpunit }}"
+              ;;
+          esac
+
+          echo "Resolved PHPUnit version: ${PHPUNIT_VERSION}"
+
+          # Try to install via composer
+          composer require --dev --no-interaction --prefer-dist --update-with-dependencies "phpunit/phpunit:${PHPUNIT_VERSION}" || {
+            echo "Composer install failed, attempting PHAR fallback"
+
+            # Determine PHAR version
+            case "${{ matrix.phpunit }}" in
+              "9")
+                PHAR_VERSION="9.6.21"
+                ;;
+              "8")
+                PHAR_VERSION="8.5.40"
+                ;;
+              "7")
+                PHAR_VERSION="7.5.20"
+                ;;
+              *)
+                PHAR_VERSION="${{ matrix.phpunit }}.0"
+                ;;
+            esac
+
+            PHAR_URL="https://phar.phpunit.de/phpunit-${PHAR_VERSION}.phar"
+            echo "Downloading ${PHAR_URL}"
+            curl -fsSL -o phpunit.phar "${PHAR_URL}"
+            chmod +x phpunit.phar
+            echo "Using phpunit.phar version ${PHAR_VERSION}"
+          }
+
+      - name: Install WordPress test suite
+        run: |
+          bash tests/bin/install-wp-tests.sh wordpress_test wp wp localhost ${{ matrix.wordpress }} true
+
+      - name: Verify test environment
+        run: |
+          echo "=== Test Configuration ==="
+          echo "WordPress: ${{ matrix.wordpress }} (v${{ matrix.wp-version }})"
+          echo "PHP: ${{ matrix.php }}"
+          echo "PHPUnit: ${{ matrix.phpunit }}"
+          echo ""
+          echo "=== PHP Version ==="
+          php -v
+          echo ""
+          echo "=== PHPUnit Version ==="
+          if [ -x ./vendor/bin/phpunit ]; then
+            ./vendor/bin/phpunit --version
+          elif [ -f phpunit.phar ]; then
+            php phpunit.phar --version
+          fi
+          echo ""
+          echo "=== Database Connection ==="
+          mysql -e "SELECT VERSION();" -uwp -pwp wordpress_test
+
+      - name: Select PHPUnit configuration
+        run: |
+          # Use legacy config for PHPUnit 7-8, modern config for PHPUnit 9+
+          if [ "${{ matrix.phpunit }}" = "7" ] || [ "${{ matrix.phpunit }}" = "8" ]; then
+            echo "PHPUNIT_CONFIG=phpunit.xml.legacy" >> $GITHUB_ENV
+            echo "Using legacy PHPUnit configuration (phpunit.xml.legacy)"
+          else
+            echo "PHPUNIT_CONFIG=phpunit.xml.dist" >> $GITHUB_ENV
+            echo "Using modern PHPUnit configuration (phpunit.xml.dist)"
+          fi
+
+      - name: Run tests
+        run: |
+          if [ -x ./vendor/bin/phpunit ]; then
+            ./vendor/bin/phpunit --configuration $PHPUNIT_CONFIG --verbose
+          elif [ -f phpunit.phar ]; then
+            php phpunit.phar --configuration $PHPUNIT_CONFIG --verbose
+          else
+            echo "No phpunit available (vendor/bin/phpunit or phpunit.phar). Failing." >&2
+            exit 1
+          fi

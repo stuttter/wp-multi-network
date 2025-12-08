@@ -1,11 +1,15 @@
 <?xml version="1.0"?>
+<!-- Legacy PHPUnit configuration for PHPUnit 7.x and 8.x -->
 <phpunit
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.6/phpunit.xsd"
+	xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/8.5/phpunit.xsd"
 	backupGlobals="false"
 	backupStaticAttributes="false"
 	bootstrap="tests/integration/includes/bootstrap.php"
 	colors="true"
+	convertErrorsToExceptions="true"
+	convertNoticesToExceptions="true"
+	convertWarningsToExceptions="true"
 	processIsolation="false"
 	stopOnError="false"
 	stopOnFailure="false"
@@ -23,15 +27,15 @@
 			<directory suffix=".php">./tests/integration/tests/</directory>
 		</testsuite>
 	</testsuites>
-	<coverage>
-		<include>
+	<filter>
+		<whitelist processUncoveredFilesFromWhitelist="true">
 			<directory suffix=".php">./wp-multi-network/includes</directory>
 			<file>./wpmn-loader.php</file>
-		</include>
-		<report>
-			<clover outputFile="build/logs/clover.xml"/>
-			<html outputDirectory="build/coverage"/>
-			<text outputFile="php://stdout" showUncoveredFiles="true"/>
-		</report>
-	</coverage>
+		</whitelist>
+	</filter>
+	<logging>
+		<log type="coverage-clover" target="build/logs/clover.xml"/>
+		<log type="coverage-html" target="build/coverage"/>
+		<log type="coverage-text" target="php://stdout" showUncoveredFiles="true"/>
+	</logging>
 </phpunit>
