@@ -1,4 +1,4 @@
-name: PHP - Code Sniffer
+name: PHP - PHPCS
 
 on:
   push:

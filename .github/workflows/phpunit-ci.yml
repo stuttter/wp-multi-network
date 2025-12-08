@@ -1,4 +1,4 @@
-name: PHPUnit Tests
+name: PHP - PHPUnit Tests
 
 on:
   push:
@@ -16,6 +16,7 @@ jobs:
       matrix:
         # Test matrix covering WordPress, PHP, and PHPUnit version combinations
         # Based on WordPress version requirements and PHP compatibility
+        # Note: WordPress officially only supports PHPUnit up to 7.x
         include:
           # WordPress 6.7+ (latest) - PHP 7.2+
           - wordpress: "latest"
@@ -114,8 +115,8 @@ jobs:
 
       - name: Install Composer dependencies
         run: |
-          # For PHP 7.2, we need to ignore platform requirements since some dev dependencies require PHP 7.4+
-          if [ "${{ matrix.php }}" = "7.2" ]; then
+          # For PHP < 7.4, we need to ignore platform requirements since some dev dependencies require PHP 7.4+
+          if [[ "${{ matrix.php }}" =~ ^7\.[0-3]$ ]]; then
             composer install --no-interaction --prefer-dist --no-progress --ignore-platform-req=php
           else
             composer install --no-interaction --prefer-dist --no-progress
@@ -160,9 +161,9 @@ jobs:
           echo "Resolved PHPUnit version: ${PHPUNIT_VERSION}"
 
           # Try to install via composer
-          # For PHP 7.2, use platform override to allow installation of packages with higher PHP requirements
+          # For PHP < 7.4, use platform override to allow installation of packages with higher PHP requirements
           COMPOSER_OPTS=""
-          if [ "${{ matrix.php }}" = "7.2" ]; then
+          if [[ "${{ matrix.php }}" =~ ^7\.[0-3]$ ]]; then
             COMPOSER_OPTS="--ignore-platform-req=php"
           fi
 
