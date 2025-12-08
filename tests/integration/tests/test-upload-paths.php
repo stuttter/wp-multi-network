@@ -1,12 +1,49 @@
 <?php
 /**
  * Tests for upload path handling.
+ *
+ * @group upload
+ * @group multisite
+ * @ticket 136
  */
 
 class WPMN_Tests_Upload_Paths extends WPMN_UnitTestCase {
 
 	/**
+	 * Shared network ID for tests to reduce redundant network creation.
+	 *
+	 * @var int
+	 */
+	protected static $network_id;
+
+	/**
+	 * Set up before class to create a shared test network.
+	 */
+	public static function wpSetUpBeforeClass() {
+		self::$network_id = add_network(
+			array(
+				'domain'       => 'shared-test.example',
+				'path'         => '/',
+				'site_name'    => 'Shared Test Network',
+				'network_name' => 'Shared Test Network',
+			)
+		);
+	}
+
+	/**
+	 * Clean up after class.
+	 */
+	public static function wpTearDownAfterClass() {
+		if ( ! empty( self::$network_id ) ) {
+			delete_network( self::$network_id, true );
+		}
+	}
+
+	/**
 	 * Test that upload paths are correctly set when creating a new network.
+	 *
+	 * @group upload-paths
+	 * @ticket 136
 	 */
 	public function test_upload_path_without_duplication() {
 		// Create a new network.
@@ -42,6 +79,10 @@ class WPMN_Tests_Upload_Paths extends WPMN_UnitTestCase {
 
 	/**
 	 * Test upload path when ms_files_rewriting is enabled.
+	 *
+	 * @group upload-paths
+	 * @group files-rewriting
+	 * @ticket 136
 	 */
 	public function test_upload_path_with_files_rewriting() {
 		// Enable files rewriting.
@@ -79,6 +120,10 @@ class WPMN_Tests_Upload_Paths extends WPMN_UnitTestCase {
 
 	/**
 	 * Test upload path in multisite environment.
+	 *
+	 * @group upload-paths
+	 * @group multisite
+	 * @ticket 136
 	 */
 	public function test_upload_path_multisite() {
 		// Verify we're in a multisite environment.
@@ -115,6 +160,10 @@ class WPMN_Tests_Upload_Paths extends WPMN_UnitTestCase {
 
 	/**
 	 * Test that upload_path is set correctly without files rewriting.
+	 *
+	 * @group upload-paths
+	 * @group no-files-rewriting
+	 * @ticket 136
 	 */
 	public function test_upload_path_without_files_rewriting() {
 		// Ensure files rewriting is disabled.
@@ -161,6 +210,10 @@ class WPMN_Tests_Upload_Paths extends WPMN_UnitTestCase {
 
 	/**
 	 * Test upload path structure for consistency.
+	 *
+	 * @group upload-paths
+	 * @group path-structure
+	 * @ticket 136
 	 */
 	public function test_upload_path_structure() {
 		// Create a new network.
@@ -196,6 +249,10 @@ class WPMN_Tests_Upload_Paths extends WPMN_UnitTestCase {
 
 	/**
 	 * Test that existing correct paths are not overwritten.
+	 *
+	 * @group upload-paths
+	 * @group path-preservation
+	 * @ticket 136
 	 */
 	public function test_upload_path_preservation() {
 		// Disable files rewriting to ensure the code path is exercised.
@@ -227,6 +284,176 @@ class WPMN_Tests_Upload_Paths extends WPMN_UnitTestCase {
 
 			// The path should be preserved and not contain any doubled segments.
 			$this->assertStringNotContainsString( '/sites/' . $main_site_id . '/sites/' . $main_site_id, $initial_upload_path, 'Upload path should never contain doubled site-specific directories' );
+		}
+	}
+
+	/**
+	 * Test upload path with subdirectory installation.
+	 *
+	 * @group upload-paths
+	 * @group subdirectory
+	 * @ticket 136
+	 */
+	public function test_upload_path_subdirectory_install() {
+		// Create a network with a subdirectory path.
+		$network_id = add_network(
+			array(
+				'domain'       => 'subdir.example.com',
+				'path'         => '/subdir/',
+				'site_name'    => 'Subdirectory Network',
+				'network_name' => 'Subdirectory Network',
+			)
+		);
+
+		$this->assertNotWPError( $network_id, 'Network with subdirectory should be created' );
+
+		$main_site_id = get_main_site_for_network( $network_id );
+		$upload_path  = get_blog_option( $main_site_id, 'upload_path' );
+
+		// Verify path doesn't have duplicates.
+		if ( ! empty( $upload_path ) ) {
+			$site_suffix = '/sites/' . $main_site_id;
+			$count       = substr_count( $upload_path, $site_suffix );
+			$this->assertLessThanOrEqual( 1, $count, 'Subdirectory network upload path should not duplicate site-specific directories' );
+		}
+	}
+
+	/**
+	 * Test upload path consistency across multiple sites in the same network.
+	 *
+	 * @group upload-paths
+	 * @group multiple-sites
+	 * @ticket 136
+	 */
+	public function test_upload_path_multiple_sites() {
+		if ( empty( self::$network_id ) ) {
+			$this->markTestSkipped( 'Shared network not available' );
+		}
+
+		// Create multiple sites in the same network.
+		$site_ids = array();
+		for ( $i = 0; $i < 3; $i++ ) {
+			switch_to_network( self::$network_id );
+			$site_id = wpmu_create_blog(
+				'site' . $i . '.shared-test.example',
+				'/',
+				'Test Site ' . $i,
+				get_current_user_id(),
+				array(),
+				self::$network_id
+			);
+			restore_current_network();
+
+			if ( ! is_wp_error( $site_id ) ) {
+				$site_ids[] = $site_id;
+			}
+		}
+
+		// Verify each site has proper upload path without duplication.
+		foreach ( $site_ids as $site_id ) {
+			$upload_path = get_blog_option( $site_id, 'upload_path' );
+
+			if ( ! empty( $upload_path ) ) {
+				$site_suffix = '/sites/' . $site_id;
+				$count       = substr_count( $upload_path, $site_suffix );
+				$this->assertLessThanOrEqual( 1, $count, "Site {$site_id} upload path should not have duplicate site-specific directories" );
+			}
+		}
+	}
+
+	/**
+	 * Test upload URL path consistency with upload path.
+	 *
+	 * @group upload-paths
+	 * @group upload-urls
+	 * @ticket 136
+	 */
+	public function test_upload_url_path_consistency() {
+		$network_id = add_network(
+			array(
+				'domain'       => 'url-test.example',
+				'path'         => '/',
+				'site_name'    => 'URL Test Network',
+				'network_name' => 'URL Test Network',
+			)
+		);
+
+		$this->assertNotWPError( $network_id, 'Network should be created' );
+
+		$main_site_id    = get_main_site_for_network( $network_id );
+		$upload_path     = get_blog_option( $main_site_id, 'upload_path' );
+		$upload_url_path = get_blog_option( $main_site_id, 'upload_url_path' );
+
+		// If both paths are set, they should have consistent site-specific segments.
+		if ( ! empty( $upload_path ) && ! empty( $upload_url_path ) ) {
+			$path_suffix = '/sites/' . $main_site_id;
+			$path_has_suffix = false !== strpos( $upload_path, $path_suffix );
+			$url_has_suffix  = false !== strpos( $upload_url_path, $path_suffix );
+
+			// Both should either have or not have the suffix.
+			$this->assertEquals( $path_has_suffix, $url_has_suffix, 'Upload path and URL path should have consistent site-specific segments' );
+
+			// Neither should have duplicates.
+			if ( $path_has_suffix ) {
+				$path_count = substr_count( $upload_path, $path_suffix );
+				$url_count  = substr_count( $upload_url_path, $path_suffix );
+				$this->assertEquals( 1, $path_count, 'Upload path should not have duplicate site-specific directories' );
+				$this->assertEquals( 1, $url_count, 'Upload URL path should not have duplicate site-specific directories' );
+			}
+		}
+	}
+
+	/**
+	 * Test upload path with network-level cloning.
+	 *
+	 * @group upload-paths
+	 * @group network-cloning
+	 * @ticket 136
+	 */
+	public function test_upload_path_with_network_cloning() {
+		// Create a source network.
+		$source_network_id = add_network(
+			array(
+				'domain'       => 'source.example.com',
+				'path'         => '/',
+				'site_name'    => 'Source Network',
+				'network_name' => 'Source Network',
+			)
+		);
+
+		$this->assertNotWPError( $source_network_id, 'Source network should be created' );
+
+		// Create a cloned network.
+		$cloned_network_id = add_network(
+			array(
+				'domain'        => 'cloned.example.com',
+				'path'          => '/',
+				'site_name'     => 'Cloned Network',
+				'network_name'  => 'Cloned Network',
+				'clone_network' => $source_network_id,
+			)
+		);
+
+		$this->assertNotWPError( $cloned_network_id, 'Cloned network should be created' );
+
+		// Get upload paths for both networks.
+		$source_site_id = get_main_site_for_network( $source_network_id );
+		$cloned_site_id = get_main_site_for_network( $cloned_network_id );
+
+		$source_upload_path = get_blog_option( $source_site_id, 'upload_path' );
+		$cloned_upload_path = get_blog_option( $cloned_site_id, 'upload_path' );
+
+		// Both should have proper paths without duplication.
+		if ( ! empty( $source_upload_path ) ) {
+			$source_suffix = '/sites/' . $source_site_id;
+			$source_count  = substr_count( $source_upload_path, $source_suffix );
+			$this->assertLessThanOrEqual( 1, $source_count, 'Source network upload path should not have duplicates' );
+		}
+
+		if ( ! empty( $cloned_upload_path ) ) {
+			$cloned_suffix = '/sites/' . $cloned_site_id;
+			$cloned_count  = substr_count( $cloned_upload_path, $cloned_suffix );
+			$this->assertLessThanOrEqual( 1, $cloned_count, 'Cloned network upload path should not have duplicates' );
 		}
 	}
 }
