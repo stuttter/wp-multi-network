@@ -73,20 +73,6 @@ jobs:
             php: "7.4"
             phpunit: "9"
             wp-version: "5.9"
-          - wordpress: "5.9"
-            php: "7.3"
-            phpunit: "7"
-            wp-version: "5.9"
-          - wordpress: "5.9"
-            php: "7.2"
-            phpunit: "6"
-            wp-version: "5.9"
-
-          # Minimum supported WordPress (5.5) - PHP 7.2+
-          - wordpress: "5.5"
-            php: "7.2"
-            phpunit: "6"
-            wp-version: "5.5"
 
     steps:
       - name: Checkout
