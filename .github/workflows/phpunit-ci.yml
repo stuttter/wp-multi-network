@@ -85,7 +85,7 @@ jobs:
           # Minimum supported WordPress (5.5) - PHP 7.2+
           - wordpress: "5.5"
             php: "7.2"
-            phpunit: "8"
+            phpunit: "7"
             wp-version: "5.5"
 
     steps:
