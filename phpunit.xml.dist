@@ -28,10 +28,5 @@
 			<directory suffix=".php">./wp-multi-network/includes</directory>
 			<file>./wpmn-loader.php</file>
 		</include>
-		<report>
-			<clover outputFile="build/logs/clover.xml"/>
-			<html outputDirectory="build/coverage"/>
-			<text outputFile="php://stdout" showUncoveredFiles="true"/>
-		</report>
 	</coverage>
 </phpunit>
