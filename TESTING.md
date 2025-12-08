@@ -15,23 +15,20 @@ The testing matrix is designed to validate the plugin against various combinatio
 ### PHPUnit Version Requirements
 
 | PHPUnit Version | PHP Requirement | WordPress Compatibility | Configuration File |
-|----------------|-----------------|------------------------|-------------------|
-| PHPUnit 9.x    | PHP 7.3+        | All versions           | phpunit.xml.dist  |
-| PHPUnit 8.x    | PHP 7.2+        | All versions           | phpunit.xml.legacy |
-| PHPUnit 7.x    | PHP 7.1+        | WP 4.9 - 6.x          | phpunit.xml.legacy |
+|-----------------|-----------------|-------------------------|--------------------|
+| PHPUnit 9.x     | PHP 7.3+        | All versions            | phpunit.xml.dist   |
+| PHPUnit 8.x     | PHP 7.2+        | All versions            | phpunit.xml.legacy |
+| PHPUnit 7.x     | PHP 7.1+        | WP 4.9 - 6.x            | phpunit.xml.legacy |
 
 ### WordPress Version Requirements
 
 | WordPress Version | Minimum PHP | Recommended PHP |
-|------------------|-------------|-----------------|
-| trunk            | 7.2.24      | 8.0+           |
-| 6.9              | 7.2.24      | 8.0+           |
-| 6.8              | 7.2.24      | 8.0+           |
-| 6.7 (latest)     | 7.2.24      | 8.0+           |
-| 6.4 - 6.6        | 7.2.24      | 8.0+           |
-| 6.0 - 6.3        | 7.2.24      | 7.4+           |
-| 5.9              | 7.2.24      | 7.4+           |
-| 5.5 - 5.8        | 7.2.0       | 7.4+           |
+|-------------------|-------------|-----------------|
+| trunk             | 7.2.24      | 8.0+            |
+| 6.4 - 6.9         | 7.2.24      | 8.0+            |
+| 6.0 - 6.3         | 7.2.24      | 7.4+            |
+| 5.9               | 7.2.24      | 7.4+            |
+| 5.5 - 5.8         | 7.2.0       | 7.4+            |
 
 ## Test Matrix Configuration
 
