@@ -622,15 +622,6 @@ if ( ! function_exists( 'add_network' ) ) :
 			}
 			$upload_dir .= '/uploads';
 
-			if ( defined( 'MULTISITE' ) ) {
-				$ms_dir = '/sites/' . $new_blog_id;
-			} else {
-				$ms_dir = '/' . $new_blog_id;
-			}
-
-			$upload_dir .= $ms_dir;
-			$upload_url .= $ms_dir;
-
 			update_blog_option( $new_blog_id, 'upload_path', $upload_dir );
 			update_blog_option( $new_blog_id, 'upload_url_path', $upload_url );
 		}
