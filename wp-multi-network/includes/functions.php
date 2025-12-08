@@ -630,10 +630,9 @@ if ( ! function_exists( 'add_network' ) ) :
 			if ( empty( $existing_upload_path ) || false === strpos( $existing_upload_path, $site_path_suffix ) ) {
 				$upload_dir .= $site_path_suffix;
 				$upload_url .= $site_path_suffix;
+				update_blog_option( $new_blog_id, 'upload_path', $upload_dir );
+				update_blog_option( $new_blog_id, 'upload_url_path', $upload_url );
 			}
-
-			update_blog_option( $new_blog_id, 'upload_path', $upload_dir );
-			update_blog_option( $new_blog_id, 'upload_url_path', $upload_url );
 		}
 
 		// Clone network meta from existing network.
