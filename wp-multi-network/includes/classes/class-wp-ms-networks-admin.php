@@ -211,23 +211,30 @@ class WP_MS_Networks_Admin {
 
 		foreach ( $this->feedback_strings as $slug => $messages ) {
 
-			$passed = ! empty( $_GET[ $slug ] )
-				? sanitize_key( $_GET[ $slug ] )
-				: '';
-
-			if ( is_string( $passed ) ) {
-				if ( '1' === $passed ) {
-					$message = $messages['1'];
-					$type    = 'updated';
-				} else {
-					$message = $messages['0'];
-					$type    = 'error';
-				}
-
-				break;
+			// Skip if not known feedback
+			if ( ! isset( $_GET[ $slug ] ) || ! is_scalar( $_GET[ $slug ] ) ) {
+				continue;
 			}
+
+			// Pass/Fail
+			$passed = sanitize_key( $_GET[ $slug ] );
+
+			// Pass
+			if ( '1' === $passed ) {
+				$message = $messages['1'];
+				$type    = 'updated';
+
+			// Fail
+			} else {
+				$message = $messages['0'];
+				$type    = 'error';
+			}
+
+			// Done
+			break;
 		}
 
+		// Bail if no message or type
 		if ( empty( $message ) || empty( $type ) ) {
 			return;
 		}

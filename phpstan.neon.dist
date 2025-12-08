@@ -9,7 +9,6 @@ parameters:
         #- %rootDir%/../../php-stubs/wp-cli-stubs/wp-cli-i18n-stubs.php
         #- %rootDir%/../../php-stubs/wp-cli-stubs/wp-cli-tools-stubs.php
     ignoreErrors:
-        - '/^Call to static method encode\(\) on an unknown class Requests_IDNAEncoder\.$/'
         # WP_Network::$blog_id is a private property that can be accessed via magic methods.
         - '/^Access to an undefined property WP_Network::\$blog_id\.$/'
         # WP_CLI\Fetchers\User::get() returns WP_User without root namespace.
