@@ -600,7 +600,7 @@ if ( ! function_exists( 'add_network' ) ) :
 			update_network_option( $new_network_id, $key, $value );
 		}
 
-		// Fix upload path and URLs for WordPress > 3.7.
+		// Fix upload path and URLs in WP < 3.7.
 		$use_files_rewriting = defined( 'SITE_ID_CURRENT_SITE' ) && get_network( SITE_ID_CURRENT_SITE )
 			? get_network_option( SITE_ID_CURRENT_SITE, 'ms_files_rewriting' )
 			: get_site_option( 'ms_files_rewriting' );
@@ -621,6 +621,16 @@ if ( ! function_exists( 'add_network' ) ) :
 				$upload_dir = substr( $upload_dir, strlen( $needle ) );
 			}
 			$upload_dir .= '/uploads';
+
+			// Check if wpmu_create_blog() already set the site-specific path.
+			$existing_upload_path = get_blog_option( $new_blog_id, 'upload_path' );
+			$site_path_suffix     = defined( 'MULTISITE' ) ? '/sites/' . $new_blog_id : '/' . $new_blog_id;
+
+			// Only add the site-specific path if it's not already present.
+			if ( empty( $existing_upload_path ) || false === strpos( $existing_upload_path, $site_path_suffix ) ) {
+				$upload_dir .= $site_path_suffix;
+				$upload_url .= $site_path_suffix;
+			}
 
 			update_blog_option( $new_blog_id, 'upload_path', $upload_dir );
 			update_blog_option( $new_blog_id, 'upload_url_path', $upload_url );
