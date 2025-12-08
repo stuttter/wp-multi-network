@@ -40,6 +40,33 @@ class WPMN_Tests_Upload_Paths extends WPMN_UnitTestCase {
 	}
 
 	/**
+	 * Helper method to assert upload path has no duplicate site-specific directories.
+	 *
+	 * @param int    $site_id     The site ID to check.
+	 * @param string $upload_path The upload path to verify.
+	 * @param string $message     Custom assertion message.
+	 */
+	protected function assertUploadPathNoDuplicates( $site_id, $upload_path, $message = '' ) {
+		if ( empty( $upload_path ) ) {
+			return;
+		}
+
+		$site_suffix = '/sites/' . $site_id;
+		$count       = substr_count( $upload_path, $site_suffix );
+
+		if ( empty( $message ) ) {
+			$message = "Upload path should not contain duplicate site-specific directories for site {$site_id}";
+		}
+
+		$this->assertLessThanOrEqual( 1, $count, $message );
+
+		// If the path contains the suffix, it should appear exactly once.
+		if ( false !== strpos( $upload_path, $site_suffix ) ) {
+			$this->assertEquals( 1, $count, "Site-specific directory should appear exactly once in upload path for site {$site_id}" );
+		}
+	}
+
+	/**
 	 * Test that upload paths are correctly set when creating a new network.
 	 *
 	 * @group upload-paths
@@ -66,15 +93,7 @@ class WPMN_Tests_Upload_Paths extends WPMN_UnitTestCase {
 		$upload_path = get_blog_option( $main_site_id, 'upload_path' );
 
 		// Check that the path doesn't contain duplicate site-specific directories.
-		$site_suffix = '/sites/' . $main_site_id;
-		$count       = substr_count( $upload_path, $site_suffix );
-
-		$this->assertLessThanOrEqual( 1, $count, 'Upload path should not contain duplicate site-specific directories' );
-
-		// If the path contains the suffix, it should only appear once.
-		if ( false !== strpos( $upload_path, $site_suffix ) ) {
-			$this->assertEquals( 1, $count, 'Site-specific directory should appear exactly once in upload path' );
-		}
+		$this->assertUploadPathNoDuplicates( $main_site_id, $upload_path, 'Upload path should not contain duplicate site-specific directories' );
 	}
 
 	/**
@@ -108,11 +127,7 @@ class WPMN_Tests_Upload_Paths extends WPMN_UnitTestCase {
 		$upload_path = get_blog_option( $main_site_id, 'upload_path' );
 
 		// The behavior with files rewriting may vary, but it should not contain duplicates.
-		if ( ! empty( $upload_path ) ) {
-			$site_suffix = '/sites/' . $main_site_id;
-			$count       = substr_count( $upload_path, $site_suffix );
-			$this->assertLessThanOrEqual( 1, $count, 'Upload path should not contain duplicate site-specific directories with files rewriting' );
-		}
+		$this->assertUploadPathNoDuplicates( $main_site_id, $upload_path, 'Upload path should not contain duplicate site-specific directories with files rewriting' );
 
 		// Clean up.
 		update_site_option( 'ms_files_rewriting', 0 );
@@ -151,11 +166,10 @@ class WPMN_Tests_Upload_Paths extends WPMN_UnitTestCase {
 		// In multisite, the path should use /sites/ directory if present.
 		if ( ! empty( $upload_path ) && false !== strpos( $upload_path, '/sites/' ) ) {
 			$this->assertStringContainsString( '/sites/' . $main_site_id, $upload_path, 'Upload path should contain /sites/{blog_id} format in multisite' );
-
-			// Ensure no duplication.
-			$count = substr_count( $upload_path, '/sites/' . $main_site_id );
-			$this->assertEquals( 1, $count, 'Site-specific path should appear exactly once' );
 		}
+
+		// Ensure no duplication.
+		$this->assertUploadPathNoDuplicates( $main_site_id, $upload_path, 'Site-specific path should appear exactly once' );
 	}
 
 	/**
@@ -199,11 +213,7 @@ class WPMN_Tests_Upload_Paths extends WPMN_UnitTestCase {
 
 			// Verify no duplication of site-specific path.
 			if ( defined( 'MULTISITE' ) && MULTISITE ) {
-				$site_suffix = '/sites/' . $main_site_id;
-				if ( false !== strpos( $upload_path, $site_suffix ) ) {
-					$count = substr_count( $upload_path, $site_suffix );
-					$this->assertEquals( 1, $count, 'Site-specific directory should not be duplicated' );
-				}
+				$this->assertUploadPathNoDuplicates( $main_site_id, $upload_path, 'Site-specific directory should not be duplicated' );
 			}
 		}
 	}
@@ -276,13 +286,11 @@ class WPMN_Tests_Upload_Paths extends WPMN_UnitTestCase {
 		// Get the initial upload path.
 		$initial_upload_path = get_blog_option( $main_site_id, 'upload_path' );
 
-		// If a path was set and contains the site-specific directory, verify it's correct.
-		if ( ! empty( $initial_upload_path ) && false !== strpos( $initial_upload_path, '/sites/' . $main_site_id ) ) {
-			// Verify no duplication.
-			$count = substr_count( $initial_upload_path, '/sites/' . $main_site_id );
-			$this->assertEquals( 1, $count, 'Initial upload path should not have duplicated site-specific directory' );
+		// Verify no duplication.
+		$this->assertUploadPathNoDuplicates( $main_site_id, $initial_upload_path, 'Initial upload path should not have duplicated site-specific directory' );
 
-			// The path should be preserved and not contain any doubled segments.
+		// The path should be preserved and not contain any doubled segments.
+		if ( ! empty( $initial_upload_path ) ) {
 			$this->assertStringNotContainsString( '/sites/' . $main_site_id . '/sites/' . $main_site_id, $initial_upload_path, 'Upload path should never contain doubled site-specific directories' );
 		}
 	}
@@ -311,11 +319,7 @@ class WPMN_Tests_Upload_Paths extends WPMN_UnitTestCase {
 		$upload_path  = get_blog_option( $main_site_id, 'upload_path' );
 
 		// Verify path doesn't have duplicates.
-		if ( ! empty( $upload_path ) ) {
-			$site_suffix = '/sites/' . $main_site_id;
-			$count       = substr_count( $upload_path, $site_suffix );
-			$this->assertLessThanOrEqual( 1, $count, 'Subdirectory network upload path should not duplicate site-specific directories' );
-		}
+		$this->assertUploadPathNoDuplicates( $main_site_id, $upload_path, 'Subdirectory network upload path should not duplicate site-specific directories' );
 	}
 
 	/**
@@ -352,12 +356,7 @@ class WPMN_Tests_Upload_Paths extends WPMN_UnitTestCase {
 		// Verify each site has proper upload path without duplication.
 		foreach ( $site_ids as $site_id ) {
 			$upload_path = get_blog_option( $site_id, 'upload_path' );
-
-			if ( ! empty( $upload_path ) ) {
-				$site_suffix = '/sites/' . $site_id;
-				$count       = substr_count( $upload_path, $site_suffix );
-				$this->assertLessThanOrEqual( 1, $count, "Site {$site_id} upload path should not have duplicate site-specific directories" );
-			}
+			$this->assertUploadPathNoDuplicates( $site_id, $upload_path, "Site {$site_id} upload path should not have duplicate site-specific directories" );
 		}
 	}
 
@@ -395,10 +394,8 @@ class WPMN_Tests_Upload_Paths extends WPMN_UnitTestCase {
 
 			// Neither should have duplicates.
 			if ( $path_has_suffix ) {
-				$path_count = substr_count( $upload_path, $path_suffix );
-				$url_count  = substr_count( $upload_url_path, $path_suffix );
-				$this->assertEquals( 1, $path_count, 'Upload path should not have duplicate site-specific directories' );
-				$this->assertEquals( 1, $url_count, 'Upload URL path should not have duplicate site-specific directories' );
+				$this->assertUploadPathNoDuplicates( $main_site_id, $upload_path, 'Upload path should not have duplicate site-specific directories' );
+				$this->assertUploadPathNoDuplicates( $main_site_id, $upload_url_path, 'Upload URL path should not have duplicate site-specific directories' );
 			}
 		}
 	}
@@ -444,16 +441,7 @@ class WPMN_Tests_Upload_Paths extends WPMN_UnitTestCase {
 		$cloned_upload_path = get_blog_option( $cloned_site_id, 'upload_path' );
 
 		// Both should have proper paths without duplication.
-		if ( ! empty( $source_upload_path ) ) {
-			$source_suffix = '/sites/' . $source_site_id;
-			$source_count  = substr_count( $source_upload_path, $source_suffix );
-			$this->assertLessThanOrEqual( 1, $source_count, 'Source network upload path should not have duplicates' );
-		}
-
-		if ( ! empty( $cloned_upload_path ) ) {
-			$cloned_suffix = '/sites/' . $cloned_site_id;
-			$cloned_count  = substr_count( $cloned_upload_path, $cloned_suffix );
-			$this->assertLessThanOrEqual( 1, $cloned_count, 'Cloned network upload path should not have duplicates' );
-		}
+		$this->assertUploadPathNoDuplicates( $source_site_id, $source_upload_path, 'Source network upload path should not have duplicates' );
+		$this->assertUploadPathNoDuplicates( $cloned_site_id, $cloned_upload_path, 'Cloned network upload path should not have duplicates' );
 	}
 }
