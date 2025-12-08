@@ -28,8 +28,15 @@ const path = require( 'path' );
  */
 function getCssFilename( pathData, suffix = '' ) {
 	if ( pathData.chunk && pathData.chunk.name ) {
-		// The chunk name includes '.min', so we just add the suffix and extension
-		return 'css/' + pathData.chunk.name + suffix + '.css';
+		const chunkName = pathData.chunk.name; // e.g., 'wp-multi-network.min'
+		const parts = chunkName.split('.');
+		if (parts.length > 1) {
+			// Reconstruct as: name + suffix + .extension
+			const baseName = parts.slice(0, -1).join('.');
+			const ext = parts[parts.length - 1];
+			return 'css/' + baseName + suffix + '.' + ext + '.css';
+		}
+		return 'css/' + chunkName + suffix + '.css';
 	}
 	return 'css/[name]' + suffix + '.css';
 }
@@ -37,7 +44,10 @@ function getCssFilename( pathData, suffix = '' ) {
 module.exports = {
 	...defaultConfig,
 	entry: {
-		'wp-multi-network.min': path.resolve( process.cwd(), '.build-script.js' ),
+		'wp-multi-network.min': [
+			path.resolve( __dirname, 'wp-multi-network/assets/js/wp-multi-network.js' ),
+			path.resolve( __dirname, 'wp-multi-network/assets/css/wp-multi-network.css' )
+		]
 	},
 	output: {
 		path: path.resolve( process.cwd(), 'wp-multi-network/assets' ),

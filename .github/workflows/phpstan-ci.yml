@@ -1,4 +1,4 @@
-name: Run PHPStan
+name: PHP - PHPStan
 
 on: [push]
 
