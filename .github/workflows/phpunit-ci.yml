@@ -18,6 +18,36 @@ jobs:
         # Based on WordPress version requirements and PHP compatibility
         # Note: WordPress officially only supports PHPUnit up to 7.x
         include:
+          # WordPress trunk (development) - PHP 7.2+
+          - wordpress: "trunk"
+            php: "8.3"
+            phpunit: "9"
+            wp-version: "trunk"
+
+          # WordPress 6.9 - PHP 7.2+
+          - wordpress: "6.9"
+            php: "8.3"
+            phpunit: "9"
+            wp-version: "6.9"
+          - wordpress: "6.9"
+            php: "8.2"
+            phpunit: "9"
+            wp-version: "6.9"
+
+          # WordPress 6.8 - PHP 7.2+
+          - wordpress: "6.8"
+            php: "8.3"
+            phpunit: "9"
+            wp-version: "6.8"
+          - wordpress: "6.8"
+            php: "8.2"
+            phpunit: "9"
+            wp-version: "6.8"
+          - wordpress: "6.8"
+            php: "8.1"
+            phpunit: "9"
+            wp-version: "6.8"
+
           # WordPress 6.7+ (latest) - PHP 7.2+
           - wordpress: "latest"
             php: "8.3"
