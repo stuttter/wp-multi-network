@@ -24,6 +24,9 @@ The testing matrix is designed to validate the plugin against various combinatio
 
 | WordPress Version | Minimum PHP | Recommended PHP |
 |------------------|-------------|-----------------|
+| trunk            | 7.2.24      | 8.0+           |
+| 6.9              | 7.2.24      | 8.0+           |
+| 6.8              | 7.2.24      | 8.0+           |
 | 6.7 (latest)     | 7.2.24      | 8.0+           |
 | 6.4 - 6.6        | 7.2.24      | 8.0+           |
 | 6.0 - 6.3        | 7.2.24      | 7.4+           |
@@ -34,7 +37,22 @@ The testing matrix is designed to validate the plugin against various combinatio
 
 The GitHub Actions workflow (`.github/workflows/phpunit-ci.yml`) runs tests across the following combinations:
 
-### Latest WordPress (6.7+)
+### WordPress trunk (development)
+
+- PHP 8.3 + PHPUnit 9
+
+### WordPress 6.9
+
+- PHP 8.3 + PHPUnit 9
+- PHP 8.2 + PHPUnit 9
+
+### WordPress 6.8
+
+- PHP 8.3 + PHPUnit 9
+- PHP 8.2 + PHPUnit 9
+- PHP 8.1 + PHPUnit 9
+
+### Latest WordPress (6.7)
 
 - PHP 8.3 + PHPUnit 9
 - PHP 8.2 + PHPUnit 9
