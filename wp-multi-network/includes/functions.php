@@ -600,7 +600,7 @@ if ( ! function_exists( 'add_network' ) ) :
 			update_network_option( $new_network_id, $key, $value );
 		}
 
-		// Fix upload path and URLs in WP < 3.7.
+		// Fix upload path and URLs for WordPress > 3.7.
 		$use_files_rewriting = defined( 'SITE_ID_CURRENT_SITE' ) && get_network( SITE_ID_CURRENT_SITE )
 			? get_network_option( SITE_ID_CURRENT_SITE, 'ms_files_rewriting' )
 			: get_site_option( 'ms_files_rewriting' );
