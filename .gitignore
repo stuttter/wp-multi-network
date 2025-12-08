@@ -49,3 +49,4 @@ logs
 ############
 
 *.map
+*.asset.php

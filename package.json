@@ -4,10 +4,11 @@
   "description": "A Network Management Interface for global administrators in WordPress Multisite installations",
   "private": true,
   "scripts": {
-    "build": "wp-scripts build && npm run copy-source && npm run rename-assets && npm run generate-rtl-source",
+    "build": "wp-scripts build && npm run copy-source && npm run rename-assets && npm run generate-rtl-source && npm run cleanup-assets",
     "copy-source": "grep -v \"import .*css\" src/js/index.js | grep -v \"// Import styles\" > wp-multi-network/assets/js/wp-multi-network.js && cp src/css/style.css wp-multi-network/assets/css/wp-multi-network.css",
     "rename-assets": "mv wp-multi-network/assets/css/style-wp-multi-network.min.css wp-multi-network/assets/css/wp-multi-network.min.css 2>/dev/null || true && mv wp-multi-network/assets/css/style-wp-multi-network.min-rtl.css wp-multi-network/assets/css/wp-multi-network-rtl.min.css 2>/dev/null || true",
     "generate-rtl-source": "npx rtlcss wp-multi-network/assets/css/wp-multi-network.css wp-multi-network/assets/css/wp-multi-network-rtl.css",
+    "cleanup-assets": "rm -f wp-multi-network/assets/js/*.asset.php",
     "start": "wp-scripts start",
     "lint:js": "wp-scripts lint-js",
     "lint:css": "wp-scripts lint-style",
