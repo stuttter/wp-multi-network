@@ -103,7 +103,7 @@ class WPMN_Tests_Upload_Paths extends WPMN_UnitTestCase {
 		// Get the upload path.
 		$upload_path = get_blog_option( $main_site_id, 'upload_path' );
 
-		// In multisite, the path should use /sites/ prefix if present.
+		// In multisite, the path should use /sites/ directory if present.
 		if ( ! empty( $upload_path ) && false !== strpos( $upload_path, '/sites/' ) ) {
 			$this->assertStringContainsString( '/sites/' . $main_site_id, $upload_path, 'Upload path should contain /sites/{blog_id} format in multisite' );
 
@@ -181,7 +181,7 @@ class WPMN_Tests_Upload_Paths extends WPMN_UnitTestCase {
 
 		if ( ! empty( $upload_path ) ) {
 			// Path should not have consecutive slashes (except in protocol).
-			$path_without_protocol = preg_replace( '#^[a-z]+://#', '', $upload_path );
+			$path_without_protocol = preg_replace( '#^[a-zA-Z]+://#i', '', $upload_path );
 			$this->assertStringNotContainsString( '//', $path_without_protocol, 'Upload path should not contain consecutive slashes' );
 
 			// Path should not end with a slash.
