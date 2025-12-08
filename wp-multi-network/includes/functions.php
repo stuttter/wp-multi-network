@@ -614,9 +614,8 @@ if ( ! function_exists( 'add_network' ) ) :
 			$new_siteurl     = untrailingslashit( get_blogaddress_by_id( $new_blog_id ) );
 			$upload_url      = str_replace( $current_siteurl, $new_siteurl, content_url() );
 			$upload_url      = $upload_url . '/uploads';
-
-			$upload_dir = WP_CONTENT_DIR;
-			$needle     = strval( ABSPATH );
+			$upload_dir      = WP_CONTENT_DIR;
+			$needle          = strval( ABSPATH );
 			if ( 0 === strpos( $upload_dir, $needle ) ) {
 				$upload_dir = substr( $upload_dir, strlen( $needle ) );
 			}
