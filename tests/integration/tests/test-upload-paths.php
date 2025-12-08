@@ -99,7 +99,7 @@ class WPMN_Tests_Upload_Paths extends WPMN_UnitTestCase {
 		// Create a new network.
 		$network_id = add_network(
 			array(
-				'domain'           => 'example.org',
+				'domain'           => 'unique-test.example.org',
 				'path'             => '/',
 				'site_name'        => 'Test Network',
 				'network_name'     => 'Test Network',
