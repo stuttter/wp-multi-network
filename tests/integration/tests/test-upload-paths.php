@@ -17,11 +17,11 @@ class WPMN_Tests_Upload_Paths extends WPMN_UnitTestCase {
 	protected static $network_id;
 
 	/**
-	 * User ID for network operations.
+	 * Super admin user ID for network operations.
 	 *
 	 * @var int
 	 */
-	protected static $user_id;
+	protected static $superadmin_id;
 
 	/**
 	 * Set up before class to create a shared test network.
@@ -29,12 +29,13 @@ class WPMN_Tests_Upload_Paths extends WPMN_UnitTestCase {
 	 * @param WP_UnitTest_Factory $factory Test factory.
 	 */
 	public static function wpSetUpBeforeClass( $factory ) {
-		// Create a user for network operations.
-		self::$user_id = $factory->user->create(
+		// Create a super admin user for network operations.
+		self::$superadmin_id = $factory->user->create(
 			array(
 				'role' => 'administrator',
 			)
 		);
+		grant_super_admin( self::$superadmin_id );
 
 		self::$network_id = add_network(
 			array(
@@ -42,8 +43,8 @@ class WPMN_Tests_Upload_Paths extends WPMN_UnitTestCase {
 				'path'             => '/',
 				'site_name'        => 'Shared Test Network',
 				'network_name'     => 'Shared Test Network',
-				'user_id'          => self::$user_id,
-				'network_admin_id' => self::$user_id,
+				'user_id'          => self::$superadmin_id,
+				'network_admin_id' => self::$superadmin_id,
 			)
 		);
 	}
@@ -56,8 +57,8 @@ class WPMN_Tests_Upload_Paths extends WPMN_UnitTestCase {
 			delete_network( self::$network_id, true );
 		}
 
-		if ( ! empty( self::$user_id ) ) {
-			self::delete_user( self::$user_id );
+		if ( ! empty( self::$superadmin_id ) ) {
+			self::delete_user( self::$superadmin_id );
 		}
 	}
 
@@ -102,8 +103,8 @@ class WPMN_Tests_Upload_Paths extends WPMN_UnitTestCase {
 				'path'             => '/',
 				'site_name'        => 'Test Network',
 				'network_name'     => 'Test Network',
-				'user_id'          => self::$user_id,
-				'network_admin_id' => self::$user_id,
+				'user_id'          => self::$superadmin_id,
+				'network_admin_id' => self::$superadmin_id,
 			)
 		);
 
@@ -138,8 +139,8 @@ class WPMN_Tests_Upload_Paths extends WPMN_UnitTestCase {
 				'path'             => '/',
 				'site_name'        => 'Test Network with Rewriting',
 				'network_name'     => 'Test Network with Rewriting',
-				'user_id'          => self::$user_id,
-				'network_admin_id' => self::$user_id,
+				'user_id'          => self::$superadmin_id,
+				'network_admin_id' => self::$superadmin_id,
 			)
 		);
 
@@ -177,8 +178,8 @@ class WPMN_Tests_Upload_Paths extends WPMN_UnitTestCase {
 				'path'             => '/',
 				'site_name'        => 'Multisite Test',
 				'network_name'     => 'Multisite Test',
-				'user_id'          => self::$user_id,
-				'network_admin_id' => self::$user_id,
+				'user_id'          => self::$superadmin_id,
+				'network_admin_id' => self::$superadmin_id,
 			)
 		);
 
@@ -218,8 +219,8 @@ class WPMN_Tests_Upload_Paths extends WPMN_UnitTestCase {
 				'path'             => '/',
 				'site_name'        => 'No Rewrite Test',
 				'network_name'     => 'No Rewrite Test',
-				'user_id'          => self::$user_id,
-				'network_admin_id' => self::$user_id,
+				'user_id'          => self::$superadmin_id,
+				'network_admin_id' => self::$superadmin_id,
 			)
 		);
 
@@ -263,8 +264,8 @@ class WPMN_Tests_Upload_Paths extends WPMN_UnitTestCase {
 				'path'             => '/',
 				'site_name'        => 'Structure Test',
 				'network_name'     => 'Structure Test',
-				'user_id'          => self::$user_id,
-				'network_admin_id' => self::$user_id,
+				'user_id'          => self::$superadmin_id,
+				'network_admin_id' => self::$superadmin_id,
 			)
 		);
 
@@ -307,8 +308,8 @@ class WPMN_Tests_Upload_Paths extends WPMN_UnitTestCase {
 				'path'             => '/',
 				'site_name'        => 'Preserve Test',
 				'network_name'     => 'Preserve Test',
-				'user_id'          => self::$user_id,
-				'network_admin_id' => self::$user_id,
+				'user_id'          => self::$superadmin_id,
+				'network_admin_id' => self::$superadmin_id,
 			)
 		);
 
@@ -344,8 +345,8 @@ class WPMN_Tests_Upload_Paths extends WPMN_UnitTestCase {
 				'path'             => '/subdir/',
 				'site_name'        => 'Subdirectory Network',
 				'network_name'     => 'Subdirectory Network',
-				'user_id'          => self::$user_id,
-				'network_admin_id' => self::$user_id,
+				'user_id'          => self::$superadmin_id,
+				'network_admin_id' => self::$superadmin_id,
 			)
 		);
 
@@ -378,7 +379,7 @@ class WPMN_Tests_Upload_Paths extends WPMN_UnitTestCase {
 				'site' . $i . '.shared-test.example',
 				'/',
 				'Test Site ' . $i,
-				self::$user_id,
+				self::$superadmin_id,
 				array(),
 				self::$network_id
 			);
@@ -410,8 +411,8 @@ class WPMN_Tests_Upload_Paths extends WPMN_UnitTestCase {
 				'path'             => '/',
 				'site_name'        => 'URL Test Network',
 				'network_name'     => 'URL Test Network',
-				'user_id'          => self::$user_id,
-				'network_admin_id' => self::$user_id,
+				'user_id'          => self::$superadmin_id,
+				'network_admin_id' => self::$superadmin_id,
 			)
 		);
 
@@ -453,8 +454,8 @@ class WPMN_Tests_Upload_Paths extends WPMN_UnitTestCase {
 				'path'             => '/',
 				'site_name'        => 'Source Network',
 				'network_name'     => 'Source Network',
-				'user_id'          => self::$user_id,
-				'network_admin_id' => self::$user_id,
+				'user_id'          => self::$superadmin_id,
+				'network_admin_id' => self::$superadmin_id,
 			)
 		);
 
@@ -468,8 +469,8 @@ class WPMN_Tests_Upload_Paths extends WPMN_UnitTestCase {
 				'site_name'        => 'Cloned Network',
 				'network_name'     => 'Cloned Network',
 				'clone_network'    => $source_network_id,
-				'user_id'          => self::$user_id,
-				'network_admin_id' => self::$user_id,
+				'user_id'          => self::$superadmin_id,
+				'network_admin_id' => self::$superadmin_id,
 			)
 		);
 
