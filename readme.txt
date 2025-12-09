@@ -9,7 +9,7 @@ Tags:              network, sites, domains, global, admin
 Requires PHP:      5.2
 Requires at least: 5.5
 Tested up to:      7.0
-Stable tag:        2.5.2
+Stable tag:        3.0.0
 
 == Description ==
 
@@ -121,6 +121,15 @@ please follow the steps in https://paulund.co.uk/wordpress-multisite-nested-path
 Not much to talk about really. Check the code for details!
 
 == Changelog ==
+
+= 3.0.0 =
+* Add RTL and minified assets
+* Add WordPress 6.8, 6.9, and trunk to PHPUnit test matrix
+* Fix PHP 8 deprecated warnings
+* Fix upload paths for older installations
+* Fix sticky cache after changing a network's domain/path
+* Fix possible fatal error when switching networks
+* Fix plugin not being activated on new networks when created via WP-CLI
 
 = 2.5.3 =
 * Remove filter_input usages

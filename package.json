@@ -1,6 +1,6 @@
 {
   "name": "wp-multi-network",
-  "version": "2.7.0",
+  "version": "3.0.0",
   "description": "A Network Management Interface for global administrators in WordPress Multisite installations",
   "private": true,
   "scripts": {
