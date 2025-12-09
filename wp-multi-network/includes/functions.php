@@ -722,10 +722,6 @@ if ( ! function_exists( 'update_network' ) ) :
 			return new WP_Error( 'blog_bad', sprintf( __( 'The site "%s" is invalid, not available, or already exists.', 'wp-multi-network' ), $domain . $path ) );
 		}
 
-		// Clear cache for the old domain/path before updating to prevent stale cache entries.
-		wp_cache_delete( $network->id, 'sites' );
-		wp_cache_delete( 'networks', 'sites' );
-
 		// phpcs:ignore WordPress.VIP.DirectDatabaseQuery.DirectQuery
 		$update_result = $wpdb->update(
 			$wpdb->site,
@@ -804,8 +800,8 @@ if ( ! function_exists( 'update_network' ) ) :
 		 * @param array $args       Associative array of network arguments.
 		 */
 		do_action( 'update_network', $network->id, array(
-			'domain' => $domain,
-			'path'   => $path,
+			'domain' => $network->domain,
+			'path'   => $network->path,
 		) );
 
 		return true;
