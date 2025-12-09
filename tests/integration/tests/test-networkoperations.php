@@ -65,4 +65,28 @@ class WPMN_Tests_NetworkOperations extends WPMN_UnitTestCase {
 
 		$this->assertEquals( 1, $current_site->id, 'Switching back should switch the network' );
 	}
+
+	public function test_update_network_clears_cache() {
+		// Create a test network.
+		$network_id = $this->factory->network->create(
+			array(
+				'domain' => 'example.com',
+				'path'   => '/test/',
+			)
+		);
+
+		// Get the network to populate cache.
+		$network = get_network( $network_id );
+		$this->assertEquals( 'example.com', $network->domain, 'Network should have original domain' );
+		$this->assertEquals( '/test/', $network->path, 'Network should have original path' );
+
+		// Update the network with new domain and path.
+		$result = update_network( $network_id, 'newdomain.com', '/newpath/' );
+		$this->assertTrue( $result, 'Network update should succeed' );
+
+		// Get the network again - it should reflect the updated values.
+		$updated_network = get_network( $network_id );
+		$this->assertEquals( 'newdomain.com', $updated_network->domain, 'Network should have updated domain without manual cache flush' );
+		$this->assertEquals( '/newpath/', $updated_network->path, 'Network should have updated path without manual cache flush' );
+	}
 }
