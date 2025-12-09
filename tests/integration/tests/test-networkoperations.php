@@ -91,13 +91,23 @@ class WPMN_Tests_NetworkOperations extends WPMN_UnitTestCase {
 	}
 
 	public function test_plugin_auto_activates_on_new_network() {
+		// Create a test user and grant super admin privileges.
+		$user_id = $this->factory->user->create(
+			array(
+				'role' => 'administrator',
+			)
+		);
+		grant_super_admin( $user_id );
+
 		// Create a test network using add_network().
 		$network_id = add_network(
 			array(
-				'domain'      => 'auto-activate-test.com',
-				'path'        => '/',
-				'site_name'   => 'Auto Activate Test',
-				'network_name' => 'Test Network',
+				'domain'           => 'auto-activate-test.com',
+				'path'             => '/',
+				'site_name'        => 'Auto Activate Test',
+				'network_name'     => 'Test Network',
+				'user_id'          => $user_id,
+				'network_admin_id' => $user_id,
 			)
 		);
 
