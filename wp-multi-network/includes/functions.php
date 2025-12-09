@@ -677,6 +677,13 @@ if ( ! function_exists( 'add_network' ) ) :
 		// Clean the network cache.
 		clean_network_cache( $new_network_id );
 
+		// Self-activate on new network.
+		$existing_plugins = get_network_option( $new_network_id, 'active_sitewide_plugins', array() );
+		if ( ! isset( $existing_plugins['wp-multi-network/wpmn-loader.php'] ) ) {
+			$existing_plugins['wp-multi-network/wpmn-loader.php'] = time();
+			update_network_option( $new_network_id, 'active_sitewide_plugins', $existing_plugins );
+		}
+
 		/**
 		 * Fires after a new network has been added.
 		 *
