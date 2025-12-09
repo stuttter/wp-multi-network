@@ -218,7 +218,8 @@ if ( ! function_exists( 'switch_to_network' ) ) :
 	function switch_to_network( $new_network = 0, $validate = false ) {
 		global $wpdb, $switched_network, $switched_network_stack, $current_site;
 
-		if ( empty( $new_network ) ) {
+		// Maybe fallback to current network.
+		if ( empty( $new_network ) || ! is_numeric( $new_network ) ) {
 			$new_network = $current_site->id;
 		}
 
@@ -249,8 +250,9 @@ if ( ! function_exists( 'switch_to_network' ) ) :
 			return true;
 		}
 
-		$prev_site_id = $current_site->id;
-		$current_site = get_network( $new_network ); // phpcs:ignore WordPress.Variables.GlobalVariables.OverrideProhibited
+		$prev_site_id    = $current_site->id;
+		$new_network_obj = get_network( $new_network );
+		$current_site    = $new_network_obj; // phpcs:ignore WordPress.Variables.GlobalVariables.OverrideProhibited
 
 		// Populate extra properties if not set already.
 		if ( ! isset( $current_site->blog_id ) ) {
