@@ -11,6 +11,8 @@ Requires at least: 5.5
 Tested up to:      7.0
 Stable tag:        3.0.0
 
+A WordPress plugin that provides a network management interface for global multisite administrators.
+
 == Description ==
 
 Turn your WordPress Multisite installation into many multisite networks, surrounding one global set of users.
