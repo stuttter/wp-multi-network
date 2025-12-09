@@ -69,7 +69,7 @@ class WPMN_Loader {
 	 * @since 1.3.0
 	 * @var string
 	 */
-	public $asset_version = '202512080001';
+	public $asset_version = '202512090001';
 
 	/**
 	 * Network admin class instance.
