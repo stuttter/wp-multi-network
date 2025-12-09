@@ -89,4 +89,27 @@ class WPMN_Tests_NetworkOperations extends WPMN_UnitTestCase {
 		$this->assertEquals( 'newdomain.com', $updated_network->domain, 'Network should have updated domain without manual cache flush' );
 		$this->assertEquals( '/newpath/', $updated_network->path, 'Network should have updated path without manual cache flush' );
 	}
+
+	public function test_plugin_auto_activates_on_new_network() {
+		// Create a test network using add_network().
+		$network_id = add_network(
+			array(
+				'domain'      => 'auto-activate-test.com',
+				'path'        => '/',
+				'site_name'   => 'Auto Activate Test',
+				'network_name' => 'Test Network',
+			)
+		);
+
+		// Verify network was created successfully.
+		$this->assertNotWPError( $network_id, 'Network should be created successfully' );
+		$this->assertIsInt( $network_id, 'Network ID should be an integer' );
+
+		// Get the active sitewide plugins for the new network.
+		$active_plugins = get_network_option( $network_id, 'active_sitewide_plugins', array() );
+
+		// Verify the plugin is auto-activated.
+		$this->assertIsArray( $active_plugins, 'Active sitewide plugins should be an array' );
+		$this->assertArrayHasKey( 'wp-multi-network/wpmn-loader.php', $active_plugins, 'Plugin should be auto-activated on new network' );
+	}
 }
