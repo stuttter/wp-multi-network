@@ -15,26 +15,41 @@ The testing matrix is designed to validate the plugin against various combinatio
 ### PHPUnit Version Requirements
 
 | PHPUnit Version | PHP Requirement | WordPress Compatibility | Configuration File |
-|----------------|-----------------|------------------------|-------------------|
-| PHPUnit 9.x    | PHP 7.3+        | All versions           | phpunit.xml.dist  |
-| PHPUnit 8.x    | PHP 7.2+        | All versions           | phpunit.xml.legacy |
-| PHPUnit 7.x    | PHP 7.1+        | WP 4.9 - 6.x          | phpunit.xml.legacy |
+|-----------------|-----------------|-------------------------|--------------------|
+| PHPUnit 9.x     | PHP 7.3+        | All versions            | phpunit.xml.dist   |
+| PHPUnit 8.x     | PHP 7.2+        | All versions            | phpunit.xml.legacy |
+| PHPUnit 7.x     | PHP 7.1+        | WP 4.9 - 6.x            | phpunit.xml.legacy |
 
 ### WordPress Version Requirements
 
 | WordPress Version | Minimum PHP | Recommended PHP |
-|------------------|-------------|-----------------|
-| 6.7 (latest)     | 7.2.24      | 8.0+           |
-| 6.4 - 6.6        | 7.2.24      | 8.0+           |
-| 6.0 - 6.3        | 7.2.24      | 7.4+           |
-| 5.9              | 7.2.24      | 7.4+           |
-| 5.5 - 5.8        | 7.2.0       | 7.4+           |
+|-------------------|-------------|-----------------|
+| trunk             | 7.2.24      | 8.0+            |
+| 6.4 - 6.9         | 7.2.24      | 8.0+            |
+| 6.0 - 6.3         | 7.2.24      | 7.4+            |
+| 5.9               | 7.2.24      | 7.4+            |
+| 5.5 - 5.8         | 7.2.0       | 7.4+            |
 
 ## Test Matrix Configuration
 
 The GitHub Actions workflow (`.github/workflows/phpunit-ci.yml`) runs tests across the following combinations:
 
-### Latest WordPress (6.7+)
+### WordPress trunk (development)
+
+- PHP 8.3 + PHPUnit 9
+
+### WordPress 6.9
+
+- PHP 8.3 + PHPUnit 9
+- PHP 8.2 + PHPUnit 9
+
+### WordPress 6.8
+
+- PHP 8.3 + PHPUnit 9
+- PHP 8.2 + PHPUnit 9
+- PHP 8.1 + PHPUnit 9
+
+### Latest WordPress (6.7)
 
 - PHP 8.3 + PHPUnit 9
 - PHP 8.2 + PHPUnit 9
@@ -109,6 +124,54 @@ composer require --dev phpunit/phpunit:^8.5
 export WP_VERSION=6.4
 bash bin/install-wp-tests.sh wordpress_test wp wp localhost $WP_VERSION
 ./vendor/bin/phpunit
+```
+
+### Running Specific Test Groups
+
+Tests are organized using PHPUnit groups for easy filtering:
+
+**Run all upload path tests:**
+
+```bash
+./vendor/bin/phpunit --group=upload
+```
+
+**Run tests by ticket number:**
+
+```bash
+./vendor/bin/phpunit --group=136
+```
+
+**Run specific test groups:**
+
+```bash
+# Files rewriting tests
+./vendor/bin/phpunit --group=files-rewriting
+
+# Multisite configuration tests
+./vendor/bin/phpunit --group=multisite
+
+# Subdirectory installation tests
+./vendor/bin/phpunit --group=subdirectory
+```
+
+**Run a single test class:**
+
+```bash
+./vendor/bin/phpunit tests/integration/tests/test-upload-paths.php
+```
+
+**Run a specific test method:**
+
+```bash
+./vendor/bin/phpunit --filter test_upload_path_without_duplication
+```
+
+**Verbose and debug output:**
+
+```bash
+./vendor/bin/phpunit --group=upload --verbose
+./vendor/bin/phpunit --group=upload --debug
 ```
 
 ### Testing with Docker

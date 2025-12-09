@@ -218,7 +218,8 @@ if ( ! function_exists( 'switch_to_network' ) ) :
 	function switch_to_network( $new_network = 0, $validate = false ) {
 		global $wpdb, $switched_network, $switched_network_stack, $current_site;
 
-		if ( empty( $new_network ) ) {
+		// Maybe fallback to current network.
+		if ( empty( $new_network ) || ! is_numeric( $new_network ) ) {
 			$new_network = $current_site->id;
 		}
 
@@ -249,8 +250,9 @@ if ( ! function_exists( 'switch_to_network' ) ) :
 			return true;
 		}
 
-		$prev_site_id = $current_site->id;
-		$current_site = get_network( $new_network ); // phpcs:ignore WordPress.Variables.GlobalVariables.OverrideProhibited
+		$prev_site_id    = $current_site->id;
+		$new_network_obj = get_network( $new_network );
+		$current_site    = $new_network_obj; // phpcs:ignore WordPress.Variables.GlobalVariables.OverrideProhibited
 
 		// Populate extra properties if not set already.
 		if ( ! isset( $current_site->blog_id ) ) {
@@ -614,25 +616,24 @@ if ( ! function_exists( 'add_network' ) ) :
 			$new_siteurl     = untrailingslashit( get_blogaddress_by_id( $new_blog_id ) );
 			$upload_url      = str_replace( $current_siteurl, $new_siteurl, content_url() );
 			$upload_url      = $upload_url . '/uploads';
-
-			$upload_dir = WP_CONTENT_DIR;
-			$needle     = strval( ABSPATH );
+			$upload_dir      = WP_CONTENT_DIR;
+			$needle          = strval( ABSPATH );
 			if ( 0 === strpos( $upload_dir, $needle ) ) {
 				$upload_dir = substr( $upload_dir, strlen( $needle ) );
 			}
 			$upload_dir .= '/uploads';
 
-			if ( defined( 'MULTISITE' ) ) {
-				$ms_dir = '/sites/' . $new_blog_id;
-			} else {
-				$ms_dir = '/' . $new_blog_id;
+			// Check if wpmu_create_blog() already set the site-specific path.
+			$existing_upload_path = get_blog_option( $new_blog_id, 'upload_path' );
+			$site_path_suffix     = defined( 'MULTISITE' ) ? '/sites/' . $new_blog_id : '/' . $new_blog_id;
+
+			// Only add the site-specific path if it's not already present.
+			if ( empty( $existing_upload_path ) || false === strpos( $existing_upload_path, $site_path_suffix ) ) {
+				$upload_dir .= $site_path_suffix;
+				$upload_url .= $site_path_suffix;
+				update_blog_option( $new_blog_id, 'upload_path', $upload_dir );
+				update_blog_option( $new_blog_id, 'upload_url_path', $upload_url );
 			}
-
-			$upload_dir .= $ms_dir;
-			$upload_url .= $ms_dir;
-
-			update_blog_option( $new_blog_id, 'upload_path', $upload_dir );
-			update_blog_option( $new_blog_id, 'upload_url_path', $upload_url );
 		}
 
 		// Clone network meta from existing network.

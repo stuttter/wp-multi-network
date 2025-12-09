@@ -140,9 +140,11 @@ class WP_MS_Networks_Admin {
 		global $plugin_page, $submenu_file;
 
 		if ( 'networks' === $plugin_page ) {
+			// phpcs:disable WordPress.Security.NonceVerification.Recommended
 			$action = ! empty( $_GET['action'] )
 				? sanitize_key( $_GET['action'] )
 				: '';
+			// phpcs:enable
 
 			if ( 'move' === $action ) {
 				$submenu_file = 'sites.php'; // phpcs:ignore WordPress.Variables.GlobalVariables.OverrideProhibited
@@ -166,8 +168,8 @@ class WP_MS_Networks_Admin {
 		}
 
 		// Determine if we should load source or minified assets based on WP_SCRIPT_DEBUG.
-		$suffix         = ( defined( 'WP_SCRIPT_DEBUG' ) && WP_SCRIPT_DEBUG ) ? '' : '.min';
-		$asset_version  = ( defined( 'WP_SCRIPT_DEBUG' ) && WP_SCRIPT_DEBUG ) ? time() : wpmn()->asset_version;
+		$suffix        = ( defined( 'WP_SCRIPT_DEBUG' ) && WP_SCRIPT_DEBUG ) ? '' : '.min';
+		$asset_version = ( defined( 'WP_SCRIPT_DEBUG' ) && WP_SCRIPT_DEBUG ) ? time() : wpmn()->asset_version;
 
 		wp_register_style( 'wp-multi-network', wpmn()->plugin_url . 'assets/css/wp-multi-network' . $suffix . '.css', array(), $asset_version );
 		wp_register_script( 'wp-multi-network', wpmn()->plugin_url . 'assets/js/wp-multi-network' . $suffix . '.js', array( 'jquery', 'post' ), $asset_version, true );
@@ -206,6 +208,9 @@ class WP_MS_Networks_Admin {
 	/**
 	 * Prints feedback notices for network admin actions as necessary.
 	 *
+	 * @phpcs:disable WordPress.Security.NonceVerification.Missing
+	 * @phpcs:disable WordPress.Security.NonceVerification.Recommended
+	 *
 	 * @since 1.3.0
 	 * @return void
 	 */
@@ -215,30 +220,29 @@ class WP_MS_Networks_Admin {
 
 		foreach ( $this->feedback_strings as $slug => $messages ) {
 
-			// Skip if not known feedback
+			// Skip if not known feedback.
 			if ( ! isset( $_GET[ $slug ] ) || ! is_scalar( $_GET[ $slug ] ) ) {
 				continue;
 			}
 
-			// Pass/Fail
+			// Pass/Fail.
 			$passed = sanitize_key( $_GET[ $slug ] );
 
-			// Pass
 			if ( '1' === $passed ) {
+				// Pass.
 				$message = $messages['1'];
 				$type    = 'updated';
-
-			// Fail
 			} else {
+				// Fail.
 				$message = $messages['0'];
 				$type    = 'error';
 			}
 
-			// Done
+			// Done.
 			break;
 		}
 
-		// Bail if no message or type
+		// Bail if no message or type.
 		if ( empty( $message ) || empty( $type ) ) {
 			return;
 		}
@@ -256,6 +260,9 @@ class WP_MS_Networks_Admin {
 
 	/**
 	 * Routes the current request to the correct page.
+	 *
+	 * @phpcs:disable WordPress.Security.NonceVerification.Missing
+	 * @phpcs:disable WordPress.Security.NonceVerification.Recommended
 	 *
 	 * @since 2.0.0
 	 * @return void
@@ -324,6 +331,9 @@ class WP_MS_Networks_Admin {
 	/**
 	 * Handles network management form submissions.
 	 *
+	 * @phpcs:disable WordPress.Security.NonceVerification.Missing
+	 * @phpcs:disable WordPress.Security.NonceVerification.Recommended
+	 *
 	 * @since 2.0.0
 	 * @return void
 	 */
@@ -387,6 +397,9 @@ class WP_MS_Networks_Admin {
 
 	/**
 	 * Renders the new network creation dashboard page.
+	 *
+	 * @phpcs:disable WordPress.Security.NonceVerification.Missing
+	 * @phpcs:disable WordPress.Security.NonceVerification.Recommended
 	 *
 	 * @since 2.0.0
 	 * @return void
@@ -468,6 +481,9 @@ class WP_MS_Networks_Admin {
 	/**
 	 * Renders the network listing dashboard page.
 	 *
+	 * @phpcs:disable WordPress.Security.NonceVerification.Missing
+	 * @phpcs:disable WordPress.Security.NonceVerification.Recommended
+	 *
 	 * @since 2.0.0
 	 *
 	 * @uses WP_MS_Networks_List_Table List_Table iterator for networks
@@ -523,6 +539,9 @@ class WP_MS_Networks_Admin {
 	/**
 	 * Renders the dashboard screen for moving sites -- accessed from the "Sites" screen.
 	 *
+	 * @phpcs:disable WordPress.Security.NonceVerification.Missing
+	 * @phpcs:disable WordPress.Security.NonceVerification.Recommended
+	 *
 	 * @since 2.0.0
 	 * @return void
 	 */
@@ -564,8 +583,17 @@ class WP_MS_Networks_Admin {
 		);
 
 		// URLs to escape.
-		$add_network_url = $this->admin_url( array( 'page' => 'add-new-network' ) );
-		$form_action_url = $this->admin_url( array( 'action' => 'move', 'blog_id' => $site_id ) );
+		$add_network_url = $this->admin_url(
+			array(
+				'page' => 'add-new-network',
+			)
+		);
+		$form_action_url = $this->admin_url(
+			array(
+				'action'  => 'move',
+				'blog_id' => $site_id,
+			)
+		);
 		?>
 
 		<div class="wrap">
@@ -604,6 +632,9 @@ class WP_MS_Networks_Admin {
 
 	/**
 	 * Renders the delete network page.
+	 *
+	 * @phpcs:disable WordPress.Security.NonceVerification.Missing
+	 * @phpcs:disable WordPress.Security.NonceVerification.Recommended
 	 *
 	 * @since 2.0.0
 	 * @return void
@@ -703,12 +734,15 @@ class WP_MS_Networks_Admin {
 	/**
 	 * Renders the delete multiple networks page.
 	 *
+	 * @phpcs:disable WordPress.Security.NonceVerification.Missing
+	 * @phpcs:disable WordPress.Security.NonceVerification.Recommended
+	 *
 	 * @since 2.0.0
 	 * @return void
 	 */
 	private function page_delete_networks() {
 
-		$network_id   = get_main_network_id();
+		$network_id = get_main_network_id();
 
 		$all_networks = ! empty( $_POST['all_networks'] ) && is_array( $_POST['all_networks'] )
 			? wp_parse_id_list( (array) $_POST['all_networks'] )
@@ -920,6 +954,9 @@ class WP_MS_Networks_Admin {
 	/**
 	 * Handles the request to add a new network.
 	 *
+	 * @phpcs:disable WordPress.Security.NonceVerification.Missing
+	 * @phpcs:disable WordPress.Security.NonceVerification.Recommended
+	 *
 	 * @since 2.0.0
 	 * @return void
 	 */
@@ -1027,6 +1064,9 @@ class WP_MS_Networks_Admin {
 	/**
 	 * Handles the request to update a network.
 	 *
+	 * @phpcs:disable WordPress.Security.NonceVerification.Missing
+	 * @phpcs:disable WordPress.Security.NonceVerification.Recommended
+	 *
 	 * @since 2.0.0
 	 * @return void
 	 */
@@ -1098,13 +1138,16 @@ class WP_MS_Networks_Admin {
 	/**
 	 * Handles the request to move a site to another network.
 	 *
+	 * @phpcs:disable WordPress.Security.NonceVerification.Missing
+	 * @phpcs:disable WordPress.Security.NonceVerification.Recommended
+	 *
 	 * @since 2.0.0
 	 * @return void
 	 */
 	private function handle_move_site() {
 
 		// Sanitize values.
-		$site_id     = ! empty( $_GET['blog_id'] ) && is_numeric( $_GET['blog_id'] )
+		$site_id = ! empty( $_GET['blog_id'] ) && is_numeric( $_GET['blog_id'] )
 			? (int) $_GET['blog_id']
 			: 0;
 
@@ -1163,6 +1206,8 @@ class WP_MS_Networks_Admin {
 
 	/**
 	 * Handles the request to reassign sites to another network.
+	 *
+	 * @phpcs:disable WordPress.Security.NonceVerification.Recommended
 	 *
 	 * @since 2.0.0
 	 * @return void
@@ -1236,6 +1281,9 @@ class WP_MS_Networks_Admin {
 	/**
 	 * Handles the request to delete a network.
 	 *
+	 * @phpcs:disable WordPress.Security.NonceVerification.Missing
+	 * @phpcs:disable WordPress.Security.NonceVerification.Recommended
+	 *
 	 * @since 2.0.0
 	 * @return void
 	 */
@@ -1266,6 +1314,8 @@ class WP_MS_Networks_Admin {
 
 	/**
 	 * Handles the request to delete multiple networks.
+	 *
+	 * @phpcs:disable WordPress.Security.NonceVerification.Missing
 	 *
 	 * @since 2.0.0
 	 * @return void

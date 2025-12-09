@@ -46,6 +46,9 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 	/**
 	 * Prepares the list table items.
 	 *
+	 * @phpcs:disable WordPress.Security.NonceVerification.Missing
+	 * @phpcs:disable WordPress.Security.NonceVerification.Recommended
+	 *
 	 * @since 1.3.0
 	 * @return void
 	 */

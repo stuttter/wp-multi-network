@@ -82,10 +82,9 @@ class WP_MS_Network_Command {
 			$network_admin_id = get_current_user_id();
 		}
 
-		$clone_network    = $assoc_args['clone_network'];
-		$options_to_clone = false;
+		$clone_network = $assoc_args['clone_network'];
 
-		if ( ! empty( $clone_network ) && ! get_network( $clone_network ) ) {
+		if ( ! empty( $clone_network ) && is_numeric( $clone_network ) && ! get_network( $clone_network ) ) {
 			WP_CLI::error( sprintf( "Clone network %s doesn't exist.", $clone_network ) );
 		}
 
@@ -98,7 +97,7 @@ class WP_MS_Network_Command {
 				'user_id'          => get_current_user_id(),
 				'network_admin_id' => $network_admin_id,
 				'clone_network'    => $clone_network,
-				'options_to_clone' => $options_to_clone,
+				'options_to_clone' => $assoc_args['options_to_clone'],
 			)
 		);
 
@@ -264,9 +263,11 @@ class WP_MS_Network_Command {
 	public function plugin( $args, $assoc_args ) {
 		$fetchers_plugin = new \WP_CLI\Fetchers\Plugin();
 		$action          = array_shift( $args );
+
 		if ( ! in_array( $action, array( 'activate', 'deactivate' ), true ) ) {
 			WP_CLI::error( sprintf( '%s is not a supported action.', $action ) );
 		}
+
 		$network_wide = \WP_CLI\Utils\get_flag_value( $assoc_args, 'network' );
 		$all          = \WP_CLI\Utils\get_flag_value( $assoc_args, 'all', false );
 
