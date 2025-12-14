@@ -174,6 +174,12 @@ class WP_MS_Networks_Admin {
 		wp_register_style( 'wp-multi-network', wpmn()->plugin_url . 'assets/css/wp-multi-network' . $suffix . '.css', array(), $asset_version );
 		wp_register_script( 'wp-multi-network', wpmn()->plugin_url . 'assets/js/wp-multi-network' . $suffix . '.js', array( 'jquery', 'post' ), $asset_version, true );
 
+		wp_style_add_data( 'wp-multi-network', 'rtl', 'replace' );
+
+		if ( $suffix ) {
+			wp_style_add_data( 'wp-multi-network', 'suffix', $suffix );
+		}
+
 		wp_enqueue_style( 'wp-multi-network' );
 		wp_enqueue_script( 'wp-multi-network' );
 	}
