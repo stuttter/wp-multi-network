@@ -91,7 +91,7 @@ function wpmn_move_site_assign_metabox( $site = null ) {
 						<?php
 						printf(
 							/* translators: %s: site registration date */
-							esc_html__( 'Created: %1$s', 'wp-multi-network' ),
+							esc_html__( 'Created: %s', 'wp-multi-network' ),
 							'<strong>' . esc_html( $site->registered ) . '</strong>'
 						);
 						?>
@@ -102,7 +102,7 @@ function wpmn_move_site_assign_metabox( $site = null ) {
 						<?php
 						printf(
 							/* translators: %s: site domain */
-							esc_html__( 'Domain: %1$s', 'wp-multi-network' ),
+							esc_html__( 'Domain: %s', 'wp-multi-network' ),
 							'<strong>' . esc_html( $site->domain ) . '</strong>'
 						);
 						?>
@@ -113,7 +113,7 @@ function wpmn_move_site_assign_metabox( $site = null ) {
 						<?php
 						printf(
 							/* translators: %s: site path */
-							esc_html__( 'Path: %1$s', 'wp-multi-network' ),
+							esc_html__( 'Path: %s', 'wp-multi-network' ),
 							'<strong>' . esc_html( $site->path ) . '</strong>'
 						);
 						?>
