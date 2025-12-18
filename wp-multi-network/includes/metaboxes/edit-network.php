@@ -38,8 +38,10 @@ function wpmn_edit_network_details_metabox( $network = null ) {
 			</th>
 			<td>
 				<label for="domain">
-					<span class="scheme"><?php echo esc_html( wp_get_scheme() ); ?></span>
-					<input type="text" name="domain" id="domain" class="regular-text" value="<?php echo esc_attr( $domain ); ?>">
+					<span class="code">
+						<span class="scheme"><?php echo esc_html( wp_get_scheme() ); ?></span><!--
+						--><input type="text" name="domain" id="domain" class="regular-text code" value="<?php echo esc_attr( $domain ); ?>">
+					</span>
 				</label>
 			</td>
 		</tr>
@@ -48,7 +50,7 @@ function wpmn_edit_network_details_metabox( $network = null ) {
 				<label for="path"><?php esc_html_e( 'Path', 'wp-multi-network' ); ?></label>
 			</th>
 			<td>
-				<input type="text" name="path" id="path" class="regular-text" value="<?php echo esc_attr( $path ); ?>">
+				<input type="text" name="path" id="path" class="regular-text code" value="<?php echo esc_attr( $path ); ?>">
 				<p class="description"><?php esc_html_e( 'Use "/" if you are unsure.', 'wp-multi-network' ); ?></p>
 			</td>
 		</tr>
