@@ -39,7 +39,7 @@ function wpmn_edit_network_details_metabox( $network = null ) {
 			<td>
 				<label for="domain">
 					<span class="code">
-						<code class="scheme"><?php echo esc_html( wp_get_scheme() ); ?></code><!--
+						<span class="scheme"><?php echo esc_html( wp_get_scheme() ); ?></span><!--
 						--><input type="text" name="domain" id="domain" class="regular-text code" value="<?php echo esc_attr( $domain ); ?>">
 					</span>
 				</label>
