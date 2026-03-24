@@ -84,7 +84,7 @@ class WP_MS_Network_Command {
 
 		$clone_network = $assoc_args['clone_network'];
 
-		if ( ! empty( $clone_network ) && is_numeric( $clone_network ) && ! get_network( $clone_network ) ) {
+		if ( ! empty( $clone_network ) && is_numeric( $clone_network ) && ! get_network( (int) $clone_network ) ) {
 			WP_CLI::error( sprintf( "Clone network %s doesn't exist.", $clone_network ) );
 		}
 
@@ -103,6 +103,8 @@ class WP_MS_Network_Command {
 
 		if ( is_wp_error( $network_id ) ) {
 			WP_CLI::error( $network_id );
+
+			return;
 		}
 
 		WP_CLI::success( sprintf( 'Created network %d.', $network_id ) );
@@ -231,7 +233,9 @@ class WP_MS_Network_Command {
 	 * @return void
 	 */
 	public function list_( $args, $assoc_args ) {
-		$items     = get_networks();
+		/** @var WP_Network[] $items */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
+		$items = get_networks();
+
 		$formatter = $this->get_formatter( $assoc_args );
 		$formatter->display_items( $items );
 	}

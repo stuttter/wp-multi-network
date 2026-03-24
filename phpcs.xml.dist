@@ -21,6 +21,7 @@
 		</properties>
 	</rule>
 	<rule ref="PHPCompatibilityWP" />
+	<rule ref="WordPress-VIP-Go" />
 	<rule ref="WordPress.WP.Capabilities">
 		<properties>
 			<property name="custom_capabilities" type="array">
@@ -33,7 +34,14 @@
 			</property>
 		</properties>
 	</rule>
-
+	<rule ref="WordPressVIPMinimum">
+	    <exclude name="WordPressVIPMinimum.JS.Window"/>
+	    <exclude name="WordPressVIPMinimum.JS.DangerouslySetInnerHTML"/>
+	    <exclude name="WordPressVIPMinimum.JS.InnerHTML"/>
+	    <exclude name="WordPressVIPMinimum.JS.StrippingTags"/>
+	    <exclude name="WordPressVIPMinimum.JS.StringConcat"/>
+	    <exclude name="WordPressVIPMinimum.JS.HTMLExecutingFunctions"/>
+	</rule>
 	<config name="testVersion" value="7.2-" />
 
 	<file>.</file>

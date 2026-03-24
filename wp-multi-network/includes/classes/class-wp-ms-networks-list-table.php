@@ -85,9 +85,8 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 			'no_found_rows' => false,
 		);
 
-		$query = new WP_Network_Query();
-
-		$this->items = $query->query( $args );
+		$query       = new WP_Network_Query();
+		$this->items = (array) $query->query( $args );
 		$count       = $query->found_networks;
 
 		$this->set_pagination_args(
@@ -133,6 +132,10 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 	 * @param string $which Where to display the pagination. Either 'top' or 'bottom'.
 	 */
 	public function pagination( $which ) { // phpcs:ignore Generic.CodeAnalysis.UselessOverridingMethod.Found
+		if ( ! in_array( $which, array( 'top', 'bottom' ), true ) ) {
+			return;
+		}
+
 		parent::pagination( $which );
 	}
 
@@ -198,7 +201,7 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 	 * @return void
 	 */
 	public function single_row( $network ) {
-		$class = (int) get_current_site()->id === (int) $network->id ? 'current' : 'not-current';
+		$class = get_current_site()->id === ( $network->id ?? 0 ) ? 'current' : 'not-current';
 
 		echo '<tr class="' . esc_attr( $class ) . '">';
 		$this->single_row_columns( $network );

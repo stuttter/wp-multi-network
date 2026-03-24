@@ -74,7 +74,7 @@ class WP_MS_Networks_Admin_Bar {
 		$networks = user_has_networks();
 
 		// Bail if user does not have networks or they can't manage networks.
-		if ( empty( $networks ) || ! current_user_can( 'manage_networks' ) ) {
+		if ( ! is_array( $networks ) || array() === $networks || ! current_user_can( 'manage_networks' ) ) {
 			return;
 		}
 

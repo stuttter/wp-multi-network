@@ -20,6 +20,7 @@
     "composer/installers": "^1.0 || ^2.0"
   },
   "require-dev": {
+    "automattic/vipwpcs": "^3.0",
     "php-stubs/wp-cli-stubs": "^2.12.0",
     "phpcompatibility/phpcompatibility-wp": "^2.1.8",
     "phpstan/extension-installer": "^1.4.3",
