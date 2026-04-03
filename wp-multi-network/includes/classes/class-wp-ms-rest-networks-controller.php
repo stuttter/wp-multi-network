@@ -881,7 +881,12 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	 * @return bool Whether the network can be edited or deleted.
 	 */
 	protected function check_edit_permission( $network ) {
-		return current_user_can( 'edit_network', $network->id ?? null );
+		$network_id = $network->id ?? null;
+		if ( null === $network_id ) {
+			return false;
+		}
+
+		return current_user_can( 'edit_network', $network_id );
 	}
 
 	/**
