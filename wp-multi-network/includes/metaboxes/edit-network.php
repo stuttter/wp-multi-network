@@ -98,16 +98,18 @@ function wpmn_edit_network_new_site_metabox() {
  * @return void
  */
 function wpmn_edit_network_assign_sites_metabox( $network = null ) {
+	$network_id = $network->id ?? null;
+
 	$to = get_sites(
 		array(
-			'site__not_in' => array( get_main_site_id( $network->id ) ),
-			'network_id'   => $network->id,
+			'site__not_in' => array( get_main_site_id( (int) $network_id ) ),
+			'network_id'   => (int) $network_id,
 		)
 	);
 
 	$from = get_sites(
 		array(
-			'network__not_in' => array( $network->id ),
+			'network__not_in' => array( (int) $network_id ),
 		)
 	);
 
@@ -127,7 +129,7 @@ function wpmn_edit_network_assign_sites_metabox( $network = null ) {
 
 					<?php foreach ( $from as $site ) : ?>
 
-						<?php if ( ( (int) $site->network_id !== (int) $network->id ) && ! is_main_site_for_network( $site->id ) ) : ?>
+						<?php if ( ( (int) $site->network_id !== (int) $network_id ) && ! is_main_site_for_network( $site->id ) ) : ?>
 
 							<option value="<?php echo esc_attr( strval( $site->id ) ); ?>">
 								<?php echo esc_html( sprintf( '%1$s (%2$s%3$s)', $site->blogname, $site->domain, $site->path ) ); ?>
@@ -148,7 +150,7 @@ function wpmn_edit_network_assign_sites_metabox( $network = null ) {
 
 					<?php foreach ( $to as $site ) : ?>
 
-						<?php if ( (int) $site->network_id === (int) $network->id ) : ?>
+						<?php if ( (int) $site->network_id === (int) $network_id ) : ?>
 
 							<option value="<?php echo esc_attr( strval( $site->id ) ); ?>" <?php disabled( is_main_site_for_network( $site->id ) ); ?>>
 								<?php echo esc_html( sprintf( '%1$s (%2$s%3$s)', $site->blogname, $site->domain, $site->path ) ); ?>

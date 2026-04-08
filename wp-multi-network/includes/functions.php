@@ -64,8 +64,13 @@ if ( ! function_exists( 'user_has_networks' ) ) :
 			$user_id    = $user_info->ID;
 			$user_login = $user_info->user_login;
 		} else {
-			$user_id    = (int) $user_id;
-			$user_info  = get_userdata( $user_id );
+			$user_id   = (int) $user_id;
+			$user_info = get_userdata( $user_id );
+
+			if ( false === $user_info ) {
+				return false;
+			}
+
 			$user_login = $user_info->user_login;
 		}
 
@@ -99,8 +104,7 @@ if ( ! function_exists( 'user_has_networks' ) ) :
 
 		if ( is_multisite() ) {
 
-			// phpcs:ignore WordPress.VIP.DirectDatabaseQuery.DirectQuery,WordPress.VIP.DirectDatabaseQuery.NoCaching
-			$my_networks = array_map( 'intval', $wpdb->get_col( $wpdb->prepare( "SELECT site_id FROM {$wpdb->sitemeta} WHERE meta_key = %s AND meta_value LIKE %s", 'site_admins', '%"' . $user_login . '"%' ) ) );
+			$my_networks = array_map( 'intval', $wpdb->get_col( $wpdb->prepare( "SELECT site_id FROM {$wpdb->sitemeta} WHERE meta_key = %s AND meta_value LIKE %s", 'site_admins', '%"' . $user_login . '"%' ) ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		}
 
 		// If there are no networks, return false.
@@ -167,14 +171,16 @@ if ( ! function_exists( 'is_main_site_for_network' ) ) :
 	 */
 	function is_main_site_for_network( $site_id ) {
 		$site = get_site( $site_id );
-		$main = get_main_site_id( $site->network_id );
-
-		// Bail if no site or network was found.
-		if ( empty( $main ) ) {
+		if ( null === $site ) { // Bail if no site was found.
 			return false;
 		}
 
-		return (int) $main === (int) $site_id;
+		$main = get_main_site_id( $site->network_id );
+		if ( empty( $main ) ) { // Bail if no network was found.
+			return false;
+		}
+
+		return $main === (int) $site_id;
 	}
 endif;
 
@@ -252,20 +258,26 @@ if ( ! function_exists( 'switch_to_network' ) ) :
 
 		$prev_site_id    = $current_site->id;
 		$new_network_obj = get_network( $new_network );
-		$current_site    = $new_network_obj; // phpcs:ignore WordPress.Variables.GlobalVariables.OverrideProhibited
+
+		// Bail if the network does not exist.
+		if ( null === $new_network_obj ) {
+			return false;
+		}
+
+		$current_site = $new_network_obj;
 
 		// Populate extra properties if not set already.
 		if ( ! isset( $current_site->blog_id ) ) {
 			$current_site->blog_id = get_main_site_id( $current_site->id );
 		}
-		if ( ! isset( $current_site->site_name ) ) {
+		if ( empty( $current_site->site_name ) ) {
 			$current_site->site_name = get_network_name();
 		}
 
 		// Update network globals.
 		$wpdb->siteid       = $current_site->id;
-		$GLOBALS['site_id'] = $current_site->id; // phpcs:ignore WordPress.Variables.GlobalVariables.OverrideProhibited
-		$GLOBALS['domain']  = $current_site->domain; // phpcs:ignore WordPress.Variables.GlobalVariables.OverrideProhibited
+		$GLOBALS['site_id'] = $current_site->id;
+		$GLOBALS['domain']  = $current_site->domain;
 
 		/** This action is documented in wp-multi-network/includes/functions.php */
 		do_action( 'switch_network', $current_site->id, $prev_site_id );
@@ -316,10 +328,10 @@ if ( ! function_exists( 'restore_current_network' ) ) :
 		$prev_network_id = $current_site->id;
 
 		// Update network globals.
-		$current_site       = $new_network; // phpcs:ignore WordPress.Variables.GlobalVariables.OverrideProhibited
+		$current_site       = $new_network;
 		$wpdb->siteid       = $new_network->id;
-		$GLOBALS['site_id'] = $new_network->id; // phpcs:ignore WordPress.Variables.GlobalVariables.OverrideProhibited
-		$GLOBALS['domain']  = $new_network->domain; // phpcs:ignore WordPress.Variables.GlobalVariables.OverrideProhibited
+		$GLOBALS['site_id'] = $new_network->id;
+		$GLOBALS['domain']  = $new_network->domain;
 
 		/** This action is documented in wp-multi-network/includes/functions.php */
 		do_action( 'switch_network', $new_network->id, $prev_network_id );
@@ -376,8 +388,7 @@ if ( ! function_exists( 'insert_network' ) ) :
 			);
 		}
 
-		// phpcs:ignore WordPress.VIP.DirectDatabaseQuery.DirectQuery
-		$result = $wpdb->insert(
+		$result = $wpdb->insert( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 			$wpdb->site,
 			array(
 				'domain' => $domain,
@@ -542,8 +553,10 @@ if ( ! function_exists( 'add_network' ) ) :
 		$new_network_id = insert_network( $r['domain'], $r['path'] );
 
 		// Bail if insert returned an error.
-		if ( empty( $new_network_id ) || is_wp_error( $new_network_id ) ) {
-			return $new_network_id;
+		if ( ! is_int( $new_network_id ) || 0 === $new_network_id ) {
+			return is_wp_error( $new_network_id )
+				? $new_network_id
+				: new WP_Error( 'network_not_created', esc_html__( 'Network could not be created.', 'wp-multi-network' ) );
 		}
 
 		// Set the installation constant to true.
@@ -657,13 +670,10 @@ if ( ! function_exists( 'add_network' ) ) :
 
 				// Fix for bug that prevents writing the ms_files_rewriting value for new networks.
 				if ( 'ms_files_rewriting' === $option ) {
-					// phpcs:ignore WordPress.VIP.DirectDatabaseQuery.DirectQuery
-					$wpdb->insert( $wpdb->sitemeta, array(
+					$wpdb->insert( $wpdb->sitemeta, array( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 						'site_id'    => $new_network_id,
-						// phpcs:ignore WordPress.VIP.SlowDBQuery
-						'meta_key'   => $option,
-						// phpcs:ignore WordPress.VIP.SlowDBQuery
-						'meta_value' => $options_cache[ $option ],
+						'meta_key'   => $option, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+						'meta_value' => $options_cache[ $option ], // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 					) );
 				} else {
 					update_network_option( $new_network_id, $option, $options_cache[ $option ] );
@@ -731,8 +741,7 @@ if ( ! function_exists( 'update_network' ) ) :
 			return new WP_Error( 'blog_bad', sprintf( __( 'The site "%s" is invalid, not available, or already exists.', 'wp-multi-network' ), $domain . $path ) );
 		}
 
-		// phpcs:ignore WordPress.VIP.DirectDatabaseQuery.DirectQuery
-		$update_result = $wpdb->update(
+		$update_result = $wpdb->update( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 			$wpdb->site,
 			array(
 				'domain' => $domain,
@@ -772,8 +781,7 @@ if ( ! function_exists( 'update_network' ) ) :
 					continue;
 				}
 
-				// phpcs:ignore WordPress.VIP.DirectDatabaseQuery.DirectQuery
-				$wpdb->update( $wpdb->blogs, $update, array(
+				$wpdb->update( $wpdb->blogs, $update, array( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 					'blog_id' => (int) $site->id,
 				) );
 
@@ -781,7 +789,7 @@ if ( ! function_exists( 'update_network' ) ) :
 
 				// Loop through URL-dependent options and correct them.
 				foreach ( network_options_list() as $option_name ) {
-					$value = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$option_table} WHERE option_name = %s", $option_name ) );  // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+					$value = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$option_table} WHERE option_name = %s", $option_name ) );  // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery
 
 					if ( ! empty( $value ) && ( false !== strpos( $value->option_value, $old_path ) ) ) {
 						$new_value = str_replace( $old_path, $full_path, $value->option_value );
@@ -860,11 +868,9 @@ if ( ! function_exists( 'delete_network' ) ) :
 			}
 		}
 
-		// phpcs:ignore WordPress.VIP.DirectDatabaseQuery.DirectQuery
-		$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->site} WHERE id = %d", $network->id ) );
+		$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->site} WHERE id = %d", $network->id ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 
-		// phpcs:ignore WordPress.VIP.DirectDatabaseQuery.DirectQuery
-		$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->sitemeta} WHERE site_id = %d", $network->id ) );
+		$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->sitemeta} WHERE site_id = %d", $network->id ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 
 		// Clean the network cache.
 		clean_network_cache( $network->id );
@@ -900,14 +906,14 @@ if ( ! function_exists( 'move_site' ) ) :
 
 		$site = get_site( $site_id );
 
+		// Bail if site does not exist.
+		if ( null === $site ) {
+			return new WP_Error( 'blog_not_exist', __( 'Site does not exist.', 'wp-multi-network' ) );
+		}
+
 		// Cast network IDs to ints.
 		$old_network_id = (int) $site->network_id;
 		$new_network_id = (int) $new_network_id;
-
-		// Bail if site does not exist.
-		if ( empty( $site ) ) {
-			return new WP_Error( 'blog_not_exist', __( 'Site does not exist.', 'wp-multi-network' ) );
-		}
 
 		// Bail if site is the main site.
 		if ( is_main_site( $site->id, $old_network_id ) ) {
@@ -920,7 +926,7 @@ if ( ! function_exists( 'move_site' ) ) :
 		}
 
 		// Update the database entry.
-		$result = $wpdb->update( // phpcs:ignore WordPress.VIP.DirectDatabaseQuery.DirectQuery
+		$result = $wpdb->update( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 			$wpdb->blogs,
 			array(
 				'site_id' => $new_network_id,

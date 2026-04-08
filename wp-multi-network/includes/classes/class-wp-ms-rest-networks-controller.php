@@ -133,7 +133,7 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 		$parameter_mappings = array(
 			'domain'         => 'domain__in',
 			'domain_exclude' => 'domain__not_in',
-			'exclude'        => 'network__not_in',
+			'exclude'        => 'network__not_in', // phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_exclude
 			'include'        => 'network__in',
 			'offset'         => 'offset',
 			'order'          => 'order',
@@ -187,13 +187,15 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 		$query        = new WP_Network_Query();
 		$query_result = $query->query( $prepared_args );
 		$networks     = array();
-		foreach ( $query_result as $network ) {
-			if ( ! $this->check_read_permission( $network, $request ) ) {
-				continue;
-			}
+		if ( is_countable( $query_result ) ) {
+			foreach ( $query_result as $network ) {
+				if ( ! $this->check_read_permission( $network, $request ) ) {
+					continue;
+				}
 
-			$data       = $this->prepare_item_for_response( $network, $request );
-			$networks[] = $this->prepare_response_for_collection( $data );
+				$data       = $this->prepare_item_for_response( $network, $request );
+				$networks[] = $this->prepare_response_for_collection( $data );
+			}
 		}
 
 		$total_networks = $query->found_networks;
@@ -374,6 +376,9 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 		}
 
 		$network = $this->get_network( $network_id );
+		if ( is_wp_error( $network ) ) {
+			return $network;
+		}
 
 		/**
 		 * Fires after a network is created or updated via the REST API.
@@ -475,12 +480,14 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 		}
 
 		$network = $this->get_network( $id );
+		if ( is_wp_error( $network ) ) {
+			return $network;
+		}
 
 		/** This action is documented in class-wp-rest-networks-api.php */
 		do_action( 'rest_insert_network', $network, $request, false );
 
 		$fields_update = $this->update_additional_fields_for_object( $network, $request );
-
 		if ( is_wp_error( $fields_update ) ) {
 			return $fields_update;
 		}
@@ -767,7 +774,7 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 			),
 		);
 
-		$query_params['exclude'] = array(
+		$query_params['exclude'] = array( // phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_exclude
 			'description' => __( 'Ensure result set excludes specific IDs.', 'wp-multi-network' ),
 			'type'        => 'array',
 			'items'       => array(
@@ -874,7 +881,12 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	 * @return bool Whether the network can be edited or deleted.
 	 */
 	protected function check_edit_permission( $network ) {
-		return current_user_can( 'edit_network', $network->id );
+		$network_id = $network->id ?? null;
+		if ( null === $network_id ) {
+			return false;
+		}
+
+		return current_user_can( 'edit_network', $network_id );
 	}
 
 	/**
