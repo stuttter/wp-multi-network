@@ -87,6 +87,42 @@ class WP_MS_Networks_Admin_Bar {
 			),
 		) );
 
+		if ( is_super_admin() ) {
+			$wp_admin_bar->add_group(array(
+				'parent' => 'my-networks',
+				'id' => 'my-networks-super-admin',
+			));
+
+			$wp_admin_bar->add_menu(array(
+				'parent' => 'my-networks-super-admin',
+				'id' => 'networks-admin',
+				'title' => __('Networks Admin', 'wp-multi-network'),
+				'href' => network_admin_url(),
+			));
+
+			$wp_admin_bar->add_menu(array(
+				'parent' => 'networks-admin',
+				'id' => 'networks-admin-d',
+				'title' => __('All Networks', 'wp-multi-network' ),
+				'href' => network_admin_url( 'admin.php?page=networks' ),
+			));
+
+			$wp_admin_bar->add_menu(array(
+				'parent' => 'networks-admin',
+				'id' => 'networks-admin-s',
+				'title' => __('Add New', 'wp-multi-network' ),
+				'href' => network_admin_url('admin.php?page=add-new-network'),
+			));
+		}
+
+		$wp_admin_bar->add_group( array(
+			'parent' => 'my-networks',
+			'id'     => 'group-network-admin',
+			'meta'   => array(
+				'class' => is_super_admin() ? 'ab-sub-secondary' : '',
+			),
+		) );
+
 		foreach ( $networks as $network_id ) {
 			$network = get_network( $network_id );
 			if ( ! $network ) {
@@ -106,7 +142,7 @@ class WP_MS_Networks_Admin_Bar {
 			) );
 
 			$wp_admin_bar->add_menu( array(
-				'parent' => 'group-network-admin-' . $network_id,
+				'parent' => 'group-network-admin',
 				'id'     => 'network-admin-' . $network_id,
 				'title'  => $network->site_name,
 				'href'   => network_admin_url(),
