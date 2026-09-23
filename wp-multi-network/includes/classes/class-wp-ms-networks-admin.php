@@ -44,6 +44,8 @@ class WP_MS_Networks_Admin {
 		add_filter( 'manage_sites_action_links', array( $this, 'add_move_blog_link' ), 10, 2 );
 
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
+		add_action( 'wp_ajax_wpmn_search_root_sites', array( $this, 'ajax_search_root_sites' ) );
+		add_action( 'wp_ajax_wpmn_get_root_site_name', array( $this, 'ajax_get_root_site_name' ) );
 	}
 
 	/**
@@ -172,7 +174,20 @@ class WP_MS_Networks_Admin {
 		$asset_version = ( defined( 'WP_SCRIPT_DEBUG' ) && WP_SCRIPT_DEBUG ) ? (string) time() : wpmn()->asset_version;
 
 		wp_register_style( 'wp-multi-network', wpmn()->plugin_url . 'assets/css/wp-multi-network' . $suffix . '.css', array(), $asset_version );
-		wp_register_script( 'wp-multi-network', wpmn()->plugin_url . 'assets/js/wp-multi-network' . $suffix . '.js', array( 'jquery', 'post' ), $asset_version, true );
+		wp_register_script( 'wp-multi-network', wpmn()->plugin_url . 'assets/js/wp-multi-network' . $suffix . '.js', array( 'jquery', 'jquery-ui-autocomplete', 'post' ), $asset_version, true );
+		wp_localize_script(
+			'wp-multi-network',
+			'wpmnRootSiteSearch',
+			array(
+				'ajaxUrl'      => admin_url( 'admin-ajax.php' ),
+				'nonce'        => wp_create_nonce( 'wpmn_search_root_sites' ),
+				'searchError'  => esc_html__( 'Site search failed. Please try again.', 'wp-multi-network' ),
+				'loadingName'  => esc_html__( 'Loading site name…', 'wp-multi-network' ),
+				'nameError'    => esc_html__( 'Could not load the selected site name.', 'wp-multi-network' ),
+				'noResults'    => esc_html__( 'No subsites found', 'wp-multi-network' ),
+				'selectResult' => esc_html__( 'Select a site from the search results.', 'wp-multi-network' ),
+			)
+		);
 
 		wp_style_add_data( 'wp-multi-network', 'rtl', 'replace' );
 
@@ -182,6 +197,121 @@ class WP_MS_Networks_Admin {
 
 		wp_enqueue_style( 'wp-multi-network' );
 		wp_enqueue_script( 'wp-multi-network' );
+	}
+
+	/**
+	 * Finds sites eligible to become a new network's root site.
+	 *
+	 * Searches only central site domain and path columns; site titles would
+	 * require loading each site's options. The query runs only after input.
+	 *
+	 * @since NEXT
+	 *
+	 * @param string $term Domain or path fragment.
+	 * @return array<int, array{id: int, url: string, domain: string, path: string}> Matching sites.
+	 */
+	public function find_eligible_root_sites( $term ) {
+		$term = trim( str_replace( '*', '', sanitize_text_field( $term ) ) );
+
+		if ( strlen( $term ) < 3 ) {
+			return array();
+		}
+
+		$matches = get_sites(
+			array(
+				'number'         => 30,
+				'orderby'        => 'id',
+				'order'          => 'DESC',
+				'no_found_rows'  => true,
+				'search'         => substr( $term, 0, 100 ),
+				'search_columns' => array( 'domain', 'path' ),
+			)
+		);
+		$results = array();
+
+		foreach ( $matches as $site ) {
+			if ( is_main_site_for_network( $site->id ) ) {
+				continue;
+			}
+
+			$results[] = array(
+				'id'     => (int) $site->id,
+				'url'    => $site->domain . $site->path,
+				'domain' => $site->domain,
+				'path'   => $site->path,
+			);
+
+			if ( count( $results ) >= 10 ) {
+				break;
+			}
+		}
+
+		return $results;
+	}
+
+	/**
+	 * Returns eligible root-site matches for the new-network search field.
+	 *
+	 * @since NEXT
+	 * @return void
+	 */
+	public function ajax_search_root_sites() {
+		if ( ! current_user_can( 'create_networks' ) ) {
+			wp_send_json_error( array(), 403 );
+		}
+
+		check_ajax_referer( 'wpmn_search_root_sites', 'nonce' );
+
+		$term = isset( $_GET['term'] ) ? sanitize_text_field( wp_unslash( $_GET['term'] ) ) : '';
+
+		wp_send_json_success(
+			array(
+				'sites' => $this->find_eligible_root_sites( $term ),
+			)
+		);
+	}
+
+	/**
+	 * Retrieves the name of one eligible site after it has been selected.
+	 *
+	 * Keeping this separate from search avoids loading options for every match.
+	 *
+	 * @since NEXT
+	 *
+	 * @param int $site_id Selected site ID.
+	 * @return string|WP_Error Site name or an error if the site is ineligible.
+	 */
+	public function get_eligible_root_site_name( $site_id ) {
+		$site_id = absint( $site_id );
+
+		if ( 0 === $site_id || ! get_site( $site_id ) || is_main_site_for_network( $site_id ) ) {
+			return new WP_Error( 'site_not_eligible', esc_html__( 'This site cannot be used as a network root.', 'wp-multi-network' ) );
+		}
+
+		return (string) get_blog_option( $site_id, 'blogname', '' );
+	}
+
+	/**
+	 * Returns the selected site's name for the read-only preview field.
+	 *
+	 * @since NEXT
+	 * @return void
+	 */
+	public function ajax_get_root_site_name() {
+		if ( ! current_user_can( 'create_networks' ) ) {
+			wp_send_json_error( array(), 403 );
+		}
+
+		check_ajax_referer( 'wpmn_search_root_sites', 'nonce' );
+
+		$site_id = isset( $_GET['site_id'] ) ? absint( wp_unslash( $_GET['site_id'] ) ) : 0;
+		$name    = $this->get_eligible_root_site_name( $site_id );
+
+		if ( is_wp_error( $name ) ) {
+			wp_send_json_error( array(), 404 );
+		}
+
+		wp_send_json_success( array( 'name' => $name ) );
 	}
 
 	/**
@@ -474,19 +604,19 @@ class WP_MS_Networks_Admin {
 							</div>
 
 							<?php if ( empty( $network ) ) : ?>
-								<div id="root-site-toggle">
-									<fieldset>
-										<label>
-											<input type="radio" name="root_site_option" value="new" checked>
-											<?php esc_html_e( 'Create new site', 'wp-multi-network' ); ?>
-										</label>
-										<label>
-											<input type="radio" name="root_site_option" value="existing">
-											<?php esc_html_e( 'Use existing site', 'wp-multi-network' ); ?>
-										</label>
-									</fieldset>
-								</div>
+								<fieldset id="root-site-toggle" class="wpmn-root-site-tabs">
+									<legend class="screen-reader-text"><?php esc_html_e( 'Choose how to create the root site', 'wp-multi-network' ); ?></legend>
+									<label class="wpmn-root-site-tab">
+										<input type="radio" name="root_site_option" value="new" checked>
+										<span><?php esc_html_e( 'Create New Site', 'wp-multi-network' ); ?></span>
+									</label>
+									<label class="wpmn-root-site-tab">
+										<input type="radio" name="root_site_option" value="existing">
+										<span><?php esc_html_e( 'Use Existing Subsite', 'wp-multi-network' ); ?></span>
+									</label>
+								</fieldset>
 							<?php endif; ?>
+
 						</div>
 
 						<div id="postbox-container-1" class="postbox-container">
@@ -1031,13 +1161,15 @@ class WP_MS_Networks_Admin {
 
 		$existing_site_id = 0;
 
-		if ( 'existing' === $root_site_option && ! empty( $_POST['existing_site_id'] ) ) {
-			$existing_site_id = absint( wp_unslash( $_POST['existing_site_id'] ) );
+		if ( 'existing' === $root_site_option ) {
+			$existing_site_id = ! empty( $_POST['existing_site_id'] )
+				? absint( wp_unslash( $_POST['existing_site_id'] ) )
+				: 0;
 
-			$existing_site = get_site( $existing_site_id );
+			$existing_site = $existing_site_id ? get_site( $existing_site_id ) : null;
 
 			// Validate the existing site.
-			if ( empty( $existing_site ) || is_main_site_for_network( $existing_site_id ) ) {
+			if ( 0 === $existing_site_id || empty( $existing_site ) || is_main_site_for_network( $existing_site_id ) ) {
 				$this->handle_redirect(
 					array(
 						'page'            => 'add-new-network',

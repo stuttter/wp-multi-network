@@ -33,9 +33,14 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	 * @return void
 	 */
 	public function register_routes() {
+		$namespace = $this->namespace;
+		if ( ! $namespace ) {
+			_doing_it_wrong( __METHOD__, esc_html__( 'REST route namespace must not be empty.', 'wp-multi-network' ), '2.4.0' );
+			return;
+		}
 
 		register_rest_route(
-			$this->namespace, '/' . $this->rest_base, array(
+			$namespace, '/' . $this->rest_base, array(
 				array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'get_items' ),
@@ -53,7 +58,7 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 		);
 
 		register_rest_route(
-			$this->namespace, '/' . $this->rest_base . '/(?P<id>[\d]+)', array(
+			$namespace, '/' . $this->rest_base . '/(?P<id>[\d]+)', array(
 				'args'   => array(
 					'id' => array(
 						'description' => __( 'Unique identifier for the object.', 'wp-multi-network' ),
@@ -168,7 +173,7 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 
 		$prepared_args['no_found_rows'] = false;
 
-		if ( isset( $registered['page'] ) && isset( $prepared_args['number'] ) && empty( $request['offset'] ) ) {
+		if ( isset( $registered['page'], $prepared_args['number'] ) && empty( $request['offset'] ) ) {
 			$prepared_args['offset'] = $prepared_args['number'] * ( absint( $request['page'] ) - 1 );
 		}
 

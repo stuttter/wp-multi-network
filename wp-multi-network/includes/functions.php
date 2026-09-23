@@ -453,7 +453,7 @@ if ( ! function_exists( 'add_network' ) ) :
 	 * @return int|WP_Error ID of newly created network, or WP_Error on failure.
 	 */
 	function add_network( $args = array() ) {
-		global $wpdb, $wp_version, $wp_db_version;
+		global $wpdb, $wp_db_version;
 
 		$func_args = func_get_args();
 
@@ -529,6 +529,11 @@ if ( ! function_exists( 'add_network' ) ) :
 			'options_to_clone' => array_keys( network_options_to_copy() ),
 		) );
 
+		// Callers such as WP-CLI may explicitly disable option cloning.
+		if ( ! is_array( $r['options_to_clone'] ) ) {
+			$r['options_to_clone'] = array();
+		}
+
 		// Bail if no user with the given ID for the site exists.
 		if ( empty( $r['user_id'] ) || ! get_userdata( $r['user_id'] ) ) {
 			return new WP_Error(
@@ -577,6 +582,42 @@ if ( ! function_exists( 'add_network' ) ) :
 			return is_wp_error( $new_network_id )
 				? $new_network_id
 				: new WP_Error( 'network_not_created', esc_html__( 'Network could not be created.', 'wp-multi-network' ) );
+		}
+
+		// The upload layout must be known before WordPress initializes the root site.
+		// Otherwise it assumes legacy files rewriting and saves a blogs.dir path.
+		$files_network_id = defined( 'SITE_ID_CURRENT_SITE' ) ? SITE_ID_CURRENT_SITE : get_current_network_id();
+		if ( ! empty( $r['clone_network'] ) && get_network( $r['clone_network'] ) && in_array( 'ms_files_rewriting', $r['options_to_clone'], true ) ) {
+			$files_network_id = $r['clone_network'];
+		}
+		$use_files_rewriting = get_network_option( $files_network_id, 'ms_files_rewriting' );
+		if ( ! empty( $r['network_meta'] ) && array_key_exists( 'ms_files_rewriting', $r['network_meta'] ) ) {
+			$use_files_rewriting = $r['network_meta']['ms_files_rewriting'];
+		}
+
+		// A missing option defaults to legacy rewriting; persist the chosen value now.
+		// A cache-cleaning callback may already have added it when the network was inserted.
+		$files_rewriting_value = empty( $use_files_rewriting ) ? '0' : '1';
+		$existing_meta_id      = $wpdb->get_var( $wpdb->prepare( // phpcs:ignore WordPress.DB.DirectDatabaseQuery -- One-time bootstrap check before the new network's cache is reliable.
+			"SELECT meta_id FROM {$wpdb->sitemeta} WHERE site_id = %d AND meta_key = %s LIMIT 1",
+			$new_network_id,
+			'ms_files_rewriting'
+		) );
+		if ( null === $existing_meta_id ) {
+			$wpdb->insert( $wpdb->sitemeta, array( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+				'site_id'    => $new_network_id,
+				'meta_key'   => 'ms_files_rewriting', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+				'meta_value' => $files_rewriting_value, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+			) );
+		} else {
+			$wpdb->update( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+				$wpdb->sitemeta,
+				array( 'meta_value' => $files_rewriting_value ), // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+				array(
+					'site_id'  => $new_network_id,
+					'meta_key' => 'ms_files_rewriting', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+				)
+			);
 		}
 
 		// Set the installation constant to true.
@@ -646,40 +687,6 @@ if ( ! function_exists( 'add_network' ) ) :
 			update_network_option( $new_network_id, $key, $value );
 		}
 
-		// Fix upload path and URLs in WP < 3.7 (only for newly created sites).
-		$use_files_rewriting = defined( 'SITE_ID_CURRENT_SITE' ) && get_network( SITE_ID_CURRENT_SITE )
-			? get_network_option( SITE_ID_CURRENT_SITE, 'ms_files_rewriting' )
-			: get_site_option( 'ms_files_rewriting' );
-
-		// Not using rewriting, and using a newer version of WordPress than 3.7.
-		if ( empty( $r['existing_blog_id'] ) && empty( $use_files_rewriting ) && version_compare( $wp_version, '3.7', '>' ) ) {
-
-			// WP_CONTENT_URL is locked to the current site and can't be overridden,
-			// so we have to replace the hostname the hard way.
-			$current_siteurl = get_option( 'siteurl' );
-			$new_siteurl     = untrailingslashit( get_blogaddress_by_id( $new_blog_id ) );
-			$upload_url      = str_replace( $current_siteurl, $new_siteurl, content_url() );
-			$upload_url      = $upload_url . '/uploads';
-			$upload_dir      = WP_CONTENT_DIR;
-			$needle          = strval( ABSPATH );
-			if ( 0 === strpos( $upload_dir, $needle ) ) {
-				$upload_dir = substr( $upload_dir, strlen( $needle ) );
-			}
-			$upload_dir .= '/uploads';
-
-			// Check if wpmu_create_blog() already set the site-specific path.
-			$existing_upload_path = get_blog_option( $new_blog_id, 'upload_path' );
-			$site_path_suffix     = defined( 'MULTISITE' ) ? '/sites/' . $new_blog_id : '/' . $new_blog_id;
-
-			// Only add the site-specific path if it's not already present.
-			if ( empty( $existing_upload_path ) || false === strpos( $existing_upload_path, $site_path_suffix ) ) {
-				$upload_dir .= $site_path_suffix;
-				$upload_url .= $site_path_suffix;
-				update_blog_option( $new_blog_id, 'upload_path', $upload_dir );
-				update_blog_option( $new_blog_id, 'upload_url_path', $upload_url );
-			}
-		}
-
 		// Clone network meta from existing network.
 		if ( ! empty( $r['clone_network'] ) && get_network( $r['clone_network'] ) ) {
 
@@ -699,14 +706,8 @@ if ( ! function_exists( 'add_network' ) ) :
 					continue;
 				}
 
-				// Fix for bug that prevents writing the ms_files_rewriting value for new networks.
-				if ( 'ms_files_rewriting' === $option ) {
-					$wpdb->insert( $wpdb->sitemeta, array( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-						'site_id'    => $new_network_id,
-						'meta_key'   => $option, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
-						'meta_value' => $options_cache[ $option ], // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
-					) );
-				} else {
+				// Upload mode was copied before the root site was initialized.
+				if ( 'ms_files_rewriting' !== $option ) {
 					update_network_option( $new_network_id, $option, $options_cache[ $option ] );
 				}
 			}

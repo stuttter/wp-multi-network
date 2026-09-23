@@ -39,7 +39,7 @@ function wpmn_edit_network_details_metabox( $network = null ) {
 			<td>
 				<label for="domain">
 					<span class="code">
-						<span class="scheme"><?php echo esc_html( wp_get_scheme() ); ?></span><!--
+						<span class="scheme">https://</span><!--
 						--><input type="text" name="domain" id="domain" class="regular-text code" value="<?php echo esc_attr( $domain ); ?>">
 					</span>
 				</label>
@@ -70,17 +70,6 @@ function wpmn_edit_network_details_metabox( $network = null ) {
  * @return void
  */
 function wpmn_edit_network_new_site_metabox() {
-
-	// Get all sites that are not main sites of any network.
-	$all_sites      = get_sites( array( 'number' => 0 ) );
-	$eligible_sites = array();
-
-	foreach ( $all_sites as $site ) {
-		if ( ! is_main_site_for_network( $site->id ) ) {
-			$eligible_sites[] = $site;
-		}
-	}
-
 	?>
 
 	<table class="edit-network form-table">
@@ -88,7 +77,7 @@ function wpmn_edit_network_new_site_metabox() {
 
 		<tr class="form-field root-site-new">
 			<th scope="row">
-				<label for="new_site"><?php esc_html_e( 'Site Name', 'wp-multi-network' ); ?>:</label>
+				<label for="new_site"><?php esc_html_e( 'Site Name', 'wp-multi-network' ); ?></label>
 			</th>
 			<td>
 				<input type="text" name="new_site" id="new_site" class="regular-text">
@@ -96,24 +85,44 @@ function wpmn_edit_network_new_site_metabox() {
 			</td>
 		</tr>
 
-		<tr class="form-field root-site-existing">
+		<tr class="form-field root-site-existing wpmn-site-search-row">
 			<th scope="row">
-				<label for="existing_site_id"><?php esc_html_e( 'Select Site', 'wp-multi-network' ); ?>:</label>
+				<label for="existing_site_search"><?php esc_html_e( 'Find Site', 'wp-multi-network' ); ?></label>
 			</th>
 			<td>
-				<?php if ( ! empty( $eligible_sites ) ) : ?>
-					<select name="existing_site_id" id="existing_site_id" class="regular-text">
-						<option value=""><?php esc_html_e( '&mdash; Select &mdash;', 'wp-multi-network' ); ?></option>
-						<?php foreach ( $eligible_sites as $site ) : ?>
-							<option value="<?php echo esc_attr( strval( $site->id ) ); ?>" data-domain="<?php echo esc_attr( $site->domain ); ?>" data-path="<?php echo esc_attr( $site->path ); ?>">
-								<?php echo esc_html( sprintf( '%1$s (%2$s%3$s)', $site->blogname, $site->domain, $site->path ) ); ?>
-							</option>
-						<?php endforeach; ?>
-					</select>
-					<p class="description"><?php esc_html_e( 'The selected site will be moved to the new network as its root site.', 'wp-multi-network' ); ?></p>
-				<?php else : ?>
-					<p class="description"><?php esc_html_e( 'No eligible sites available. All existing sites are main sites of their networks.', 'wp-multi-network' ); ?></p>
-				<?php endif; ?>
+				<span class="wpmn-site-search-field">
+					<input type="search" id="existing_site_search" class="regular-text" autocomplete="off" aria-describedby="existing_site_search_help existing_site_search_status">
+					<span id="existing_site_search_spinner" class="spinner" aria-hidden="true"></span>
+				</span>
+				<input type="hidden" name="existing_site_id" id="existing_site_id" value="">
+				<p id="existing_site_search_help" class="description"><?php esc_html_e( 'Search subsites by domain or path.', 'wp-multi-network' ); ?></p>
+				<p id="existing_site_search_status" class="description" role="status" aria-live="polite"></p>
+			</td>
+		</tr>
+		<tr class="form-field root-site-existing">
+			<th scope="row">
+				<label for="existing_site_domain"><?php esc_html_e( 'Domain', 'wp-multi-network' ); ?></label>
+			</th>
+			<td>
+				<input type="text" id="existing_site_domain" class="regular-text code" value="" disabled>
+			</td>
+		</tr>
+		<tr class="form-field root-site-existing">
+			<th scope="row">
+				<label for="existing_site_path"><?php esc_html_e( 'Path', 'wp-multi-network' ); ?></label>
+			</th>
+			<td>
+				<input type="text" id="existing_site_path" class="regular-text code" value="" disabled>
+			</td>
+		</tr>
+		<tr class="form-field root-site-existing">
+			<th scope="row">
+				<label for="existing_site_name"><?php esc_html_e( 'Site Name', 'wp-multi-network' ); ?></label>
+			</th>
+			<td>
+				<input type="text" id="existing_site_name" class="regular-text" value="" aria-describedby="existing_site_name_status" disabled>
+				<span id="existing_site_name_status" class="description" role="status" aria-live="polite"></span>
+				<p class="description"><?php esc_html_e( 'The selected site will become the root of the new network.', 'wp-multi-network' ); ?></p>
 			</td>
 		</tr>
 
