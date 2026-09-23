@@ -438,6 +438,9 @@ if ( ! function_exists( 'add_network' ) ) :
 	 *     @type string  $network_name     Name of the new network.
 	 *     @type integer $user_id          ID of the user to add as the site owner.
 	 *                                     Defaults to current user ID.
+	 *     @type integer $existing_blog_id Optional. ID of an existing site to use as the
+	 *                                     root site instead of creating a new one.
+	 *                                     Default 0. @since NEXT.
 	 *     @type integer $network_admin_id ID of the user to add as the network administrator.
 	 *                                     Defaults to current user ID.
 	 *     @type array   $meta             Array of metadata to save to this network.
@@ -515,6 +518,9 @@ if ( ! function_exists( 'add_network' ) ) :
 			'user_id'          => $current_user_id,
 			'meta'             => $default_site_meta,
 
+			// Existing site argument.
+			'existing_blog_id' => 0,
+
 			// Network arguments.
 			'network_name'     => esc_attr__( 'New Network', 'wp-multi-network' ),
 			'network_admin_id' => $current_user_id,
@@ -553,6 +559,20 @@ if ( ! function_exists( 'add_network' ) ) :
 		// Strip spaces out of domain & path.
 		$r['domain'] = str_replace( ' ', '', strtolower( $r['domain'] ) );
 		$r['path']   = str_replace( ' ', '', strtolower( $r['path'] ) );
+
+		// Validate existing site before creating the network.
+		if ( ! empty( $r['existing_blog_id'] ) ) {
+
+			$existing_site = get_site( $r['existing_blog_id'] );
+
+			if ( empty( $existing_site ) ) {
+				return new WP_Error( 'blog_not_exist', esc_html__( 'The specified site does not exist.', 'wp-multi-network' ) );
+			}
+
+			if ( is_main_site_for_network( $r['existing_blog_id'] ) ) {
+				return new WP_Error( 'blog_is_main_site', esc_html__( 'The specified site is already a main site for another network.', 'wp-multi-network' ) );
+			}
+		}
 
 		// Insert the new network.
 		$new_network_id = insert_network( $r['domain'], $r['path'] );
@@ -611,17 +631,28 @@ if ( ! function_exists( 'add_network' ) ) :
 		// Make sure upload constants are defined.
 		ms_upload_constants();
 
-		// Attempt to create the site.
-		$new_blog_id = wpmu_create_blog(
-			$r['domain'],
-			$r['path'],
-			$r['site_name'],
-			$r['user_id'],
-			$r['meta'],
-			$new_network_id
-		);
+		// Use existing site or create a new one.
+		if ( ! empty( $r['existing_blog_id'] ) ) {
 
-		// Grant super admin priviledges.
+			// Move the existing site to the new network.
+			move_site( $r['existing_blog_id'], $new_network_id );
+
+			$new_blog_id = (int) $r['existing_blog_id'];
+
+		} else {
+
+			// Attempt to create a new site.
+			$new_blog_id = wpmu_create_blog(
+				$r['domain'],
+				$r['path'],
+				$r['site_name'],
+				$r['user_id'],
+				$r['meta'],
+				$new_network_id
+			);
+		}
+
+		// Grant super admin privileges.
 		grant_super_admin( $r['network_admin_id'] );
 
 		// Restore current network.

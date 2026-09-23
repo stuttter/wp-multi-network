@@ -39,7 +39,7 @@ function wpmn_edit_network_details_metabox( $network = null ) {
 			<td>
 				<label for="domain">
 					<span class="code">
-						<span class="scheme"><?php echo esc_html( wp_get_scheme() ); ?></span><!--
+						<span class="scheme">https://</span><!--
 						--><input type="text" name="domain" id="domain" class="regular-text code" value="<?php echo esc_attr( $domain ); ?>">
 					</span>
 				</label>
@@ -65,6 +65,8 @@ function wpmn_edit_network_details_metabox( $network = null ) {
  * Renders the metabox for defining the main site for a new network.
  *
  * @since 1.7.0
+ * @since NEXT Added support for selecting an existing site as root site.
+ *
  * @return void
  */
 function wpmn_edit_network_new_site_metabox() {
@@ -73,13 +75,54 @@ function wpmn_edit_network_new_site_metabox() {
 	<table class="edit-network form-table">
 		<?php do_action( 'wpmn_edit_network_new_site_metabox_before_group' ); ?>
 
-		<tr class="form-field form-required">
+		<tr class="form-field root-site-new">
 			<th scope="row">
-				<label for="new_site"><?php esc_html_e( 'Site Name', 'wp-multi-network' ); ?>:</label>
+				<label for="new_site"><?php esc_html_e( 'Site Name', 'wp-multi-network' ); ?></label>
 			</th>
 			<td>
 				<input type="text" name="new_site" id="new_site" class="regular-text">
 				<p class="description"><?php esc_html_e( 'A new site needs to be created at the root of this network.', 'wp-multi-network' ); ?></p>
+			</td>
+		</tr>
+
+		<tr class="form-field root-site-existing wpmn-site-search-row">
+			<th scope="row">
+				<label for="existing_site_search"><?php esc_html_e( 'Find Site', 'wp-multi-network' ); ?></label>
+			</th>
+			<td>
+				<span class="wpmn-site-search-field">
+					<input type="search" id="existing_site_search" class="regular-text" autocomplete="off" aria-describedby="existing_site_search_help existing_site_search_status">
+					<span id="existing_site_search_spinner" class="spinner" aria-hidden="true"></span>
+				</span>
+				<input type="hidden" name="existing_site_id" id="existing_site_id" value="">
+				<p id="existing_site_search_help" class="description"><?php esc_html_e( 'Search subsites by domain or path.', 'wp-multi-network' ); ?></p>
+				<p id="existing_site_search_status" class="description" role="status" aria-live="polite"></p>
+			</td>
+		</tr>
+		<tr class="form-field root-site-existing">
+			<th scope="row">
+				<label for="existing_site_domain"><?php esc_html_e( 'Domain', 'wp-multi-network' ); ?></label>
+			</th>
+			<td>
+				<input type="text" id="existing_site_domain" class="regular-text code" value="" disabled>
+			</td>
+		</tr>
+		<tr class="form-field root-site-existing">
+			<th scope="row">
+				<label for="existing_site_path"><?php esc_html_e( 'Path', 'wp-multi-network' ); ?></label>
+			</th>
+			<td>
+				<input type="text" id="existing_site_path" class="regular-text code" value="" disabled>
+			</td>
+		</tr>
+		<tr class="form-field root-site-existing">
+			<th scope="row">
+				<label for="existing_site_name"><?php esc_html_e( 'Site Name', 'wp-multi-network' ); ?></label>
+			</th>
+			<td>
+				<input type="text" id="existing_site_name" class="regular-text" value="" aria-describedby="existing_site_name_status" disabled>
+				<span id="existing_site_name_status" class="description" role="status" aria-live="polite"></span>
+				<p class="description"><?php esc_html_e( 'The selected site will become the root of the new network.', 'wp-multi-network' ); ?></p>
 			</td>
 		</tr>
 
@@ -232,7 +275,7 @@ function wpmn_edit_network_publish_metabox( $network = null ) {
 					?>
 
 					<div class="misc-pub-section misc-pub-section-first" id="sites">
-						<span><?php esc_html_e( 'Creating a network with 1 new site.', 'wp-multi-network' ); ?></span>
+						<span><?php esc_html_e( 'Creating a network with 1 site.', 'wp-multi-network' ); ?></span>
 					</div>
 
 					<?php
