@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v5
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -23,16 +23,15 @@ jobs:
 
       - name: Get Composer cache directory
         id: composer-cache
-        run: echo "::set-output name=dir::$(composer config cache-files-dir)"
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
 
       - name: Setup Composer cache
-        uses: pat-s/always-upload-cache@v2.1.3
+        uses: actions/cache@v5
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          key: ${{ runner.os }}-php-7.4-composer-${{ hashFiles('composer.json') }}
           restore-keys: |
-            ${{ runner.os }}-composer-
-            ${{ runner.os }}-
+            ${{ runner.os }}-php-7.4-composer-
 
       - name: Validate composer.json
         run: composer --no-interaction validate --no-check-all
