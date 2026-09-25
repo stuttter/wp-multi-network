@@ -27,7 +27,6 @@ class WP_MS_Networks_List_Table extends WP_List_Table {
 				'ajax'     => false,
 				'plural'   => 'networks',
 				'singular' => 'network',
-				'screen'   => 'wpmn',
 			)
 		);
 	}

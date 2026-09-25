@@ -25,6 +25,14 @@ class WP_MS_Networks_Admin {
 	private $feedback_strings = array();
 
 	/**
+	 * List table for the Networks screen.
+	 *
+	 * @since NEXT
+	 * @var WP_MS_Networks_List_Table|null
+	 */
+	private $list_table = null;
+
+	/**
 	 * Constructor.
 	 *
 	 * Hooks in the necessary methods.
@@ -44,6 +52,7 @@ class WP_MS_Networks_Admin {
 		add_filter( 'manage_sites_action_links', array( $this, 'add_move_blog_link' ), 10, 2 );
 
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
+		add_filter( 'set_screen_option_networks_per_page', array( $this, 'save_networks_per_page' ), 10, 3 );
 		add_action( 'wp_ajax_wpmn_search_root_sites', array( $this, 'ajax_search_root_sites' ) );
 		add_action( 'wp_ajax_wpmn_get_root_site_name', array( $this, 'ajax_get_root_site_name' ) );
 	}
@@ -110,11 +119,130 @@ class WP_MS_Networks_Admin {
 		$page = add_menu_page( esc_html__( 'Networks', 'wp-multi-network' ), esc_html__( 'Networks', 'wp-multi-network' ), 'manage_networks', 'networks', array( $this, 'route_pages' ), 'dashicons-networking', -1 );
 
 		add_submenu_page( 'networks', esc_html__( 'All Networks', 'wp-multi-network' ), esc_html__( 'All Networks', 'wp-multi-network' ), 'list_networks', 'networks', array( $this, 'route_pages' ) );
-		add_submenu_page( 'networks', esc_html__( 'Add New', 'wp-multi-network' ), esc_html__( 'Add New', 'wp-multi-network' ), 'create_networks', 'add-new-network', array( $this, 'page_edit_network' ) );
+		$add_page = add_submenu_page( 'networks', esc_html__( 'Add Network', 'wp-multi-network' ), esc_html__( 'Add Network', 'wp-multi-network' ), 'create_networks', 'add-new-network', array( $this, 'page_edit_network' ) );
 
 		add_action( "admin_head-{$page}", array( $this, 'fix_menu_highlight_for_move_page' ) );
+		add_action( "load-{$page}", array( $this, 'setup_networks_screen' ) );
+		add_action( "load-{$add_page}", array( $this, 'setup_edit_network_screen' ) );
 
 		require_once wpmn()->plugin_dir . '/includes/classes/class-wp-ms-networks-list-table.php';
+	}
+
+	/**
+	 * Sets up the Networks list screen before the admin header is rendered.
+	 *
+	 * @since NEXT
+	 * @return void
+	 */
+	public function setup_networks_screen() {
+		// The edit screen shares this page hook with the network list.
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended
+		$action = ! empty( $_GET['action'] ) && is_string( $_GET['action'] )
+			? sanitize_key( $_GET['action'] )
+			: '';
+		// phpcs:enable
+
+		if ( 'edit_network' === $action ) {
+			$this->setup_edit_network_screen();
+			return;
+		}
+
+		if ( ! in_array( $action, array( '', 'all_networks', 'domains' ), true ) ) {
+			return;
+		}
+
+		$screen = get_current_screen();
+
+		if ( null === $screen ) {
+			return;
+		}
+
+		$this->list_table = new WP_MS_Networks_List_Table();
+
+		add_screen_option(
+			'per_page',
+			array(
+				'label'   => esc_html__( 'Networks', 'wp-multi-network' ),
+				'default' => 20,
+				'option'  => 'networks_per_page',
+			)
+		);
+
+		$screen->add_help_tab(
+			array(
+				'id'      => 'overview',
+				'title'   => esc_html__( 'Overview', 'wp-multi-network' ),
+				'content' => '<p>' . esc_html__( 'This screen lists the networks in this installation. You can search by network domain or path, open a network to edit it, or add a new network.', 'wp-multi-network' ) . '</p>'
+					. '<p>' . esc_html__( 'Use Screen Options to choose which columns to show and how many networks appear on each page.', 'wp-multi-network' ) . '</p>',
+			)
+		);
+	}
+
+	/**
+	 * Registers network edit boxes and help before Screen Options render.
+	 *
+	 * @since NEXT
+	 * @return void
+	 */
+	public function setup_edit_network_screen() {
+		$screen = get_current_screen();
+
+		if ( null === $screen ) {
+			return;
+		}
+
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended
+		$network_id = ! empty( $_GET['id'] ) && is_numeric( $_GET['id'] )
+			? (int) $_GET['id']
+			: 0;
+		// phpcs:enable
+
+		$network = $network_id
+			? get_network( $network_id )
+			: null;
+
+		add_meta_box( 'wpmn-edit-network-details', esc_html__( 'Details', 'wp-multi-network' ), 'wpmn_edit_network_details_metabox', $screen->id, 'normal', 'high', array( $network ) );
+		add_meta_box( 'wpmn-edit-network-publish', esc_html__( 'Network', 'wp-multi-network' ), 'wpmn_edit_network_publish_metabox', $screen->id, 'side', 'high', array( $network ) );
+
+		if ( empty( $network ) ) {
+			add_meta_box( 'wpmn-edit-network-new-site', esc_html__( 'Root Site', 'wp-multi-network' ), 'wpmn_edit_network_new_site_metabox', $screen->id, 'advanced', 'high', array( $network ) );
+		} else {
+			add_meta_box( 'wpmn-edit-network-assign-sites', esc_html__( 'Site Assignment', 'wp-multi-network' ), 'wpmn_edit_network_assign_sites_metabox', $screen->id, 'advanced', 'high', array( $network ) );
+		}
+
+		add_screen_option(
+			'layout_columns',
+			array(
+				'max'     => 2,
+				'default' => 2,
+			)
+		);
+
+		$screen->add_help_tab(
+			array(
+				'id'      => 'overview',
+				'title'   => esc_html__( 'Overview', 'wp-multi-network' ),
+				'content' => empty( $network )
+					? '<p>' . esc_html__( 'Enter a network title, domain, and path. Create a new root site, or select an existing subsite to become the root of the new network.', 'wp-multi-network' ) . '</p>'
+					: '<p>' . esc_html__( 'Edit this network’s title, domain, path, and site assignments.', 'wp-multi-network' ) . '</p>',
+			)
+		);
+	}
+
+	/**
+	 * Saves the Networks list pagination setting for the current user.
+	 *
+	 * @since NEXT
+	 *
+	 * @param mixed  $screen_option Existing screen option value.
+	 * @param string $option        Option name.
+	 * @param int    $value         Requested number of networks per page.
+	 * @return int|false Valid count or false to reject it.
+	 */
+	public function save_networks_per_page( $screen_option, $option, $value ) {
+		$value = (int) $value;
+
+		return ( $value >= 1 && $value <= 999 ) ? $value : false;
 	}
 
 	/**
@@ -556,18 +684,11 @@ class WP_MS_Networks_Admin {
 			? get_network( $network_id )
 			: null;
 
-		add_meta_box( 'wpmn-edit-network-details', esc_html__( 'Details', 'wp-multi-network' ), 'wpmn_edit_network_details_metabox', $screen->id, 'normal', 'high', array( $network ) );
-		add_meta_box( 'wpmn-edit-network-publish', esc_html__( 'Network', 'wp-multi-network' ), 'wpmn_edit_network_publish_metabox', $screen->id, 'side', 'high', array( $network ) );
-
 		// Differentiate between a new network and an existing network.
 		if ( empty( $network ) ) {
 			$network_title = '';
-
-			add_meta_box( 'wpmn-edit-network-new-site', esc_html__( 'Root Site', 'wp-multi-network' ), 'wpmn_edit_network_new_site_metabox', $screen->id, 'advanced', 'high', array( $network ) );
 		} else {
 			$network_title = get_network_option( $network->id, 'site_name', '' );
-
-			add_meta_box( 'wpmn-edit-network-assign-sites', esc_html__( 'Site Assignment', 'wp-multi-network' ), 'wpmn_edit_network_assign_sites_metabox', $screen->id, 'advanced', 'high', array( $network ) );
 		}
 
 		$add_network_url = $this->admin_url( array( 'page' => 'add-new-network' ) );
@@ -581,11 +702,11 @@ class WP_MS_Networks_Admin {
 
 					if ( current_user_can( 'create_networks' ) ) {
 						?>
-						<a href="<?php echo esc_url( $add_network_url ); ?>" class="add-new-h2"><?php echo esc_html_x( 'Add New', 'network', 'wp-multi-network' ); ?></a>
+						<a href="<?php echo esc_url( $add_network_url ); ?>" class="page-title-action"><?php esc_html_e( 'Add Network', 'wp-multi-network' ); ?></a>
 						<?php
 					}
 				} else {
-					esc_html_e( 'Add New Network', 'wp-multi-network' );
+					esc_html_e( 'Add Network', 'wp-multi-network' );
 				}
 				?>
 			</h1>
@@ -593,8 +714,10 @@ class WP_MS_Networks_Admin {
 			<hr class="wp-header-end">
 
 			<form method="post" action="" id="edit-network-form">
+				<?php wp_nonce_field( 'closedpostboxes', 'closedpostboxesnonce', false ); ?>
+				<?php wp_nonce_field( 'meta-box-order', 'meta-box-order-nonce', false ); ?>
 				<div id="poststuff" class="poststuff">
-					<div id="post-body" class="metabox-holder columns-2">
+					<div id="post-body" class="metabox-holder columns-<?php echo ( 1 === $screen->get_columns() ) ? '1' : '2'; ?>">
 						<div id="post-body-content">
 							<div id="titlediv">
 								<div id="titlewrap">
@@ -647,7 +770,7 @@ class WP_MS_Networks_Admin {
 	 * @return void
 	 */
 	private function page_all_networks() {
-		$wp_list_table = new WP_MS_Networks_List_Table();
+		$wp_list_table = $this->list_table ? $this->list_table : new WP_MS_Networks_List_Table();
 		$wp_list_table->prepare_items();
 
 		$add_network_url  = $this->admin_url( array( 'page' => 'add-new-network' ) );
@@ -667,7 +790,7 @@ class WP_MS_Networks_Admin {
 
 				if ( current_user_can( 'create_networks' ) ) {
 					?>
-					<a href="<?php echo esc_url( $add_network_url ); ?>" class="add-new-h2"><?php echo esc_html_x( 'Add New', 'network', 'wp-multi-network' ); ?></a>
+					<a href="<?php echo esc_url( $add_network_url ); ?>" class="page-title-action"><?php esc_html_e( 'Add Network', 'wp-multi-network' ); ?></a>
 					<?php
 				}
 
@@ -766,7 +889,7 @@ class WP_MS_Networks_Admin {
 
 				if ( current_user_can( 'create_networks' ) ) {
 					?>
-					<a href="<?php echo esc_url( $add_network_url ); ?>" class="add-new-h2"><?php echo esc_html_x( 'Add New', 'network', 'wp-multi-network' ); ?></a>
+					<a href="<?php echo esc_url( $add_network_url ); ?>" class="page-title-action"><?php esc_html_e( 'Add Network', 'wp-multi-network' ); ?></a>
 					<?php
 				}
 				?>
@@ -829,7 +952,7 @@ class WP_MS_Networks_Admin {
 
 				if ( current_user_can( 'create_networks' ) ) {
 					?>
-					<a href="<?php echo esc_url( $add_network_url ); ?>" class="add-new-h2"><?php echo esc_html_x( 'Add New', 'network', 'wp-multi-network' ); ?></a>
+					<a href="<?php echo esc_url( $add_network_url ); ?>" class="page-title-action"><?php esc_html_e( 'Add Network', 'wp-multi-network' ); ?></a>
 					<?php
 				}
 				?>
