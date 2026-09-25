@@ -158,7 +158,6 @@ class WP_MS_Networks_Admin {
 		}
 
 		$this->list_table = new WP_MS_Networks_List_Table();
-		add_filter( "manage_{$screen->id}_columns", array( $this->list_table, 'get_columns' ) );
 
 		add_screen_option(
 			'per_page',
@@ -715,8 +714,10 @@ class WP_MS_Networks_Admin {
 			<hr class="wp-header-end">
 
 			<form method="post" action="" id="edit-network-form">
+				<?php wp_nonce_field( 'closedpostboxes', 'closedpostboxesnonce', false ); ?>
+				<?php wp_nonce_field( 'meta-box-order', 'meta-box-order-nonce', false ); ?>
 				<div id="poststuff" class="poststuff">
-					<div id="post-body" class="metabox-holder columns-2">
+					<div id="post-body" class="metabox-holder columns-<?php echo ( 1 === $screen->get_columns() ) ? '1' : '2'; ?>">
 						<div id="post-body-content">
 							<div id="titlediv">
 								<div id="titlewrap">
