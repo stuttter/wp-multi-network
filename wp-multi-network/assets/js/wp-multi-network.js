@@ -17,6 +17,15 @@ jQuery( document ).ready( function ( $ ) {
 			}
 		} );
 
+	/* Handle clicks to add/remove sites to/from selected list */
+	$( 'input[name=assign]' ).click( function () {
+		move( 'from', 'to' );
+	} );
+
+	$( 'input[name=unassign]' ).click( function () {
+		move( 'to', 'from' );
+	} );
+
 	/* Toggle the root-site panels while retaining native radio semantics. */
 	$( 'input[name=root_site_option]' )
 		.on( 'change', function () {
@@ -299,27 +308,8 @@ jQuery( document ).ready( function ( $ ) {
 		} );
 	}
 
-	/* Require a destination only when moving selected sites out. */
-	$( 'input[name="move_sites[]"]' ).on( 'change', function () {
-		$( '#move-to-network' ).prop(
-			'required',
-			$( 'input[name="move_sites[]"]:checked' ).length > 0
-		);
-	} );
-
+	/* Select all sites in "selected" box when submitting */
 	$( '#edit-network-form' ).submit( function () {
-		const $destination = $( '#move-to-network' );
-		if (
-			$destination.length &&
-			$( 'input[name="move_sites[]"]:checked' ).length &&
-			! $destination.val()
-		) {
-			$destination.prop( 'required', true );
-			$destination[ 0 ].reportValidity();
-			return false;
-		}
-		$destination.prop( 'required', false );
-
 		if (
 			$siteSearch.length &&
 			$( 'input[name=root_site_option]:checked' ).val() === 'existing' &&
@@ -331,5 +321,17 @@ jQuery( document ).ready( function ( $ ) {
 			$siteSearch[ 0 ].reportValidity();
 			return false;
 		}
+
+		$( '#to' ).children( 'option:enabled' ).attr( 'selected', true );
+		$( '#from' ).children( 'option:enabled' ).attr( 'selected', true );
 	} );
+
+	function move( from, to ) {
+		jQuery( '#' + from )
+			.children( 'option:selected' )
+			.each( function () {
+				jQuery( '#' + to ).append( jQuery( this ).clone() );
+				jQuery( this ).remove();
+			} );
+	}
 } );

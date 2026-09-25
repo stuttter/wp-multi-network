@@ -136,153 +136,76 @@ function wpmn_edit_network_new_site_metabox() {
  *
  * @since 1.7.0
  *
- * @phpcs:disable WordPress.Security.NonceVerification.Recommended -- Read-only searches.
- *
- * @param WP_Network $network Network being edited.
+ * @param WP_Network $network Optional. Network object. Default null.
  * @return void
  */
 function wpmn_edit_network_assign_sites_metabox( $network = null ) {
-	if ( ! $network ) {
-		return;
-	}
+	$network_id = $network->id ?? null;
 
-	$network_id    = (int) ( $network->id ?? 0 );
-	$root_id       = get_main_site_id( $network_id );
-	$root_site     = $root_id ? get_site( $root_id ) : null;
-	$networks      = get_networks();
-	$networks      = is_array( $networks ) ? $networks : array();
-	$network_names = array();
-	foreach ( $networks as $known_network ) {
-		$name = get_network_option( $known_network->id, 'site_name' );
-
-		$network_names[ $known_network->id ] = $name ? $name : $known_network->domain . $known_network->path;
-	}
-	$search   = isset( $_GET['assigned_site_search'] ) && is_string( $_GET['assigned_site_search'] ) ? sanitize_text_field( wp_unslash( $_GET['assigned_site_search'] ) ) : '';
-	$page     = isset( $_GET['assigned_site_page'] ) && is_scalar( $_GET['assigned_site_page'] ) ? max( 1, absint( $_GET['assigned_site_page'] ) ) : 1;
-	$per_page = 20;
-	$query    = array(
-		'network_id'    => $network_id,
-		'site__not_in'  => array( $root_id ),
-		'number'        => $per_page,
-		'offset'        => ( $page - 1 ) * $per_page,
-		'no_found_rows' => false,
+	$to = get_sites(
+		array(
+			'site__not_in' => array( get_main_site_id( (int) $network_id ) ),
+			'network_id'   => (int) $network_id,
+		)
 	);
 
-	if ( '' !== $search ) {
-		$query['search'] = $search;
-	}
+	$from = get_sites(
+		array(
+			'network__not_in' => array( (int) $network_id ),
+		)
+	);
 
-	$site_query   = new WP_Site_Query( $query );
-	$sites        = $site_query->sites;
-	$total        = $site_query->found_sites;
-	$other_sites  = array();
-	$other_search = isset( $_GET['available_site_search'] ) && is_string( $_GET['available_site_search'] ) ? sanitize_text_field( wp_unslash( $_GET['available_site_search'] ) ) : '';
-
-	if ( strlen( $other_search ) >= 3 ) {
-		$root_ids          = array();
-		$other_network_ids = array();
-		foreach ( $networks as $other_network ) {
-			if ( (int) $other_network->id !== $network_id ) {
-				$other_network_ids[] = (int) $other_network->id;
-				$other_root_id       = get_main_site_id( $other_network->id );
-				if ( $other_root_id ) {
-					$root_ids[] = $other_root_id;
-				}
-			}
-		}
-		if ( $other_network_ids ) {
-			$other_sites = get_sites(
-				array(
-					'network__in'  => $other_network_ids,
-					'site__not_in' => $root_ids,
-					'search'       => $other_search,
-					'number'       => 10,
-				)
-			);
-			$other_sites = is_array( $other_sites ) ? $other_sites : array();
-		}
-	}
 	?>
-	<div class="wpmn-site-assignment">
-		<section class="wpmn-assignment-section">
-			<h3><?php esc_html_e( 'Sites in this network', 'wp-multi-network' ); ?></h3>
-			<?php if ( $root_site ) : ?>
-				<p class="wpmn-root-site"><strong><?php esc_html_e( 'Primary site', 'wp-multi-network' ); ?></strong> <?php echo esc_html( $root_site->domain . $root_site->path ); ?> <span class="description"><?php esc_html_e( 'Cannot be moved.', 'wp-multi-network' ); ?></span></p>
-			<?php endif; ?>
-			<p class="search-box">
-				<label class="screen-reader-text" for="assigned-site-search"><?php esc_html_e( 'Search sites in this network', 'wp-multi-network' ); ?></label>
-				<input type="search" id="assigned-site-search" name="assigned_site_search" form="wpmn-assigned-site-search-form" value="<?php echo esc_attr( $search ); ?>">
-				<button type="submit" class="button" form="wpmn-assigned-site-search-form"><?php esc_html_e( 'Search Sites', 'wp-multi-network' ); ?></button>
-			</p>
-			<table class="widefat striped"><thead><tr><th class="check-column"><span class="screen-reader-text"><?php esc_html_e( 'Select sites to move', 'wp-multi-network' ); ?></span></th><th><?php esc_html_e( 'Site', 'wp-multi-network' ); ?></th></tr></thead><tbody>
-			<?php foreach ( $sites as $site ) : ?>
-				<?php
-				// Translators: %s: subsite URL.
-				$move_label = sprintf( __( 'Move %s', 'wp-multi-network' ), $site->domain . $site->path );
-				?>
-				<tr><th class="check-column"><input type="checkbox" name="move_sites[]" value="<?php echo esc_attr( strval( $site->id ) ); ?>" aria-label="<?php echo esc_attr( $move_label ); ?>"></th><td><?php echo esc_html( get_blog_option( $site->id, 'blogname' ) ); ?> <span class="description"><?php echo esc_html( $site->domain . $site->path ); ?></span></td></tr>
-			<?php endforeach; ?>
-			<?php
-			if ( empty( $sites ) ) :
-				?>
-				<tr><td colspan="2"><?php esc_html_e( 'No subsites found.', 'wp-multi-network' ); ?></td></tr><?php endif; ?>
-			</tbody></table>
-			<?php if ( $total > $per_page ) : ?>
-				<div class="tablenav"><div class="tablenav-pages">
-				<?php
-				$pagination = paginate_links(
-					array(
-						'base'    => add_query_arg(
-							array(
-								'page'                  => 'networks',
-								'action'                => 'edit_network',
-								'id'                    => $network_id,
-								'assigned_site_search'  => $search,
-								'available_site_search' => $other_search,
-								'assigned_site_page'    => '%#%',
-							),
-							network_admin_url( 'admin.php' )
-						),
-						'current' => $page,
-						'total'   => (int) ceil( $total / $per_page ),
-					)
-				);
-				if ( $pagination ) {
-					echo wp_kses_post( $pagination );
-				}
-				?>
-				</div></div>
-			<?php endif; ?>
-			<p><label for="move-to-network"><?php esc_html_e( 'Move selected sites to', 'wp-multi-network' ); ?></label>
-			<select name="move_to_network" id="move-to-network"><option value=""><?php esc_html_e( 'Choose a network', 'wp-multi-network' ); ?></option>
-			<?php foreach ( $networks as $other_network ) : ?>
-				<?php if ( (int) $other_network->id !== $network_id ) : ?>
-					<option value="<?php echo esc_attr( strval( $other_network->id ) ); ?>"><?php echo esc_html( $network_names[ $other_network->id ] ); ?></option>
-				<?php endif; ?>
-			<?php endforeach; ?>
-			</select></p>
-		</section>
-		<section class="wpmn-assignment-section">
-			<h3><?php esc_html_e( 'Bring a subsite into this network', 'wp-multi-network' ); ?></h3>
-			<p class="search-box"><label class="screen-reader-text" for="available-site-search"><?php esc_html_e( 'Search subsites in other networks', 'wp-multi-network' ); ?></label><input type="search" id="available-site-search" name="available_site_search" form="wpmn-available-site-search-form" value="<?php echo esc_attr( $other_search ); ?>"><button type="submit" class="button" form="wpmn-available-site-search-form"><?php esc_html_e( 'Search Sites', 'wp-multi-network' ); ?></button></p>
-			<?php
-			if ( strlen( $other_search ) < 3 ) :
-				?>
-				<p class="description"><?php esc_html_e( 'Enter at least three characters of a domain or path.', 'wp-multi-network' ); ?></p>
-				<?php
-			elseif ( empty( $other_sites ) ) :
-				?>
-				<p><?php esc_html_e( 'No eligible subsites found.', 'wp-multi-network' ); ?></p>
-			<?php else : ?>
-				<fieldset><legend class="screen-reader-text"><?php esc_html_e( 'Choose a subsite to move into this network', 'wp-multi-network' ); ?></legend>
-				<?php foreach ( $other_sites as $site ) : ?>
-					<p><label><input type="radio" name="move_here_site_id" value="<?php echo esc_attr( strval( $site->id ) ); ?>"> <?php echo esc_html( $site->domain . $site->path ); ?> <span class="description"><?php echo esc_html( $network_names[ $site->network_id ] ); ?></span></label></p>
-				<?php endforeach; ?>
-				</fieldset>
-			<?php endif; ?>
-		</section>
-		<p class="description"><?php esc_html_e( 'Site moves take effect when you update the network.', 'wp-multi-network' ); ?></p>
-	</div>
+
+	<table class="assign-sites widefat">
+		<thead>
+			<tr>
+				<th><?php esc_html_e( 'Available Subsites', 'wp-multi-network' ); ?></th>
+				<th>&nbsp;</th>
+				<th><?php esc_html_e( 'Network Subsites', 'wp-multi-network' ); ?></th>
+			</tr>
+		</thead>
+		<tr>
+			<td class="column-available">
+				<select name="from[]" id="from" multiple>
+
+					<?php foreach ( $from as $site ) : ?>
+
+						<?php if ( ( (int) $site->network_id !== (int) $network_id ) && ! is_main_site_for_network( $site->id ) ) : ?>
+
+							<option value="<?php echo esc_attr( strval( $site->id ) ); ?>">
+								<?php echo esc_html( sprintf( '%1$s (%2$s%3$s)', $site->blogname, $site->domain, $site->path ) ); ?>
+							</option>
+
+						<?php endif; ?>
+
+					<?php endforeach; ?>
+
+				</select>
+			</td>
+			<td class="column-actions">
+				<input type="button" name="assign" id="assign" class="button assign" value="&rarr;">
+				<input type="button" name="unassign" id="unassign" class="button unassign" value="&larr;">
+			</td>
+			<td class="column-assigned">
+				<select name="to[]" id="to" multiple>
+
+					<?php foreach ( $to as $site ) : ?>
+
+						<?php if ( (int) $site->network_id === (int) $network_id ) : ?>
+
+							<option value="<?php echo esc_attr( strval( $site->id ) ); ?>" <?php disabled( is_main_site_for_network( $site->id ) ); ?>>
+								<?php echo esc_html( sprintf( '%1$s (%2$s%3$s)', $site->blogname, $site->domain, $site->path ) ); ?>
+							</option>
+
+						<?php endif; ?>
+
+					<?php endforeach; ?>
+
+				</select>
+			</td>
+		</tr>
+	</table>
 
 	<?php
 }

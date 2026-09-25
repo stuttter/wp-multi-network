@@ -747,20 +747,6 @@ class WP_MS_Networks_Admin {
 			</h1>
 
 			<hr class="wp-header-end">
-			<?php if ( ! empty( $network ) ) : ?>
-				<form method="get" action="<?php echo esc_url( network_admin_url( 'admin.php' ) ); ?>" id="wpmn-assigned-site-search-form">
-					<input type="hidden" name="page" value="networks"><input type="hidden" name="action" value="edit_network"><input type="hidden" name="id" value="<?php echo esc_attr( strval( $network->id ) ); ?>">
-					<?php if ( isset( $_GET['available_site_search'] ) && is_string( $_GET['available_site_search'] ) ) : ?>
-						<input type="hidden" name="available_site_search" value="<?php echo esc_attr( sanitize_text_field( wp_unslash( $_GET['available_site_search'] ) ) ); ?>">
-					<?php endif; ?>
-				</form>
-				<form method="get" action="<?php echo esc_url( network_admin_url( 'admin.php' ) ); ?>" id="wpmn-available-site-search-form">
-					<input type="hidden" name="page" value="networks"><input type="hidden" name="action" value="edit_network"><input type="hidden" name="id" value="<?php echo esc_attr( strval( $network->id ) ); ?>">
-					<?php if ( isset( $_GET['assigned_site_search'] ) && is_string( $_GET['assigned_site_search'] ) ) : ?>
-						<input type="hidden" name="assigned_site_search" value="<?php echo esc_attr( sanitize_text_field( wp_unslash( $_GET['assigned_site_search'] ) ) ); ?>">
-					<?php endif; ?>
-				</form>
-			<?php endif; ?>
 
 			<form method="post" action="" id="edit-network-form">
 				<?php wp_nonce_field( 'closedpostboxes', 'closedpostboxesnonce', false ); ?>
@@ -1574,33 +1560,67 @@ class WP_MS_Networks_Admin {
 	 * @return void
 	 */
 	private function handle_reassign_sites() {
-		$network_id = isset( $_GET['id'] ) ? absint( $_GET['id'] ) : 0;
-		$network    = $network_id ? get_network( $network_id ) : false;
 
-		if ( ! $network ) {
+		// Sanitize values.
+		$to = ! empty( $_POST['to'] ) && is_array( $_POST['to'] )
+			? wp_parse_id_list( (array) $_POST['to'] )
+			: array();
+
+		$from = ! empty( $_POST['from'] ) && is_array( $_POST['from'] )
+			? wp_parse_id_list( (array) $_POST['from'] )
+			: array();
+
+		// Bail early if no movement.
+		if ( empty( $to ) && empty( $from ) ) {
 			return;
 		}
 
-		$move_sites     = isset( $_POST['move_sites'] ) && is_array( $_POST['move_sites'] )
-			? wp_parse_id_list( wp_unslash( $_POST['move_sites'] ) )
-			: array();
-		$destination_id = isset( $_POST['move_to_network'] ) ? absint( $_POST['move_to_network'] ) : 0;
-		$incoming_id    = isset( $_POST['move_here_site_id'] ) ? absint( $_POST['move_here_site_id'] ) : 0;
+		// Sanitize network ID.
+		$network_id = ! empty( $_GET['id'] ) && is_numeric( $_GET['id'] )
+			? (int) $_GET['id']
+			: 0;
 
-		// A selected outgoing site must have a real, different destination.
-		if ( ! empty( $move_sites ) && $destination_id && $destination_id !== $network_id && get_network( $destination_id ) ) {
-			foreach ( $move_sites as $site_id ) {
-				$site = get_site( $site_id );
-				if ( $site && (int) $site->network_id === $network_id && ! is_main_site( $site_id, $network_id ) ) {
-					move_site( $site_id, $destination_id );
-				}
+		// Default to/from arrays.
+		$moving_to   = array();
+		$moving_from = array();
+
+		// Get sites for network.
+		$sites_list = get_sites(
+			array(
+				'network_id' => $network_id,
+				'fields'     => 'ids',
+			)
+		);
+
+		// Move sites out of current network.
+		foreach ( $from as $site_id ) {
+			if ( in_array( $site_id, $sites_list, true ) ) {
+				$moving_from[] = $site_id;
 			}
 		}
 
-		if ( $incoming_id ) {
-			$site = get_site( $incoming_id );
-			if ( $site && (int) $site->network_id > 0 && (int) $site->network_id !== $network_id && get_network( $site->network_id ) && ! is_main_site( $incoming_id, $site->network_id ) ) {
-				move_site( $incoming_id, $network_id );
+		// Move sites into current network.
+		foreach ( $to as $site_id ) {
+			if ( ! in_array( $site_id, $sites_list, true ) ) {
+				$moving_to[] = $site_id;
+			}
+		}
+
+		$moving = array_filter( array_merge( $moving_to, $moving_from ) );
+
+		// Loop through and move sites.
+		foreach ( $moving as $site_id ) {
+			$site = get_site( $site_id );
+
+			// Skip if missing or main site.
+			if ( empty( $site ) || is_main_site( $site->id, $site->network_id ) ) {
+				continue;
+			}
+
+			if ( in_array( $site_id, $to, true ) && ! in_array( $site_id, $sites_list, true ) ) {
+				move_site( $site_id, $network_id );
+			} elseif ( in_array( $site_id, $from, true ) ) {
+				move_site( $site_id, 0 );
 			}
 		}
 	}
