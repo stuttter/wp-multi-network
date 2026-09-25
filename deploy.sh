@@ -88,6 +88,7 @@ printf "Removing unnecessary GitHub and test files..."
 rm CONTRIBUTING.md
 rm LICENSE.md
 rm README.md
+rm TESTING.md
 rm -rf tests
 echo "Done."
 
@@ -100,7 +101,8 @@ composer.json
 composer.lock
 deploy.sh
 phpcs.xml.dist
-phpunit.xml.dist" .
+phpunit.xml.dist
+phpunit.xml.legacy" .
 echo "Done."
 
 printf "Adding new files..."

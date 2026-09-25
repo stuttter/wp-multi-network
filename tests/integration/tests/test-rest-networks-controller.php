@@ -160,6 +160,19 @@ class  WP_MS_Test_REST_Networks_Controller extends WP_Test_REST_Controller_Testc
 		$this->assertEquals( 200, $response->get_status() );
 	}
 
+	public function test_cannot_delete_main_network() {
+		$network_id = get_main_network_id();
+		wp_set_current_user( self::$superadmin_id );
+		$request          = new WP_REST_Request( 'DELETE', '/wpmn/v1/networks/' . $network_id );
+		$request['force'] = true;
+
+		$response = rest_get_server()->dispatch( $request );
+
+		$this->assertSame( 400, $response->get_status() );
+		$this->assertSame( 'network_is_main', $response->get_data()['code'] );
+		$this->assertNotNull( get_network( $network_id ) );
+	}
+
 	public function test_no_update_item() {
 		$network_id = wp_rand();
 		wp_set_current_user( self::$superadmin_id );

@@ -3,6 +3,9 @@ on:
   push:
     branches:
       - master
+    paths:
+      - readme.txt
+      - '.wordpress-org/**'
 jobs:
   master:
     name: Push to main
@@ -15,3 +18,4 @@ jobs:
           SLUG: ${{ secrets.SLUG }}
           SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
           SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+          IGNORE_OTHER_FILES: true

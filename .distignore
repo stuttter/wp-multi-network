@@ -16,8 +16,10 @@ LICENSE.md
 license.txt
 phpcs.xml.dist
 phpunit.xml.dist
+phpunit.xml.legacy
 phpstan.neon.dist
 README.md
+TESTING.md
 package.json
 package-lock.json
 node_modules

@@ -122,45 +122,6 @@ class WPMN_Tests_Upload_Paths extends WPMN_UnitTestCase {
 	}
 
 	/**
-	 * Test upload path when ms_files_rewriting is enabled.
-	 *
-	 * @group upload-paths
-	 * @group files-rewriting
-	 * @ticket 136
-	 */
-	public function test_upload_path_with_files_rewriting() {
-		// Enable files rewriting.
-		update_site_option( 'ms_files_rewriting', 1 );
-
-		// Create a new network.
-		$network_id = add_network(
-			array(
-				'domain'           => 'example.net',
-				'path'             => '/',
-				'site_name'        => 'Test Network with Rewriting',
-				'network_name'     => 'Test Network with Rewriting',
-				'user_id'          => self::$superadmin_id,
-				'network_admin_id' => self::$superadmin_id,
-			)
-		);
-
-		$this->assertNotWPError( $network_id, 'Network should be created successfully with files rewriting' );
-
-		// Get the main site for the network.
-		$main_site_id = get_main_site_for_network( $network_id );
-		$this->assertNotEmpty( $main_site_id, 'Main site should exist for the network' );
-
-		// With files rewriting enabled, the upload path may not be set or may be empty.
-		$upload_path = get_blog_option( $main_site_id, 'upload_path' );
-
-		// The behavior with files rewriting may vary, but it should not contain duplicates.
-		$this->assertUploadPathNoDuplicates( $main_site_id, $upload_path, 'Upload path should not contain duplicate site-specific directories with files rewriting' );
-
-		// Clean up.
-		update_site_option( 'ms_files_rewriting', 0 );
-	}
-
-	/**
 	 * Test upload path in multisite environment.
 	 *
 	 * @group upload-paths
@@ -202,7 +163,7 @@ class WPMN_Tests_Upload_Paths extends WPMN_UnitTestCase {
 	}
 
 	/**
-	 * Test that upload_path is set correctly without files rewriting.
+	 * Test WordPress's effective upload path without files rewriting.
 	 *
 	 * @group upload-paths
 	 * @group no-files-rewriting
@@ -234,19 +195,152 @@ class WPMN_Tests_Upload_Paths extends WPMN_UnitTestCase {
 		$upload_path     = get_blog_option( $main_site_id, 'upload_path' );
 		$upload_url_path = get_blog_option( $main_site_id, 'upload_url_path' );
 
-		// Without files rewriting in WordPress > 3.7, paths should be set.
-		global $wp_version;
-		if ( version_compare( $wp_version, '3.7', '>' ) ) {
-			$this->assertNotEmpty( $upload_path, 'Upload path should be set without files rewriting in WP > 3.7' );
+		$this->assertFalse( (bool) get_network_option( $network_id, 'ms_files_rewriting' ), 'Use modern uploads on the new network' );
+		$this->assertSame( '', $upload_path, 'Use the WordPress default upload path' );
+		$this->assertSame( '', $upload_url_path, 'Use the WordPress default upload URL' );
 
-			// Check for proper path structure.
-			$this->assertStringContainsString( '/uploads', $upload_path, 'Upload path should contain /uploads' );
+		switch_to_network( $network_id );
+		switch_to_blog( $main_site_id );
+		$uploads = wp_upload_dir( null, false, true );
+		restore_current_blog();
+		restore_current_network();
 
-			// Verify no duplication of site-specific path.
-			if ( defined( 'MULTISITE' ) && MULTISITE ) {
-				$this->assertUploadPathNoDuplicates( $main_site_id, $upload_path, 'Site-specific directory should not be duplicated' );
+		$site_suffix = '/sites/' . $main_site_id;
+		$this->assertSame( 1, substr_count( $uploads['basedir'], $site_suffix ), 'WordPress should append the site directory once' );
+		$this->assertSame( 1, substr_count( $uploads['baseurl'], $site_suffix ), 'WordPress should append the site URL once' );
+		$this->assertSame( WP_CONTENT_DIR . '/uploads' . $site_suffix, $uploads['basedir'] );
+	}
+
+	/**
+	 * Test that custom upload bases set during creation remain intact.
+	 *
+	 * @group upload-paths
+	 * @ticket 243
+	 */
+	public function test_custom_upload_base_is_preserved() {
+		update_site_option( 'ms_files_rewriting', 0 );
+
+		$set_custom_upload_base = function ( $blog_id ) {
+			update_blog_option( $blog_id, 'upload_path', 'wp-content/custom-uploads' );
+			update_blog_option( $blog_id, 'upload_url_path', 'https://uploads.example.test' );
+		};
+		add_action( 'added_network_blog', $set_custom_upload_base );
+
+		$network_id = add_network(
+			array(
+				'domain'           => 'custom-uploads.test',
+				'path'             => '/',
+				'site_name'        => 'Custom Uploads Test',
+				'network_name'     => 'Custom Uploads Test',
+				'user_id'          => self::$superadmin_id,
+				'network_admin_id' => self::$superadmin_id,
+				'clone_network'    => get_current_network_id(),
+				'options_to_clone' => array( 'ms_files_rewriting' ),
+			)
+		);
+
+		remove_action( 'added_network_blog', $set_custom_upload_base );
+		$this->assertNotWPError( $network_id );
+
+		$main_site_id = get_main_site_for_network( $network_id );
+		$this->assertSame( 'wp-content/custom-uploads', get_blog_option( $main_site_id, 'upload_path' ) );
+		$this->assertSame( 'https://uploads.example.test', get_blog_option( $main_site_id, 'upload_url_path' ) );
+
+		switch_to_network( $network_id );
+		switch_to_blog( $main_site_id );
+		$uploads = wp_upload_dir( null, false, true );
+		restore_current_blog();
+		restore_current_network();
+
+		$this->assertSame( ABSPATH . 'wp-content/custom-uploads/sites/' . $main_site_id, $uploads['basedir'] );
+		$this->assertSame( 'https://uploads.example.test/sites/' . $main_site_id, $uploads['baseurl'] );
+	}
+
+	/**
+	 * Test cloning a network without cloning its options, as WP-CLI allows.
+	 *
+	 * @group upload-paths
+	 * @ticket 243
+	 */
+	public function test_network_clone_without_options_to_clone() {
+		update_site_option( 'ms_files_rewriting', 0 );
+
+		$network_id = add_network(
+			array(
+				'domain'           => 'clone-without-options.test',
+				'path'             => '/',
+				'site_name'        => 'Clone Without Options Test',
+				'network_name'     => 'Clone Without Options Test',
+				'user_id'          => self::$superadmin_id,
+				'network_admin_id' => self::$superadmin_id,
+				'clone_network'    => get_current_network_id(),
+				'options_to_clone' => false,
+			)
+		);
+
+		$this->assertNotWPError( $network_id );
+		$main_site_id = get_main_site_for_network( $network_id );
+		$this->assertSame( '', get_blog_option( $main_site_id, 'upload_path' ) );
+		$this->assertSame( '', get_blog_option( $main_site_id, 'upload_url_path' ) );
+
+		switch_to_network( $network_id );
+		switch_to_blog( $main_site_id );
+		$uploads = wp_upload_dir( null, false, true );
+		restore_current_blog();
+		restore_current_network();
+
+		$this->assertSame( 1, substr_count( $uploads['basedir'], '/sites/' . $main_site_id ) );
+		$this->assertSame( 1, substr_count( $uploads['baseurl'], '/sites/' . $main_site_id ) );
+	}
+
+	/**
+	 * Test an upload mode prepopulated during network cache cleanup.
+	 *
+	 * @group upload-paths
+	 * @ticket 243
+	 */
+	public function test_prepopulated_upload_mode_is_not_duplicated() {
+		global $wpdb;
+
+		update_site_option( 'ms_files_rewriting', 0 );
+		$seeded_network_id = 0;
+		$seed_upload_mode  = function ( $network_id ) use ( &$seeded_network_id, $wpdb ) {
+			if ( $seeded_network_id ) {
+				return;
 			}
-		}
+
+			$seeded_network_id = $network_id;
+			$wpdb->insert( $wpdb->sitemeta, array( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+				'site_id'    => $network_id,
+				'meta_key'   => 'ms_files_rewriting', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+				'meta_value' => '1', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+			) );
+		};
+		add_action( 'clean_network_cache', $seed_upload_mode );
+
+		$network_id = add_network(
+			array(
+				'domain'           => 'prepopulated-uploads.test',
+				'path'             => '/',
+				'site_name'        => 'Prepopulated Uploads Test',
+				'network_name'     => 'Prepopulated Uploads Test',
+				'user_id'          => self::$superadmin_id,
+				'network_admin_id' => self::$superadmin_id,
+			)
+		);
+
+		remove_action( 'clean_network_cache', $seed_upload_mode );
+		$this->assertNotWPError( $network_id );
+		$this->assertSame( $network_id, $seeded_network_id );
+		$this->assertFalse( (bool) get_network_option( $network_id, 'ms_files_rewriting' ) );
+		$this->assertSame(
+			'1',
+			$wpdb->get_var( $wpdb->prepare(
+				"SELECT COUNT(*) FROM {$wpdb->sitemeta} WHERE site_id = %d AND meta_key = %s",
+				$network_id,
+				'ms_files_rewriting'
+			) )
+		);
 	}
 
 	/**
@@ -357,6 +451,16 @@ class WPMN_Tests_Upload_Paths extends WPMN_UnitTestCase {
 
 		// Verify path doesn't have duplicates.
 		$this->assertUploadPathNoDuplicates( $main_site_id, $upload_path, 'Subdirectory network upload path should not duplicate site-specific directories' );
+
+		switch_to_network( $network_id );
+		switch_to_blog( $main_site_id );
+		$uploads = wp_upload_dir( null, false, true );
+		restore_current_blog();
+		restore_current_network();
+
+		$site_suffix = '/sites/' . $main_site_id;
+		$this->assertSame( 1, substr_count( $uploads['basedir'], $site_suffix ), 'Subdirectory network should have one site directory' );
+		$this->assertSame( 1, substr_count( $uploads['baseurl'], $site_suffix ), 'Subdirectory network should have one site URL suffix' );
 	}
 
 	/**
@@ -385,15 +489,26 @@ class WPMN_Tests_Upload_Paths extends WPMN_UnitTestCase {
 			);
 			restore_current_network();
 
-			if ( ! is_wp_error( $site_id ) ) {
-				$site_ids[] = $site_id;
-			}
+			$this->assertNotWPError( $site_id, "Site {$i} should be created" );
+			$site_ids[] = $site_id;
 		}
+
+		$this->assertCount( 3, $site_ids, 'All sites should be created before their upload paths are checked' );
 
 		// Verify each site has proper upload path without duplication.
 		foreach ( $site_ids as $site_id ) {
 			$upload_path = get_blog_option( $site_id, 'upload_path' );
 			$this->assertUploadPathNoDuplicates( $site_id, $upload_path, "Site {$site_id} upload path should not have duplicate site-specific directories" );
+
+			switch_to_network( self::$network_id );
+			switch_to_blog( $site_id );
+			$uploads = wp_upload_dir( null, false, true );
+			restore_current_blog();
+			restore_current_network();
+
+			$site_suffix = '/sites/' . $site_id;
+			$this->assertSame( 1, substr_count( $uploads['basedir'], $site_suffix ), "Site {$site_id} should have one upload directory suffix" );
+			$this->assertSame( 1, substr_count( $uploads['baseurl'], $site_suffix ), "Site {$site_id} should have one upload URL suffix" );
 		}
 	}
 
@@ -486,5 +601,46 @@ class WPMN_Tests_Upload_Paths extends WPMN_UnitTestCase {
 		// Both should have proper paths without duplication.
 		$this->assertUploadPathNoDuplicates( $source_site_id, $source_upload_path, 'Source network upload path should not have duplicates' );
 		$this->assertUploadPathNoDuplicates( $cloned_site_id, $cloned_upload_path, 'Cloned network upload path should not have duplicates' );
+	}
+
+	/**
+	 * Test upload path when ms_files_rewriting is enabled.
+	 *
+	 * This must run last because WordPress upload constants cannot be undefined.
+	 *
+	 * @group upload-paths
+	 * @group files-rewriting
+	 * @ticket 136
+	 */
+	public function test_upload_path_with_files_rewriting() {
+		// Enable files rewriting.
+		update_site_option( 'ms_files_rewriting', 1 );
+
+		// Create a new network.
+		$network_id = add_network(
+			array(
+				'domain'           => 'example.net',
+				'path'             => '/',
+				'site_name'        => 'Test Network with Rewriting',
+				'network_name'     => 'Test Network with Rewriting',
+				'user_id'          => self::$superadmin_id,
+				'network_admin_id' => self::$superadmin_id,
+			)
+		);
+
+		$this->assertNotWPError( $network_id, 'Network should be created successfully with files rewriting' );
+
+		// Get the main site for the network.
+		$main_site_id = get_main_site_for_network( $network_id );
+		$this->assertNotEmpty( $main_site_id, 'Main site should exist for the network' );
+
+		// With files rewriting enabled, the upload path may not be set or may be empty.
+		$upload_path = get_blog_option( $main_site_id, 'upload_path' );
+
+		// The behavior with files rewriting may vary, but it should not contain duplicates.
+		$this->assertUploadPathNoDuplicates( $main_site_id, $upload_path, 'Upload path should not contain duplicate site-specific directories with files rewriting' );
+
+		// Clean up.
+		update_site_option( 'ms_files_rewriting', 0 );
 	}
 }

@@ -1,12 +1,15 @@
 th.column-title {
 	width: 35%;
 }
+
 th.column-path {
 	width: 15%;
 }
+
 th.column-blogs {
 	width: 10%;
 }
+
 td.column-domain {
 	white-space: nowrap;
 	overflow: hidden;
@@ -21,9 +24,95 @@ td.column-domain {
 	display: inline-block;
 }
 
+#wpmn-edit-network-details .form-table,
+#wpmn-edit-network-new-site .form-table {
+	table-layout: fixed;
+	width: 100%;
+}
+
+#wpmn-edit-network-details .form-table th,
+#wpmn-edit-network-new-site .form-table th {
+	width: 120px;
+	min-width: 120px;
+	max-width: 120px;
+}
+
+#wpmn-edit-network-details label[for="domain"] {
+	display: flex;
+	align-items: center;
+}
+
+#wpmn-edit-network-details label[for="domain"] > .code {
+	display: flex;
+	align-items: center;
+	flex: 1;
+	min-width: 0;
+}
+
+#wpmn-edit-network-details #domain {
+	flex: 1;
+	width: auto;
+	min-width: 0;
+	max-width: 25em;
+}
+
+#wpmn-edit-network-details .form-table td input.regular-text,
+#wpmn-edit-network-new-site .form-table td input.regular-text,
+#wpmn-edit-network-new-site .form-table td select {
+	box-sizing: border-box;
+	max-width: 100%;
+}
+
+#wpmn-edit-network-new-site .form-table td input.regular-text {
+	width: 100%;
+	max-width: 25em;
+}
+
+@media screen and (max-width: 782px) {
+	#wpmn-edit-network-details .form-table,
+	#wpmn-edit-network-new-site .form-table {
+		table-layout: auto;
+	}
+
+	#wpmn-edit-network-details .form-table th,
+	#wpmn-edit-network-new-site .form-table th {
+		width: auto;
+		min-width: 0;
+		max-width: none;
+	}
+}
+
 #poststuff #wpmn-edit-network-assign-sites .inside {
 	margin: 0;
 	padding: 0;
+}
+
+.wpmn-site-assignment {
+	padding: 0 12px 12px;
+}
+
+.wpmn-assignment-section {
+	padding: 12px 0 16px;
+	border-bottom: 1px solid #dcdcde;
+}
+
+.wpmn-assignment-section h3 {
+	margin: 0 0 12px;
+}
+
+.wpmn-assignment-section .search-box {
+	float: none;
+	margin: 0 0 12px;
+}
+
+.wpmn-assignment-section .check-column {
+	width: 2.2em;
+}
+
+.wpmn-root-site {
+	padding: 10px 12px;
+	background: #f6f7f7;
+	border: 1px solid #dcdcde;
 }
 
 #wpmn-edit-network-publish .submitbox,
@@ -59,14 +148,12 @@ td.column-domain {
 	content: '\f325';
 }
 
-table.widefat.move-site,
-table.widefat.assign-sites {
+table.widefat.move-site {
 	border: none;
 	box-shadow: none;
 }
 
-table.move-site thead th,
-table.assign-sites thead th {
+table.move-site thead th {
 	text-align: center;
 	font-size: 13px;
 	font-weight: 600;
@@ -90,53 +177,11 @@ table.assign-sites thead th {
 	padding: 10px 9px;
 }
 
-table.assign-sites select[multiple] {
-	width: 100%;
-	height: 80px !important;
-	margin: 0;
-}
-
-table.assign-sites .button {
-	margin: 0 5px;
-	width: 35%;
-	height: 80px;
-}
-
-table.assign-sites td.column-actions {
-	width: 16%;
-	padding: 8px 0;
-}
-
-table.assign-sites td.column-actions .assign {
-	float: left;
-	content: "\f341";
-}
-
-table.assign-sites td.column-actions .unassign {
-	float: right;
-}
-
-table.assign-sites td.column-available {
-	padding-right: 0;
-}
-
-table.assign-sites td.column-assigned {
-	padding-left: 0;
-}
-table.assign-sites td.column-available,
-table.assign-sites td.column-assigned {
-	width: 42%;
-}
-
-table.assign-sites td.column-assigned {
-	text-align: right;
-}
-
 div.network-delete {
 	background: #fff;
 	border-left: 4px solid #dc3232;
-	-webkit-box-shadow: 0 1px 1px 0 rgba( 0, 0, 0, 0.1 );
-	box-shadow: 0 1px 1px 0 rgba( 0, 0, 0, 0.1 );
+	-webkit-box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1);
+	box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1);
 	margin: 5px 0 2px;
 	padding: 1px 12px;
 }
@@ -153,4 +198,102 @@ ul.delete-sites {
 
 ul.delete-sites li {
 	margin: 0;
+}
+
+.wpmn-root-site-tabs {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+	margin: 16px 0 4px;
+	border-bottom: 1px solid #c3c4c7;
+}
+
+.wpmn-root-site-tab {
+	position: relative;
+	margin-bottom: -1px;
+	cursor: pointer;
+}
+
+.wpmn-root-site-tab input {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	opacity: 0;
+}
+
+.wpmn-root-site-tab span {
+	display: block;
+	padding: 10px 14px;
+	border: 1px solid transparent;
+	border-bottom: 0;
+	color: #2271b1;
+	font-weight: 600;
+}
+
+.wpmn-root-site-tab input:checked + span {
+	border-color: #c3c4c7;
+	border-bottom: 1px solid #f0f0f0;
+	background: transparent;
+	color: #1d2327;
+}
+
+.wpmn-root-site-tab input:focus-visible + span {
+	outline: 2px solid #2271b1;
+	outline-offset: -2px;
+}
+
+.root-site-existing {
+	display: none;
+}
+
+.wpmn-site-search-row {
+	border-bottom: 1px solid #dcdcde;
+}
+
+.wpmn-site-search-field {
+	display: inline-block;
+	position: relative;
+	width: 100%;
+	max-width: 25em;
+}
+
+.wpmn-site-search-field #existing_site_search {
+	box-sizing: border-box;
+	width: 100%;
+}
+
+#existing_site_search_spinner {
+	float: none;
+	position: absolute;
+	top: 50%;
+	inset-inline-end: 36px;
+	transform: translateY(-50%);
+	margin: 0;
+	pointer-events: none;
+}
+
+.wpmn-site-search-menu.ui-autocomplete {
+	z-index: 100000;
+	max-height: 240px;
+	margin: 0;
+	padding: 0;
+	overflow-y: auto;
+	background: #fff;
+	border: 1px solid #8c8f94;
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.wpmn-site-search-menu .ui-menu-item-wrapper {
+	padding: 8px 12px;
+	cursor: pointer;
+}
+
+.wpmn-site-search-menu .ui-state-active {
+	background: #2271b1;
+	color: #fff;
+}
+
+.wpmn-site-search-menu .ui-state-disabled {
+	color: #646970;
+	cursor: default;
 }

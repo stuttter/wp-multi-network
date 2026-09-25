@@ -4,6 +4,54 @@
  */
 
 class WPMN_Tests_NetworkOperations extends WPMN_UnitTestCase {
+	public function test_main_network_cannot_be_deleted() {
+		$network_id = get_main_network_id();
+		$site_id    = get_main_site_id( $network_id );
+
+		$result = delete_network( $network_id, true );
+
+		$this->assertWPError( $result );
+		$this->assertSame( 'network_is_main', $result->get_error_code() );
+		$this->assertNotNull( get_network( $network_id ) );
+		$this->assertNotNull( get_site( $site_id ) );
+	}
+
+	public function test_network_admin_lookup_escapes_username_wildcards() {
+		$user_id    = $this->factory->user->create( array( 'user_login' => 'audit_user' ) );
+		$network_id = $this->factory->network->create();
+
+		update_network_option( $network_id, 'site_admins', array( 'auditXuser' ) );
+		$this->assertFalse( user_has_networks( $user_id ) );
+
+		update_network_option( $network_id, 'site_admins', array( 'audit_user' ) );
+		$this->assertContains( $network_id, user_has_networks( $user_id ) );
+	}
+
+	public function test_my_networks_escapes_action_urls() {
+		$user_id = $this->factory->user->create( array( 'role' => 'administrator' ) );
+		wp_set_current_user( $user_id );
+		grant_super_admin( $user_id );
+
+		$network_id = add_network(
+			array(
+				'domain'           => "example.test' onmouseover='alert(1)",
+				'path'             => '/',
+				'site_name'        => 'Test Site',
+				'network_name'     => 'Test Network',
+				'user_id'          => $user_id,
+				'network_admin_id' => $user_id,
+			)
+		);
+		$this->assertNotWPError( $network_id );
+
+		ob_start();
+		$admin = new WP_MS_Networks_Admin();
+		$admin->page_my_networks();
+		$html = ob_get_clean();
+
+		$this->assertStringNotContainsString( "' onmouseover='", $html );
+	}
+
 	public function test_network_exists() {
 		$network = $this->factory->network->create();
 		$this->assertTrue( network_exists( $network ) !== false );
@@ -88,5 +136,38 @@ class WPMN_Tests_NetworkOperations extends WPMN_UnitTestCase {
 		$updated_network = get_network( $network_id );
 		$this->assertEquals( 'newdomain.com', $updated_network->domain, 'Network should have updated domain without manual cache flush' );
 		$this->assertEquals( '/newpath/', $updated_network->path, 'Network should have updated path without manual cache flush' );
+	}
+
+	public function test_plugin_auto_activates_on_new_network() {
+		// Create a test user and grant super admin privileges.
+		$user_id = $this->factory->user->create(
+			array(
+				'role' => 'administrator',
+			)
+		);
+		grant_super_admin( $user_id );
+
+		// Create a test network using add_network().
+		$network_id = add_network(
+			array(
+				'domain'           => 'auto-activate-test.com',
+				'path'             => '/',
+				'site_name'        => 'Auto Activate Test',
+				'network_name'     => 'Test Network',
+				'user_id'          => $user_id,
+				'network_admin_id' => $user_id,
+			)
+		);
+
+		// Verify network was created successfully.
+		$this->assertNotWPError( $network_id, 'Network should be created successfully' );
+		$this->assertIsInt( $network_id, 'Network ID should be an integer' );
+
+		// Get the active sitewide plugins for the new network.
+		$active_plugins = get_network_option( $network_id, 'active_sitewide_plugins', array() );
+
+		// Verify the plugin is auto-activated.
+		$this->assertIsArray( $active_plugins, 'Active sitewide plugins should be an array' );
+		$this->assertArrayHasKey( 'wp-multi-network/wpmn-loader.php', $active_plugins, 'Plugin should be auto-activated on new network' );
 	}
 }

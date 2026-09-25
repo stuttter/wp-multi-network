@@ -33,9 +33,14 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	 * @return void
 	 */
 	public function register_routes() {
+		$namespace = $this->namespace;
+		if ( ! $namespace ) {
+			_doing_it_wrong( __METHOD__, esc_html__( 'REST route namespace must not be empty.', 'wp-multi-network' ), '2.4.0' );
+			return;
+		}
 
 		register_rest_route(
-			$this->namespace, '/' . $this->rest_base, array(
+			$namespace, '/' . $this->rest_base, array(
 				array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'get_items' ),
@@ -53,7 +58,7 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 		);
 
 		register_rest_route(
-			$this->namespace, '/' . $this->rest_base . '/(?P<id>[\d]+)', array(
+			$namespace, '/' . $this->rest_base . '/(?P<id>[\d]+)', array(
 				'args'   => array(
 					'id' => array(
 						'description' => __( 'Unique identifier for the object.', 'wp-multi-network' ),
@@ -133,7 +138,7 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 		$parameter_mappings = array(
 			'domain'         => 'domain__in',
 			'domain_exclude' => 'domain__not_in',
-			'exclude'        => 'network__not_in',
+			'exclude'        => 'network__not_in', // phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_exclude
 			'include'        => 'network__in',
 			'offset'         => 'offset',
 			'order'          => 'order',
@@ -168,7 +173,7 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 
 		$prepared_args['no_found_rows'] = false;
 
-		if ( isset( $registered['page'] ) && empty( $request['offset'] ) ) {
+		if ( isset( $registered['page'], $prepared_args['number'] ) && empty( $request['offset'] ) ) {
 			$prepared_args['offset'] = $prepared_args['number'] * ( absint( $request['page'] ) - 1 );
 		}
 
@@ -187,13 +192,15 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 		$query        = new WP_Network_Query();
 		$query_result = $query->query( $prepared_args );
 		$networks     = array();
-		foreach ( $query_result as $network ) {
-			if ( ! $this->check_read_permission( $network, $request ) ) {
-				continue;
-			}
+		if ( is_countable( $query_result ) ) {
+			foreach ( $query_result as $network ) {
+				if ( ! $this->check_read_permission( $network, $request ) ) {
+					continue;
+				}
 
-			$data       = $this->prepare_item_for_response( $network, $request );
-			$networks[] = $this->prepare_response_for_collection( $data );
+				$data       = $this->prepare_item_for_response( $network, $request );
+				$networks[] = $this->prepare_response_for_collection( $data );
+			}
 		}
 
 		$total_networks = $query->found_networks;
@@ -374,6 +381,9 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 		}
 
 		$network = $this->get_network( $network_id );
+		if ( is_wp_error( $network ) ) {
+			return $network;
+		}
 
 		/**
 		 * Fires after a network is created or updated via the REST API.
@@ -475,12 +485,14 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 		}
 
 		$network = $this->get_network( $id );
+		if ( is_wp_error( $network ) ) {
+			return $network;
+		}
 
 		/** This action is documented in class-wp-rest-networks-api.php */
 		do_action( 'rest_insert_network', $network, $request, false );
 
 		$fields_update = $this->update_additional_fields_for_object( $network, $request );
-
 		if ( is_wp_error( $fields_update ) ) {
 			return $fields_update;
 		}
@@ -767,7 +779,7 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 			),
 		);
 
-		$query_params['exclude'] = array(
+		$query_params['exclude'] = array( // phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_exclude
 			'description' => __( 'Ensure result set excludes specific IDs.', 'wp-multi-network' ),
 			'type'        => 'array',
 			'items'       => array(
@@ -874,7 +886,12 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 	 * @return bool Whether the network can be edited or deleted.
 	 */
 	protected function check_edit_permission( $network ) {
-		return current_user_can( 'edit_network', $network->id );
+		$network_id = $network->id ?? null;
+		if ( null === $network_id ) {
+			return false;
+		}
+
+		return current_user_can( 'edit_network', $network_id );
 	}
 
 	/**
@@ -894,6 +911,7 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 				$status = 500;
 				break;
 			case 'network_not_empty':
+			case 'network_is_main':
 			case 'network_empty_domain':
 			case 'network_not_exist':
 			case 'network_not_updated':

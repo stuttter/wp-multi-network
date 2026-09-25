@@ -18,8 +18,7 @@ defined( 'ABSPATH' ) || exit;
  * @return void
  */
 function wpmn_move_site_list_metabox( $site = null ) {
-
-	// Get networks and scheme.
+	/** @var WP_Network[] $networks */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
 	$networks = get_networks();
 	$scheme   = wp_get_scheme();
 
@@ -43,7 +42,7 @@ function wpmn_move_site_list_metabox( $site = null ) {
 
 						?>
 
-						<option value="<?php echo esc_attr( $new_network->id ); ?>" <?php selected( $site->network_id, $new_network->id ); ?>>
+						<option value="<?php echo esc_attr( (string) $new_network->id ); ?>" <?php selected( $site->network_id ?? null, $new_network->id ); ?>>
 							<?php echo esc_html( $url ); ?>
 						</option>
 
@@ -81,6 +80,7 @@ function wpmn_move_site_list_metabox( $site = null ) {
  * @return void
  */
 function wpmn_move_site_assign_metabox( $site = null ) {
+
 	?>
 
 	<div class="submitbox">
@@ -91,8 +91,8 @@ function wpmn_move_site_assign_metabox( $site = null ) {
 						<?php
 						printf(
 							/* translators: %s: site registration date */
-							esc_html__( 'Created: %1$s', 'wp-multi-network' ),
-							'<strong>' . esc_html( $site->registered ) . '</strong>'
+							esc_html__( 'Created: %s', 'wp-multi-network' ),
+							'<strong>' . esc_html( $site->registered ?? '' ) . '</strong>'
 						);
 						?>
 					</span>
@@ -102,8 +102,8 @@ function wpmn_move_site_assign_metabox( $site = null ) {
 						<?php
 						printf(
 							/* translators: %s: site domain */
-							esc_html__( 'Domain: %1$s', 'wp-multi-network' ),
-							'<strong>' . esc_html( $site->domain ) . '</strong>'
+							esc_html__( 'Domain: %s', 'wp-multi-network' ),
+							'<strong>' . esc_html( $site->domain ?? '' ) . '</strong>'
 						);
 						?>
 					</span>
@@ -113,8 +113,8 @@ function wpmn_move_site_assign_metabox( $site = null ) {
 						<?php
 						printf(
 							/* translators: %s: site path */
-							esc_html__( 'Path: %1$s', 'wp-multi-network' ),
-							'<strong>' . esc_html( $site->path ) . '</strong>'
+							esc_html__( 'Path: %s', 'wp-multi-network' ),
+							'<strong>' . esc_html( $site->path ?? '' ) . '</strong>'
 						);
 						?>
 					</span>
@@ -140,7 +140,7 @@ function wpmn_move_site_assign_metabox( $site = null ) {
 
 				?>
 				<input type="hidden" name="action" value="move">
-				<input type="hidden" name="from" value="<?php echo esc_attr( strval( $site->network_id ) ); ?>">
+				<input type="hidden" name="from" value="<?php echo esc_attr( strval( $site->network_id ?? null ) ); ?>">
 			</div>
 			<div class="clear"></div>
 		</div>

@@ -18,7 +18,7 @@
  * Requires at least: 5.5
  * Requires PHP:      7.2
  * Tested up to:      7.0
- * Version:           2.5.2
+ * Version:           3.0.0
  */
 
 // Exit if accessed directly.
@@ -69,7 +69,7 @@ class WPMN_Loader {
 	 * @since 1.3.0
 	 * @var string
 	 */
-	public $asset_version = '202108250001';
+	public $asset_version = '202512090001';
 
 	/**
 	 * Network admin class instance.
@@ -153,9 +153,15 @@ class WPMN_Loader {
 
 		require $this->plugin_dir . 'includes/classes/class-wp-ms-networks-capabilities.php';
 
-		if ( is_blog_admin() || is_network_admin() ) {
-			require $this->plugin_dir . 'includes/metaboxes/move-site.php';
-			require $this->plugin_dir . 'includes/metaboxes/edit-network.php';
+		// admin-ajax.php has no network-admin screen, so load these site-selection handlers explicitly.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Only routes the request; the handler verifies its nonce.
+		$is_root_site_ajax = wp_doing_ajax() && isset( $_REQUEST['action'] ) && in_array( sanitize_key( wp_unslash( $_REQUEST['action'] ) ), array( 'wpmn_search_root_sites', 'wpmn_get_root_site_name', 'wpmn_refresh_root_site_nonce' ), true );
+
+		if ( is_blog_admin() || is_network_admin() || $is_root_site_ajax ) {
+			if ( ! $is_root_site_ajax ) {
+				require $this->plugin_dir . 'includes/metaboxes/move-site.php';
+				require $this->plugin_dir . 'includes/metaboxes/edit-network.php';
+			}
 
 			require $this->plugin_dir . 'includes/classes/class-wp-ms-networks-admin.php';
 

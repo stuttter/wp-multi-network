@@ -72,8 +72,7 @@ if ( ! function_exists( 'wp_validate_site_url' ) ) :
 			return false;
 		}
 
-		// phpcs:ignore WordPress.VIP.DirectDatabaseQuery.DirectQuery,WordPress.VIP.DirectDatabaseQuery.NoCaching
-		$signup = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->signups} WHERE domain = %s AND path = %s", $domain, $path ) );
+		$signup = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->signups} WHERE domain = %s AND path = %s", $domain, $path ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		if ( ! empty( $signup ) ) {
 			return false;
 		}
@@ -85,7 +84,8 @@ if ( ! function_exists( 'wp_validate_site_url' ) ) :
 
 		// Validate individual domain and path parts.
 		$paths   = explode( '/', $path );
-		$domains = substr_count( $domain, '.' ) > 1 ? (array) substr( $domain, 0, strpos( $domain, '.' ) ) : array();
+		$parts   = explode( '.', $domain );
+		$domains = count( $parts ) > 2 ? array( $parts[0] ) : array();
 		$pieces  = array_filter( array_merge( $domains, $paths ) );
 		foreach ( $pieces as $slug ) {
 			// Bail if not lowercase or numbers.

@@ -25,6 +25,14 @@ class WP_MS_Networks_Admin {
 	private $feedback_strings = array();
 
 	/**
+	 * List table for the Networks screen.
+	 *
+	 * @since NEXT
+	 * @var WP_MS_Networks_List_Table|null
+	 */
+	private $list_table = null;
+
+	/**
 	 * Constructor.
 	 *
 	 * Hooks in the necessary methods.
@@ -44,6 +52,10 @@ class WP_MS_Networks_Admin {
 		add_filter( 'manage_sites_action_links', array( $this, 'add_move_blog_link' ), 10, 2 );
 
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
+		add_filter( 'set_screen_option_networks_per_page', array( $this, 'save_networks_per_page' ), 10, 3 );
+		add_action( 'wp_ajax_wpmn_search_root_sites', array( $this, 'ajax_search_root_sites' ) );
+		add_action( 'wp_ajax_wpmn_refresh_root_site_nonce', array( $this, 'ajax_refresh_root_site_nonce' ) );
+		add_action( 'wp_ajax_wpmn_get_root_site_name', array( $this, 'ajax_get_root_site_name' ) );
 	}
 
 	/**
@@ -108,11 +120,130 @@ class WP_MS_Networks_Admin {
 		$page = add_menu_page( esc_html__( 'Networks', 'wp-multi-network' ), esc_html__( 'Networks', 'wp-multi-network' ), 'manage_networks', 'networks', array( $this, 'route_pages' ), 'dashicons-networking', -1 );
 
 		add_submenu_page( 'networks', esc_html__( 'All Networks', 'wp-multi-network' ), esc_html__( 'All Networks', 'wp-multi-network' ), 'list_networks', 'networks', array( $this, 'route_pages' ) );
-		add_submenu_page( 'networks', esc_html__( 'Add New', 'wp-multi-network' ), esc_html__( 'Add New', 'wp-multi-network' ), 'create_networks', 'add-new-network', array( $this, 'page_edit_network' ) );
+		$add_page = add_submenu_page( 'networks', esc_html__( 'Add Network', 'wp-multi-network' ), esc_html__( 'Add Network', 'wp-multi-network' ), 'create_networks', 'add-new-network', array( $this, 'page_edit_network' ) );
 
 		add_action( "admin_head-{$page}", array( $this, 'fix_menu_highlight_for_move_page' ) );
+		add_action( "load-{$page}", array( $this, 'setup_networks_screen' ) );
+		add_action( "load-{$add_page}", array( $this, 'setup_edit_network_screen' ) );
 
 		require_once wpmn()->plugin_dir . '/includes/classes/class-wp-ms-networks-list-table.php';
+	}
+
+	/**
+	 * Sets up the Networks list screen before the admin header is rendered.
+	 *
+	 * @since NEXT
+	 * @return void
+	 */
+	public function setup_networks_screen() {
+		// The edit screen shares this page hook with the network list.
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended
+		$action = ! empty( $_GET['action'] ) && is_string( $_GET['action'] )
+			? sanitize_key( $_GET['action'] )
+			: '';
+		// phpcs:enable
+
+		if ( 'edit_network' === $action ) {
+			$this->setup_edit_network_screen();
+			return;
+		}
+
+		if ( ! in_array( $action, array( '', 'all_networks', 'domains' ), true ) ) {
+			return;
+		}
+
+		$screen = get_current_screen();
+
+		if ( null === $screen ) {
+			return;
+		}
+
+		$this->list_table = new WP_MS_Networks_List_Table();
+
+		add_screen_option(
+			'per_page',
+			array(
+				'label'   => esc_html__( 'Networks', 'wp-multi-network' ),
+				'default' => 20,
+				'option'  => 'networks_per_page',
+			)
+		);
+
+		$screen->add_help_tab(
+			array(
+				'id'      => 'overview',
+				'title'   => esc_html__( 'Overview', 'wp-multi-network' ),
+				'content' => '<p>' . esc_html__( 'This screen lists the networks in this installation. You can search by network domain or path, open a network to edit it, or add a new network.', 'wp-multi-network' ) . '</p>'
+					. '<p>' . esc_html__( 'Use Screen Options to choose which columns to show and how many networks appear on each page.', 'wp-multi-network' ) . '</p>',
+			)
+		);
+	}
+
+	/**
+	 * Registers network edit boxes and help before Screen Options render.
+	 *
+	 * @since NEXT
+	 * @return void
+	 */
+	public function setup_edit_network_screen() {
+		$screen = get_current_screen();
+
+		if ( null === $screen ) {
+			return;
+		}
+
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended
+		$network_id = ! empty( $_GET['id'] ) && is_numeric( $_GET['id'] )
+			? (int) $_GET['id']
+			: 0;
+		// phpcs:enable
+
+		$network = $network_id
+			? get_network( $network_id )
+			: null;
+
+		add_meta_box( 'wpmn-edit-network-details', esc_html__( 'Details', 'wp-multi-network' ), 'wpmn_edit_network_details_metabox', $screen->id, 'normal', 'high', array( $network ) );
+		add_meta_box( 'wpmn-edit-network-publish', esc_html__( 'Network', 'wp-multi-network' ), 'wpmn_edit_network_publish_metabox', $screen->id, 'side', 'high', array( $network ) );
+
+		if ( empty( $network ) ) {
+			add_meta_box( 'wpmn-edit-network-new-site', esc_html__( 'Root Site', 'wp-multi-network' ), 'wpmn_edit_network_new_site_metabox', $screen->id, 'advanced', 'high', array( $network ) );
+		} else {
+			add_meta_box( 'wpmn-edit-network-assign-sites', esc_html__( 'Site Assignment', 'wp-multi-network' ), 'wpmn_edit_network_assign_sites_metabox', $screen->id, 'advanced', 'high', array( $network ) );
+		}
+
+		add_screen_option(
+			'layout_columns',
+			array(
+				'max'     => 2,
+				'default' => 2,
+			)
+		);
+
+		$screen->add_help_tab(
+			array(
+				'id'      => 'overview',
+				'title'   => esc_html__( 'Overview', 'wp-multi-network' ),
+				'content' => empty( $network )
+					? '<p>' . esc_html__( 'Enter a network title, domain, and path. Create a new root site, or select an existing subsite to become the root of the new network.', 'wp-multi-network' ) . '</p>'
+					: '<p>' . esc_html__( 'Edit this network’s title, domain, path, and site assignments.', 'wp-multi-network' ) . '</p>',
+			)
+		);
+	}
+
+	/**
+	 * Saves the Networks list pagination setting for the current user.
+	 *
+	 * @since NEXT
+	 *
+	 * @param mixed  $screen_option Existing screen option value.
+	 * @param string $option        Option name.
+	 * @param int    $value         Requested number of networks per page.
+	 * @return int|false Valid count or false to reject it.
+	 */
+	public function save_networks_per_page( $screen_option, $option, $value ) {
+		$value = (int) $value;
+
+		return ( $value >= 1 && $value <= 999 ) ? $value : false;
 	}
 
 	/**
@@ -123,7 +254,7 @@ class WP_MS_Networks_Admin {
 	 * @return void
 	 */
 	public function network_admin_menu_separator() {
-		$GLOBALS['menu']['-2'] = array( '', 'read', 'separator', '', 'wp-menu-separator' ); // phpcs:ignore WordPress.Variables.GlobalVariables.OverrideProhibited
+		$GLOBALS['menu']['-2'] = array( '', 'read', 'separator', '', 'wp-menu-separator' );
 	}
 
 	/**
@@ -147,7 +278,7 @@ class WP_MS_Networks_Admin {
 			// phpcs:enable
 
 			if ( 'move' === $action ) {
-				$submenu_file = 'sites.php'; // phpcs:ignore WordPress.Variables.GlobalVariables.OverrideProhibited
+				$submenu_file = 'sites.php';
 			}
 		}
 	}
@@ -169,13 +300,164 @@ class WP_MS_Networks_Admin {
 
 		// Determine if we should load source or minified assets based on WP_SCRIPT_DEBUG.
 		$suffix        = ( defined( 'WP_SCRIPT_DEBUG' ) && WP_SCRIPT_DEBUG ) ? '' : '.min';
-		$asset_version = ( defined( 'WP_SCRIPT_DEBUG' ) && WP_SCRIPT_DEBUG ) ? time() : wpmn()->asset_version;
+		$asset_version = ( defined( 'WP_SCRIPT_DEBUG' ) && WP_SCRIPT_DEBUG ) ? (string) time() : wpmn()->asset_version;
 
 		wp_register_style( 'wp-multi-network', wpmn()->plugin_url . 'assets/css/wp-multi-network' . $suffix . '.css', array(), $asset_version );
-		wp_register_script( 'wp-multi-network', wpmn()->plugin_url . 'assets/js/wp-multi-network' . $suffix . '.js', array( 'jquery', 'post' ), $asset_version, true );
+		wp_register_script( 'wp-multi-network', wpmn()->plugin_url . 'assets/js/wp-multi-network' . $suffix . '.js', array( 'jquery', 'jquery-ui-autocomplete', 'post' ), $asset_version, true );
+		wp_localize_script(
+			'wp-multi-network',
+			'wpmnRootSiteSearch',
+			array(
+				'ajaxUrl'      => admin_url( 'admin-ajax.php' ),
+				'nonce'        => wp_create_nonce( 'wpmn_search_root_sites' ),
+				'searchError'  => esc_html__( 'Site search failed. Please try again.', 'wp-multi-network' ),
+				'loadingName'  => esc_html__( 'Loading site name…', 'wp-multi-network' ),
+				'nameError'    => esc_html__( 'Could not load the selected site name.', 'wp-multi-network' ),
+				'noResults'    => esc_html__( 'No subsites found', 'wp-multi-network' ),
+				'selectResult' => esc_html__( 'Select a site from the search results.', 'wp-multi-network' ),
+			)
+		);
+
+		wp_style_add_data( 'wp-multi-network', 'rtl', 'replace' );
+
+		if ( $suffix ) {
+			wp_style_add_data( 'wp-multi-network', 'suffix', $suffix );
+		}
 
 		wp_enqueue_style( 'wp-multi-network' );
 		wp_enqueue_script( 'wp-multi-network' );
+	}
+
+	/**
+	 * Finds sites eligible to become a new network's root site.
+	 *
+	 * Searches only central site domain and path columns; site titles would
+	 * require loading each site's options. The query runs only after input.
+	 *
+	 * @since NEXT
+	 *
+	 * @param string $term Domain or path fragment.
+	 * @return array<int, array{id: int, url: string, domain: string, path: string}> Matching sites.
+	 */
+	public function find_eligible_root_sites( $term ) {
+		$term = trim( str_replace( '*', '', sanitize_text_field( $term ) ) );
+
+		if ( strlen( $term ) < 3 ) {
+			return array();
+		}
+
+		$matches = get_sites(
+			array(
+				'number'         => 30,
+				'orderby'        => 'id',
+				'order'          => 'DESC',
+				'no_found_rows'  => true,
+				'search'         => substr( $term, 0, 100 ),
+				'search_columns' => array( 'domain', 'path' ),
+			)
+		);
+		$results = array();
+
+		foreach ( $matches as $site ) {
+			if ( is_main_site_for_network( $site->id ) ) {
+				continue;
+			}
+
+			$results[] = array(
+				'id'     => (int) $site->id,
+				'url'    => $site->domain . $site->path,
+				'domain' => $site->domain,
+				'path'   => $site->path,
+			);
+
+			if ( count( $results ) >= 10 ) {
+				break;
+			}
+		}
+
+		return $results;
+	}
+
+	/**
+	 * Returns eligible root-site matches for the new-network search field.
+	 *
+	 * @since NEXT
+	 * @return void
+	 */
+	public function ajax_search_root_sites() {
+		if ( ! current_user_can( 'create_networks' ) ) {
+			wp_send_json_error( array(), 403 );
+		}
+
+		check_ajax_referer( 'wpmn_search_root_sites', 'nonce' );
+
+		$term = isset( $_GET['term'] ) ? sanitize_text_field( wp_unslash( $_GET['term'] ) ) : '';
+
+		wp_send_json_success(
+			array(
+				'sites' => $this->find_eligible_root_sites( $term ),
+			)
+		);
+	}
+
+	/**
+	 * Refreshes the root-site search nonce for an authenticated network creator.
+	 *
+	 * This endpoint does not change state, so it can recover an open form after
+	 * its original nonce expires without accepting that expired nonce.
+	 *
+	 * @since NEXT
+	 * @return void
+	 */
+	public function ajax_refresh_root_site_nonce() {
+		if ( ! current_user_can( 'create_networks' ) ) {
+			wp_send_json_error( array(), 403 );
+		}
+
+		wp_send_json_success( array( 'nonce' => wp_create_nonce( 'wpmn_search_root_sites' ) ) );
+	}
+
+	/**
+	 * Retrieves the name of one eligible site after it has been selected.
+	 *
+	 * Keeping this separate from search avoids loading options for every match.
+	 *
+	 * @since NEXT
+	 *
+	 * @param int $site_id Selected site ID.
+	 * @return string|WP_Error Site name or an error if the site is ineligible.
+	 */
+	public function get_eligible_root_site_name( $site_id ) {
+		$site_id = absint( $site_id );
+
+		if ( 0 === $site_id || ! get_site( $site_id ) || is_main_site_for_network( $site_id ) ) {
+			return new WP_Error( 'site_not_eligible', esc_html__( 'This site cannot be used as a network root.', 'wp-multi-network' ) );
+		}
+
+		return (string) get_blog_option( $site_id, 'blogname', '' );
+	}
+
+	/**
+	 * Returns the selected site's name for the read-only preview field.
+	 *
+	 * @since NEXT
+	 * @return void
+	 */
+	public function ajax_get_root_site_name() {
+		if ( ! current_user_can( 'create_networks' ) ) {
+			wp_send_json_error( array(), 403 );
+		}
+
+		check_ajax_referer( 'wpmn_search_root_sites', 'nonce' );
+
+		$site_id = isset( $_GET['site_id'] ) ? absint( wp_unslash( $_GET['site_id'] ) ) : 0;
+		$name    = $this->get_eligible_root_site_name( $site_id );
+
+		if ( is_wp_error( $name ) ) {
+			wp_send_json_error( array(), 404 );
+		}
+
+		wp_send_json_success( array( 'name' => $name ) );
 	}
 
 	/**
@@ -226,7 +508,7 @@ class WP_MS_Networks_Admin {
 			}
 
 			// Pass/Fail.
-			$passed = sanitize_key( $_GET[ $slug ] );
+			$passed = sanitize_key( (string) $_GET[ $slug ] );
 
 			if ( '1' === $passed ) {
 				// Pass.
@@ -341,7 +623,7 @@ class WP_MS_Networks_Admin {
 
 		// Bail -- our fields aren't being edited
 		// Otherwise we'll do an unnecessary nonce check.
-		if ( empty( $_POST['network_edit'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		if ( empty( $_POST['network_edit'] ) ) {
 			return;
 		}
 
@@ -365,12 +647,14 @@ class WP_MS_Networks_Admin {
 			// Create network.
 			case 'create':
 				$this->check_nonce();
+				$this->check_capability( 'create_networks' );
 				$this->handle_add_network();
 				break;
 
 			// Update network.
 			case 'update':
 				$this->check_nonce();
+				$this->check_capability( 'edit_network', isset( $_GET['id'] ) ? absint( $_GET['id'] ) : 0 );
 				$this->handle_reassign_sites();
 				$this->handle_update_network();
 				break;
@@ -378,18 +662,27 @@ class WP_MS_Networks_Admin {
 			// Delete network.
 			case 'delete':
 				$this->check_nonce();
+				$this->check_capability( 'delete_network', isset( $_GET['id'] ) ? absint( $_GET['id'] ) : 0 );
 				$this->handle_delete_network();
 				break;
 
 			// Delete multiple networks.
 			case 'delete_multiple':
 				$this->check_nonce();
+				$this->check_capability( 'delete_networks' );
+				$network_ids = isset( $_POST['deleted_networks'] ) && is_array( $_POST['deleted_networks'] )
+					? wp_parse_id_list( $_POST['deleted_networks'] )
+					: array();
+				foreach ( $network_ids as $network_id ) {
+					$this->check_capability( 'delete_network', $network_id );
+				}
 				$this->handle_delete_networks();
 				break;
 
 			// Move site to different network.
 			case 'move':
 				$this->check_nonce();
+				$this->check_capability( 'manage_networks' );
 				$this->handle_move_site();
 				break;
 		}
@@ -406,6 +699,12 @@ class WP_MS_Networks_Admin {
 	 */
 	public function page_edit_network() {
 
+		$screen = get_current_screen();
+
+		if ( null === $screen ) {
+			return;
+		}
+
 		$network_id = ! empty( $_GET['id'] ) && is_numeric( $_GET['id'] )
 			? (int) $_GET['id']
 			: 0;
@@ -414,18 +713,17 @@ class WP_MS_Networks_Admin {
 			? get_network( $network_id )
 			: null;
 
-		add_meta_box( 'wpmn-edit-network-details', esc_html__( 'Details', 'wp-multi-network' ), 'wpmn_edit_network_details_metabox', get_current_screen()->id, 'normal', 'high', array( $network ) );
-		add_meta_box( 'wpmn-edit-network-publish', esc_html__( 'Network', 'wp-multi-network' ), 'wpmn_edit_network_publish_metabox', get_current_screen()->id, 'side', 'high', array( $network ) );
+		if ( empty( $network ) ) {
+			$this->check_capability( 'create_networks' );
+		} else {
+			$this->check_capability( 'edit_network', $network->id );
+		}
 
 		// Differentiate between a new network and an existing network.
 		if ( empty( $network ) ) {
 			$network_title = '';
-
-			add_meta_box( 'wpmn-edit-network-new-site', esc_html__( 'Root Site', 'wp-multi-network' ), 'wpmn_edit_network_new_site_metabox', get_current_screen()->id, 'advanced', 'high', array( $network ) );
 		} else {
 			$network_title = get_network_option( $network->id, 'site_name', '' );
-
-			add_meta_box( 'wpmn-edit-network-assign-sites', esc_html__( 'Site Assignment', 'wp-multi-network' ), 'wpmn_edit_network_assign_sites_metabox', get_current_screen()->id, 'advanced', 'high', array( $network ) );
 		}
 
 		$add_network_url = $this->admin_url( array( 'page' => 'add-new-network' ) );
@@ -439,20 +737,36 @@ class WP_MS_Networks_Admin {
 
 					if ( current_user_can( 'create_networks' ) ) {
 						?>
-						<a href="<?php echo esc_url( $add_network_url ); ?>" class="add-new-h2"><?php echo esc_html_x( 'Add New', 'network', 'wp-multi-network' ); ?></a>
+						<a href="<?php echo esc_url( $add_network_url ); ?>" class="page-title-action"><?php esc_html_e( 'Add Network', 'wp-multi-network' ); ?></a>
 						<?php
 					}
 				} else {
-					esc_html_e( 'Add New Network', 'wp-multi-network' );
+					esc_html_e( 'Add Network', 'wp-multi-network' );
 				}
 				?>
 			</h1>
 
 			<hr class="wp-header-end">
+			<?php if ( ! empty( $network ) ) : ?>
+				<form method="get" action="<?php echo esc_url( network_admin_url( 'admin.php' ) ); ?>" id="wpmn-assigned-site-search-form">
+					<input type="hidden" name="page" value="networks"><input type="hidden" name="action" value="edit_network"><input type="hidden" name="id" value="<?php echo esc_attr( strval( $network->id ) ); ?>">
+					<?php if ( isset( $_GET['available_site_search'] ) && is_string( $_GET['available_site_search'] ) ) : ?>
+						<input type="hidden" name="available_site_search" value="<?php echo esc_attr( sanitize_text_field( wp_unslash( $_GET['available_site_search'] ) ) ); ?>">
+					<?php endif; ?>
+				</form>
+				<form method="get" action="<?php echo esc_url( network_admin_url( 'admin.php' ) ); ?>" id="wpmn-available-site-search-form">
+					<input type="hidden" name="page" value="networks"><input type="hidden" name="action" value="edit_network"><input type="hidden" name="id" value="<?php echo esc_attr( strval( $network->id ) ); ?>">
+					<?php if ( isset( $_GET['assigned_site_search'] ) && is_string( $_GET['assigned_site_search'] ) ) : ?>
+						<input type="hidden" name="assigned_site_search" value="<?php echo esc_attr( sanitize_text_field( wp_unslash( $_GET['assigned_site_search'] ) ) ); ?>">
+					<?php endif; ?>
+				</form>
+			<?php endif; ?>
 
 			<form method="post" action="" id="edit-network-form">
+				<?php wp_nonce_field( 'closedpostboxes', 'closedpostboxesnonce', false ); ?>
+				<?php wp_nonce_field( 'meta-box-order', 'meta-box-order-nonce', false ); ?>
 				<div id="poststuff" class="poststuff">
-					<div id="post-body" class="metabox-holder columns-2">
+					<div id="post-body" class="metabox-holder columns-<?php echo ( 1 === $screen->get_columns() ) ? '1' : '2'; ?>">
 						<div id="post-body-content">
 							<div id="titlediv">
 								<div id="titlewrap">
@@ -460,15 +774,30 @@ class WP_MS_Networks_Admin {
 									<input type="text" name="title" size="30" id="title" spellcheck="true" autocomplete="off" value="<?php echo esc_attr( $network_title ); ?>">
 								</div>
 							</div>
+
+							<?php if ( empty( $network ) ) : ?>
+								<fieldset id="root-site-toggle" class="wpmn-root-site-tabs">
+									<legend class="screen-reader-text"><?php esc_html_e( 'Choose how to create the root site', 'wp-multi-network' ); ?></legend>
+									<label class="wpmn-root-site-tab">
+										<input type="radio" name="root_site_option" value="new" checked>
+										<span><?php esc_html_e( 'Create New Site', 'wp-multi-network' ); ?></span>
+									</label>
+									<label class="wpmn-root-site-tab">
+										<input type="radio" name="root_site_option" value="existing">
+										<span><?php esc_html_e( 'Use Existing Subsite', 'wp-multi-network' ); ?></span>
+									</label>
+								</fieldset>
+							<?php endif; ?>
+
 						</div>
 
 						<div id="postbox-container-1" class="postbox-container">
-							<?php do_meta_boxes( get_current_screen()->id, 'side', $network ); ?>
+							<?php do_meta_boxes( $screen->id, 'side', $network ); ?>
 						</div>
 
 						<div id="postbox-container-2" class="postbox-container">
-							<?php do_meta_boxes( get_current_screen()->id, 'normal', $network ); ?>
-							<?php do_meta_boxes( get_current_screen()->id, 'advanced', $network ); ?>
+							<?php do_meta_boxes( $screen->id, 'normal', $network ); ?>
+							<?php do_meta_boxes( $screen->id, 'advanced', $network ); ?>
 						</div>
 					</div>
 				</div>
@@ -490,7 +819,7 @@ class WP_MS_Networks_Admin {
 	 * @return void
 	 */
 	private function page_all_networks() {
-		$wp_list_table = new WP_MS_Networks_List_Table();
+		$wp_list_table = $this->list_table ? $this->list_table : new WP_MS_Networks_List_Table();
 		$wp_list_table->prepare_items();
 
 		$add_network_url  = $this->admin_url( array( 'page' => 'add-new-network' ) );
@@ -510,7 +839,7 @@ class WP_MS_Networks_Admin {
 
 				if ( current_user_can( 'create_networks' ) ) {
 					?>
-					<a href="<?php echo esc_url( $add_network_url ); ?>" class="add-new-h2"><?php echo esc_html_x( 'Add New', 'network', 'wp-multi-network' ); ?></a>
+					<a href="<?php echo esc_url( $add_network_url ); ?>" class="page-title-action"><?php esc_html_e( 'Add Network', 'wp-multi-network' ); ?></a>
 					<?php
 				}
 
@@ -547,6 +876,12 @@ class WP_MS_Networks_Admin {
 	 */
 	private function page_move_site() {
 
+		$screen = get_current_screen();
+
+		if ( null === $screen ) {
+			return;
+		}
+
 		$site_id = ! empty( $_GET['blog_id'] ) && is_numeric( $_GET['blog_id'] )
 			? (int) $_GET['blog_id']
 			: 0;
@@ -565,7 +900,7 @@ class WP_MS_Networks_Admin {
 			'wpmn-move-site-list',
 			esc_html__( 'Assign Network', 'wp-multi-network' ),
 			'wpmn_move_site_list_metabox',
-			get_current_screen()->id,
+			$screen->id,
 			'normal',
 			'high',
 			array( $site )
@@ -576,7 +911,7 @@ class WP_MS_Networks_Admin {
 			'wpmn-move-site-publish',
 			esc_html__( 'Site', 'wp-multi-network' ),
 			'wpmn_move_site_assign_metabox',
-			get_current_screen()->id,
+			$screen->id,
 			'side',
 			'high',
 			array( $site )
@@ -603,7 +938,7 @@ class WP_MS_Networks_Admin {
 
 				if ( current_user_can( 'create_networks' ) ) {
 					?>
-					<a href="<?php echo esc_url( $add_network_url ); ?>" class="add-new-h2"><?php echo esc_html_x( 'Add New', 'network', 'wp-multi-network' ); ?></a>
+					<a href="<?php echo esc_url( $add_network_url ); ?>" class="page-title-action"><?php esc_html_e( 'Add Network', 'wp-multi-network' ); ?></a>
 					<?php
 				}
 				?>
@@ -615,12 +950,12 @@ class WP_MS_Networks_Admin {
 				<div id="poststuff">
 					<div id="post-body" class="metabox-holder columns-2">
 						<div id="postbox-container-1" class="postbox-container">
-							<?php do_meta_boxes( get_current_screen()->id, 'side', $site ); ?>
+							<?php do_meta_boxes( $screen->id, 'side', $site ); ?>
 						</div>
 
 						<div id="postbox-container-2" class="postbox-container">
-							<?php do_meta_boxes( get_current_screen()->id, 'normal', $site ); ?>
-							<?php do_meta_boxes( get_current_screen()->id, 'advanced', $site ); ?>
+							<?php do_meta_boxes( $screen->id, 'normal', $site ); ?>
+							<?php do_meta_boxes( $screen->id, 'advanced', $site ); ?>
 						</div>
 					</div>
 				</div>
@@ -654,6 +989,8 @@ class WP_MS_Networks_Admin {
 			wp_die( esc_html__( 'Invalid network id.', 'wp-multi-network' ) );
 		}
 
+		$this->check_capability( 'delete_network', $network->id );
+
 		$sites = get_sites( array( 'network_id' => $network->id ) );
 
 		$add_network_url = $this->admin_url( array( 'page' => 'add-new-network' ) );
@@ -666,7 +1003,7 @@ class WP_MS_Networks_Admin {
 
 				if ( current_user_can( 'create_networks' ) ) {
 					?>
-					<a href="<?php echo esc_url( $add_network_url ); ?>" class="add-new-h2"><?php echo esc_html_x( 'Add New', 'network', 'wp-multi-network' ); ?></a>
+					<a href="<?php echo esc_url( $add_network_url ); ?>" class="page-title-action"><?php esc_html_e( 'Add Network', 'wp-multi-network' ); ?></a>
 					<?php
 				}
 				?>
@@ -741,7 +1078,6 @@ class WP_MS_Networks_Admin {
 	 * @return void
 	 */
 	private function page_delete_networks() {
-
 		$network_id = get_main_network_id();
 
 		$all_networks = ! empty( $_POST['all_networks'] ) && is_array( $_POST['all_networks'] )
@@ -750,6 +1086,7 @@ class WP_MS_Networks_Admin {
 
 		$all_networks = array_diff( $all_networks, array( $network_id ) );
 
+		/** @var WP_Network[] $networks */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
 		$networks = get_networks(
 			array(
 				'network__in' => $all_networks,
@@ -761,7 +1098,10 @@ class WP_MS_Networks_Admin {
 			wp_die( esc_html__( 'You have selected an invalid network or networks for deletion', 'wp-multi-network' ) );
 		}
 
+		$this->check_capability( 'delete_networks' );
+
 		foreach ( $networks as $network ) {
+			$this->check_capability( 'delete_network', $network->id );
 			if ( ! get_network( $network ) ) {
 				wp_die( esc_html__( 'You have selected an invalid network for deletion.', 'wp-multi-network' ) );
 			}
@@ -793,7 +1133,7 @@ class WP_MS_Networks_Admin {
 
 							foreach ( $networks as $deleted_network ) {
 								?>
-								<li><input type="hidden" name="deleted_networks[]" value="<?php echo esc_attr( $deleted_network->id ); ?>"><?php echo esc_html( $deleted_network->domain . $deleted_network->path ); ?></li>
+								<li><input type="hidden" name="deleted_networks[]" value="<?php echo esc_attr( (string) $deleted_network->id ); ?>"><?php echo esc_html( $deleted_network->domain . $deleted_network->path ); ?></li>
 								<?php
 							}
 
@@ -828,7 +1168,7 @@ class WP_MS_Networks_Admin {
 						foreach ( $networks as $deleted_network ) :
 
 							?>
-								<li><input type="hidden" name="deleted_networks[]" value="<?php echo esc_attr( $deleted_network->id ); ?>"><?php echo esc_html( $deleted_network->domain . $deleted_network->path ); ?></li>
+								<li><input type="hidden" name="deleted_networks[]" value="<?php echo esc_attr( (string) $deleted_network->id ); ?>"><?php echo esc_html( $deleted_network->domain . $deleted_network->path ); ?></li>
 								<?php
 
 							endforeach;
@@ -876,9 +1216,12 @@ class WP_MS_Networks_Admin {
 			<?php
 
 			$my_networks = user_has_networks();
+			if ( ! is_array( $my_networks ) ) {
+				$my_networks = array();
+			}
+
 			foreach ( $my_networks as $key => $network_id ) {
-				// phpcs:ignore WordPress.VIP.DirectDatabaseQuery.DirectQuery,WordPress.VIP.DirectDatabaseQuery.NoCaching
-				$my_networks[ $key ] = $wpdb->get_row(
+				$my_networks[ $key ] = $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 					$wpdb->prepare(
 						'SELECT s.*, sm.meta_value as site_name, b.blog_id FROM ' . $wpdb->site . ' s LEFT JOIN ' . $wpdb->sitemeta . ' as sm ON sm.site_id = s.id AND sm.meta_key = %s LEFT JOIN ' . $wpdb->blogs . ' b ON s.id = b.site_id AND b.path = s.path WHERE s.id = %d',
 						'site_name',
@@ -920,8 +1263,8 @@ class WP_MS_Networks_Admin {
 							<p>
 								<?php
 								$network_actions = array(
-									"<a href='" . network_home_url() . "'>" . esc_html__( 'Visit', 'wp-multi-network' ) . '</a>',
-									"<a href='" . network_admin_url() . "'>" . esc_html__( 'Dashboard', 'wp-multi-network' ) . '</a>',
+									"<a href='" . esc_url( network_home_url() ) . "'>" . esc_html__( 'Visit', 'wp-multi-network' ) . '</a>',
+									"<a href='" . esc_url( network_admin_url() ) . "'>" . esc_html__( 'Dashboard', 'wp-multi-network' ) . '</a>',
 								);
 								$network_actions = implode( ' | ', $network_actions );
 
@@ -961,14 +1304,8 @@ class WP_MS_Networks_Admin {
 	 * @return void
 	 */
 	private function handle_add_network() {
-
-		// Sanitize options to clone.
 		$options_to_clone = ! empty( $_POST['options_to_clone'] ) && is_array( $_POST['options_to_clone'] )
-			? $_POST['options_to_clone']
-			: array();
-
-		$options_to_clone = ! empty( $options_to_clone )
-			? array_keys( $options_to_clone )
+			? array_map( 'sanitize_text_field', array_keys( $_POST['options_to_clone'] ) ) // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 			: array_keys( network_options_to_copy() );
 
 		// Sanitize network ID to clone.
@@ -982,27 +1319,51 @@ class WP_MS_Networks_Admin {
 
 		// Unslash posted values.
 		$network_title  = ! empty( $_POST['title'] )
-			? wp_unslash( $_POST['title'] )
+			? sanitize_text_field( wp_unslash( $_POST['title'] ) )
 			: '';
 		$network_domain = ! empty( $_POST['domain'] )
-			? wp_unslash( $_POST['domain'] )
+			? str_replace( ' ', '', strtolower( sanitize_text_field( wp_unslash( $_POST['domain'] ) ) ) )
 			: '';
 		$network_path   = ! empty( $_POST['path'] )
-			? wp_unslash( $_POST['path'] )
+			? str_replace( ' ', '', strtolower( sanitize_text_field( wp_unslash( $_POST['path'] ) ) ) )
 			: '';
 		$site_name      = ! empty( $_POST['new_site'] )
-			? wp_unslash( $_POST['new_site'] )
-			: '';
+			? sanitize_text_field( wp_unslash( $_POST['new_site'] ) )
+			: $network_title; // Fallback to network title if not explicitly set.
 
-		// Additional sanitization.
-		$network_title  = sanitize_text_field( $network_title );
-		$network_domain = str_replace( ' ', '', strtolower( sanitize_text_field( $network_domain ) ) );
-		$network_path   = str_replace( ' ', '', strtolower( sanitize_text_field( $network_path ) ) );
+		// Root site option: 'new' (default) or 'existing'.
+		$root_site_option = ! empty( $_POST['root_site_option'] )
+			? sanitize_key( wp_unslash( $_POST['root_site_option'] ) )
+			: 'new';
 
-		// Fallback to network title if not explicitly set.
-		$site_name = ! empty( $site_name )
-			? sanitize_text_field( $site_name )
-			: $network_title;
+		$existing_site_id = 0;
+
+		if ( 'existing' === $root_site_option ) {
+			$existing_site_id = ! empty( $_POST['existing_site_id'] )
+				? absint( wp_unslash( $_POST['existing_site_id'] ) )
+				: 0;
+
+			$existing_site = $existing_site_id ? get_site( $existing_site_id ) : null;
+
+			// Validate the existing site.
+			if ( 0 === $existing_site_id || empty( $existing_site ) || is_main_site_for_network( $existing_site_id ) ) {
+				$this->handle_redirect(
+					array(
+						'page'            => 'add-new-network',
+						'network_created' => '0',
+					)
+				);
+			}
+
+			// Use the existing site's domain and path for the network.
+			$network_domain = $existing_site->domain;
+			$network_path   = $existing_site->path;
+			$site_name      = $existing_site->blogname;
+
+			if ( empty( $network_title ) ) {
+				$network_title = $existing_site->blogname;
+			}
+		}
 
 		// Bail if missing fields.
 		if ( empty( $network_domain ) || empty( $network_path ) ) {
@@ -1023,6 +1384,11 @@ class WP_MS_Networks_Admin {
 			'clone_network'    => $clone,
 			'options_to_clone' => $options_to_clone,
 		);
+
+		// Use existing site as root site if selected.
+		if ( $existing_site_id > 0 ) {
+			$args['existing_blog_id'] = $existing_site_id;
+		}
 
 		// Add network.
 		$result = add_network( $args );
@@ -1084,19 +1450,14 @@ class WP_MS_Networks_Admin {
 
 		// Unslash posted values.
 		$network_title  = ! empty( $_POST['title'] )
-			? wp_unslash( $_POST['title'] )
+			? sanitize_text_field( wp_unslash( $_POST['title'] ) )
 			: '';
 		$network_domain = ! empty( $_POST['domain'] )
-			? wp_unslash( $_POST['domain'] )
+			? str_replace( ' ', '', strtolower( sanitize_text_field( wp_unslash( $_POST['domain'] ) ) ) )
 			: '';
 		$network_path   = ! empty( $_POST['path'] )
-			? wp_unslash( $_POST['path'] )
+			? str_replace( ' ', '', strtolower( sanitize_text_field( wp_unslash( $_POST['path'] ) ) ) )
 			: '';
-
-		// Additional sanitization.
-		$network_title  = sanitize_text_field( $network_title );
-		$network_domain = str_replace( ' ', '', strtolower( sanitize_text_field( $network_domain ) ) );
-		$network_path   = str_replace( ' ', '', strtolower( sanitize_text_field( $network_path ) ) );
 
 		// Bail if missing fields.
 		if ( empty( $network_title ) || empty( $network_domain ) || empty( $network_path ) ) {
@@ -1213,67 +1574,33 @@ class WP_MS_Networks_Admin {
 	 * @return void
 	 */
 	private function handle_reassign_sites() {
+		$network_id = isset( $_GET['id'] ) ? absint( $_GET['id'] ) : 0;
+		$network    = $network_id ? get_network( $network_id ) : false;
 
-		// Sanitize values.
-		$to = ! empty( $_POST['to'] ) && is_array( $_POST['to'] )
-			? wp_parse_id_list( (array) $_POST['to'] )
-			: array();
-
-		$from = ! empty( $_POST['from'] ) && is_array( $_POST['from'] )
-			? wp_parse_id_list( (array) $_POST['from'] )
-			: array();
-
-		// Bail early if no movement.
-		if ( empty( $to ) && empty( $from ) ) {
+		if ( ! $network ) {
 			return;
 		}
 
-		// Sanitize network ID.
-		$network_id = ! empty( $_GET['id'] ) && is_numeric( $_GET['id'] )
-			? (int) $_GET['id']
-			: 0;
+		$move_sites     = isset( $_POST['move_sites'] ) && is_array( $_POST['move_sites'] )
+			? wp_parse_id_list( wp_unslash( $_POST['move_sites'] ) )
+			: array();
+		$destination_id = isset( $_POST['move_to_network'] ) ? absint( $_POST['move_to_network'] ) : 0;
+		$incoming_id    = isset( $_POST['move_here_site_id'] ) ? absint( $_POST['move_here_site_id'] ) : 0;
 
-		// Default to/from arrays.
-		$moving_to   = array();
-		$moving_from = array();
-
-		// Get sites for network.
-		$sites_list = get_sites(
-			array(
-				'network_id' => $network_id,
-				'fields'     => 'ids',
-			)
-		);
-
-		// Move sites out of current network.
-		foreach ( $from as $site_id ) {
-			if ( in_array( $site_id, $sites_list, true ) ) {
-				$moving_from[] = $site_id;
+		// A selected outgoing site must have a real, different destination.
+		if ( ! empty( $move_sites ) && $destination_id && $destination_id !== $network_id && get_network( $destination_id ) ) {
+			foreach ( $move_sites as $site_id ) {
+				$site = get_site( $site_id );
+				if ( $site && (int) $site->network_id === $network_id && ! is_main_site( $site_id, $network_id ) ) {
+					move_site( $site_id, $destination_id );
+				}
 			}
 		}
 
-		// Move sites into current network.
-		foreach ( $to as $site_id ) {
-			if ( ! in_array( $site_id, $sites_list, true ) ) {
-				$moving_to[] = $site_id;
-			}
-		}
-
-		$moving = array_filter( array_merge( $moving_to, $moving_from ) );
-
-		// Loop through and move sites.
-		foreach ( $moving as $site_id ) {
-			$site = get_site( $site_id );
-
-			// Skip if missing or main site.
-			if ( empty( $site ) || is_main_site( $site->id, $site->network_id ) ) {
-				continue;
-			}
-
-			if ( in_array( $site_id, $to, true ) && ! in_array( $site_id, $sites_list, true ) ) {
-				move_site( $site_id, $network_id );
-			} elseif ( in_array( $site_id, $from, true ) ) {
-				move_site( $site_id, 0 );
+		if ( $incoming_id ) {
+			$site = get_site( $incoming_id );
+			if ( $site && (int) $site->network_id > 0 && (int) $site->network_id !== $network_id && get_network( $site->network_id ) && ! is_main_site( $incoming_id, $site->network_id ) ) {
+				move_site( $incoming_id, $network_id );
 			}
 		}
 	}
@@ -1357,7 +1684,7 @@ class WP_MS_Networks_Admin {
 	 * @since 2.0.0
 	 *
 	 * @param array<string, int|string> $args Optional. URL query arguments. Default empty array.
-	 * @return void
+	 * @return never
 	 */
 	private function handle_redirect( $args = array() ) {
 		wp_safe_redirect( $this->admin_url( $args ) );
@@ -1410,5 +1737,19 @@ class WP_MS_Networks_Admin {
 	 */
 	private function check_nonce() {
 		check_admin_referer( 'edit_network', 'network_edit' );
+	}
+
+	/**
+	 * Checks the capability required for a network management action.
+	 *
+	 * @since NEXT
+	 * @param string $capability Required capability.
+	 * @param int    $object_id  Optional network ID for meta capabilities.
+	 * @return void
+	 */
+	private function check_capability( $capability, $object_id = 0 ) {
+		if ( ! current_user_can( $capability, $object_id ) ) {
+			wp_die( esc_html__( 'You do not have permission to perform this action.', 'wp-multi-network' ) );
+		}
 	}
 }
