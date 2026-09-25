@@ -911,6 +911,7 @@ class WP_MS_REST_Networks_Controller extends WP_REST_Controller {
 				$status = 500;
 				break;
 			case 'network_not_empty':
+			case 'network_is_main':
 			case 'network_empty_domain':
 			case 'network_not_exist':
 			case 'network_not_updated':

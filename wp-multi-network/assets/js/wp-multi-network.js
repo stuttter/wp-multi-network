@@ -52,7 +52,6 @@ jQuery( document ).ready( function ( $ ) {
 	const $siteName = $( '#existing_site_name' );
 	const $siteNameStatus = $( '#existing_site_name_status' );
 	const $siteSpinner = $( '#existing_site_search_spinner' );
-	const $siteStatus = $( '#existing_site_search_status' );
 	let siteSearchRequest;
 	let siteNameRequest;
 	let siteNameSequence = 0;
@@ -62,6 +61,9 @@ jQuery( document ).ready( function ( $ ) {
 	const setSearchBusy = function ( busy ) {
 		$siteSpinner.toggleClass( 'is-active', busy );
 		$siteSearch.attr( 'aria-busy', busy ? 'true' : 'false' );
+	};
+	const isExpiredNonce = function ( xhr ) {
+		return xhr.status === 403 && String( xhr.responseText ).trim() === '-1';
 	};
 	const cancelSiteSearch = function () {
 		siteSearchSequence++;
@@ -96,6 +98,11 @@ jQuery( document ).ready( function ( $ ) {
 			classes: { 'ui-autocomplete': 'wpmn-site-search-menu' },
 			source( request, response ) {
 				cancelSiteSearch();
+				const errorItem = {
+					label: wpmnRootSiteSearch.searchError,
+					value: '',
+					disabled: true,
+				};
 				const searchSequence = siteSearchSequence;
 				const startedAt = Date.now();
 				let responseSent = false;
@@ -109,7 +116,7 @@ jQuery( document ).ready( function ( $ ) {
 					}
 					response( items );
 				};
-				const finishSearch = function ( items, failed ) {
+				const finishSearch = function ( items ) {
 					if ( searchSequence !== siteSearchSequence ) {
 						sendResponse( [] );
 						return;
@@ -119,11 +126,6 @@ jQuery( document ).ready( function ( $ ) {
 						function () {
 							if ( searchSequence === siteSearchSequence ) {
 								setSearchBusy( false );
-								if ( failed ) {
-									$siteStatus.text(
-										wpmnRootSiteSearch.searchError
-									);
-								}
 								sendResponse( items );
 							}
 						},
@@ -132,46 +134,89 @@ jQuery( document ).ready( function ( $ ) {
 				};
 
 				siteSearchPendingResponse = sendResponse;
-				$siteStatus.text( '' );
 				setSearchBusy( true );
-				siteSearchRequest = $.ajax( {
-					url: wpmnRootSiteSearch.ajaxUrl,
-					dataType: 'json',
-					data: {
-						action: 'wpmn_search_root_sites',
-						nonce: wpmnRootSiteSearch.nonce,
-						term: request.term,
-					},
-				} )
-					.done( function ( result ) {
-						const sites = result.success ? result.data.sites : [];
-						const items = $.map( sites, function ( site ) {
-							return {
-								label: site.url,
-								value: site.url,
-								id: site.id,
-								domain: site.domain,
-								path: site.path,
-							};
-						} );
-
-						if ( result.success && ! items.length ) {
-							items.push( {
-								label: wpmnRootSiteSearch.noResults,
-								value: '',
-								disabled: true,
-							} );
-						}
-
-						finishSearch( items, false );
+				const searchSites = function ( retried ) {
+					siteSearchRequest = $.ajax( {
+						url: wpmnRootSiteSearch.ajaxUrl,
+						dataType: 'json',
+						data: {
+							action: 'wpmn_search_root_sites',
+							nonce: wpmnRootSiteSearch.nonce,
+							term: request.term,
+						},
 					} )
-					.fail( function ( xhr, status ) {
-						if ( status === 'abort' ) {
-							sendResponse( [] );
-						} else {
-							finishSearch( [], true );
-						}
-					} );
+						.done( function ( result ) {
+							if ( ! result.success ) {
+								finishSearch( [ errorItem ] );
+								return;
+							}
+
+							const sites = result.data.sites;
+							const items = $.map( sites, function ( site ) {
+								return {
+									label: site.url,
+									value: site.url,
+									id: site.id,
+									domain: site.domain,
+									path: site.path,
+								};
+							} );
+
+							if ( ! items.length ) {
+								items.push( {
+									label: wpmnRootSiteSearch.noResults,
+									value: '',
+									disabled: true,
+								} );
+							}
+
+							finishSearch( items );
+						} )
+						.fail( function ( xhr, status ) {
+							if ( status === 'abort' ) {
+								sendResponse( [] );
+							} else if ( ! retried && isExpiredNonce( xhr ) ) {
+								siteSearchRequest = $.ajax( {
+									url: wpmnRootSiteSearch.ajaxUrl,
+									type: 'POST',
+									dataType: 'json',
+									data: {
+										action: 'wpmn_refresh_root_site_nonce',
+									},
+								} )
+									.done( function ( result ) {
+										if (
+											searchSequence !==
+											siteSearchSequence
+										) {
+											return;
+										}
+										if (
+											result.success &&
+											result.data.nonce
+										) {
+											wpmnRootSiteSearch.nonce =
+												result.data.nonce;
+											searchSites( true );
+										} else {
+											finishSearch( [ errorItem ] );
+										}
+									} )
+									.fail(
+										function ( refreshXhr, refreshStatus ) {
+											if ( refreshStatus === 'abort' ) {
+												sendResponse( [] );
+											} else {
+												finishSearch( [ errorItem ] );
+											}
+										}
+									);
+							} else {
+								finishSearch( [ errorItem ] );
+							}
+						} );
+				};
+				searchSites( false );
 			},
 			focus( event, ui ) {
 				if ( ui.item.disabled ) {
@@ -236,7 +281,6 @@ jQuery( document ).ready( function ( $ ) {
 						}
 					} );
 				$siteSearch[ 0 ].setCustomValidity( '' );
-				$siteStatus.text( '' );
 				return false;
 			},
 		} );
@@ -261,7 +305,6 @@ jQuery( document ).ready( function ( $ ) {
 			cancelSiteNameLookup();
 			cancelSiteSearch();
 			this.setCustomValidity( '' );
-			$siteStatus.text( '' );
 		} );
 	}
 

@@ -4,6 +4,54 @@
  */
 
 class WPMN_Tests_NetworkOperations extends WPMN_UnitTestCase {
+	public function test_main_network_cannot_be_deleted() {
+		$network_id = get_main_network_id();
+		$site_id    = get_main_site_id( $network_id );
+
+		$result = delete_network( $network_id, true );
+
+		$this->assertWPError( $result );
+		$this->assertSame( 'network_is_main', $result->get_error_code() );
+		$this->assertNotNull( get_network( $network_id ) );
+		$this->assertNotNull( get_site( $site_id ) );
+	}
+
+	public function test_network_admin_lookup_escapes_username_wildcards() {
+		$user_id    = $this->factory->user->create( array( 'user_login' => 'audit_user' ) );
+		$network_id = $this->factory->network->create();
+
+		update_network_option( $network_id, 'site_admins', array( 'auditXuser' ) );
+		$this->assertFalse( user_has_networks( $user_id ) );
+
+		update_network_option( $network_id, 'site_admins', array( 'audit_user' ) );
+		$this->assertContains( $network_id, user_has_networks( $user_id ) );
+	}
+
+	public function test_my_networks_escapes_action_urls() {
+		$user_id = $this->factory->user->create( array( 'role' => 'administrator' ) );
+		wp_set_current_user( $user_id );
+		grant_super_admin( $user_id );
+
+		$network_id = add_network(
+			array(
+				'domain'           => "example.test' onmouseover='alert(1)",
+				'path'             => '/',
+				'site_name'        => 'Test Site',
+				'network_name'     => 'Test Network',
+				'user_id'          => $user_id,
+				'network_admin_id' => $user_id,
+			)
+		);
+		$this->assertNotWPError( $network_id );
+
+		ob_start();
+		$admin = new WP_MS_Networks_Admin();
+		$admin->page_my_networks();
+		$html = ob_get_clean();
+
+		$this->assertStringNotContainsString( "' onmouseover='", $html );
+	}
+
 	public function test_network_exists() {
 		$network = $this->factory->network->create();
 		$this->assertTrue( network_exists( $network ) !== false );

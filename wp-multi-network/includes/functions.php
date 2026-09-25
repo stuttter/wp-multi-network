@@ -104,7 +104,7 @@ if ( ! function_exists( 'user_has_networks' ) ) :
 
 		if ( is_multisite() ) {
 
-			$my_networks = array_map( 'intval', $wpdb->get_col( $wpdb->prepare( "SELECT site_id FROM {$wpdb->sitemeta} WHERE meta_key = %s AND meta_value LIKE %s", 'site_admins', '%"' . $user_login . '"%' ) ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			$my_networks = array_map( 'intval', $wpdb->get_col( $wpdb->prepare( "SELECT site_id FROM {$wpdb->sitemeta} WHERE meta_key = %s AND meta_value LIKE %s", 'site_admins', '%' . $wpdb->esc_like( '"' . $user_login . '"' ) . '%' ) ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		}
 
 		// If there are no networks, return false.
@@ -878,6 +878,11 @@ if ( ! function_exists( 'delete_network' ) ) :
 		// Bail if network does not exist.
 		if ( empty( $network ) ) {
 			return new WP_Error( 'network_not_exist', __( 'Network does not exist.', 'wp-multi-network' ) );
+		}
+
+		// The main network must remain available to the installation.
+		if ( is_main_network( $network->id ) ) {
+			return new WP_Error( 'network_is_main', __( 'Cannot delete the main network.', 'wp-multi-network' ) );
 		}
 
 		$sites = get_sites( array(

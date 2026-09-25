@@ -54,6 +54,7 @@ class WP_MS_Networks_Admin {
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 		add_filter( 'set_screen_option_networks_per_page', array( $this, 'save_networks_per_page' ), 10, 3 );
 		add_action( 'wp_ajax_wpmn_search_root_sites', array( $this, 'ajax_search_root_sites' ) );
+		add_action( 'wp_ajax_wpmn_refresh_root_site_nonce', array( $this, 'ajax_refresh_root_site_nonce' ) );
 		add_action( 'wp_ajax_wpmn_get_root_site_name', array( $this, 'ajax_get_root_site_name' ) );
 	}
 
@@ -400,6 +401,23 @@ class WP_MS_Networks_Admin {
 	}
 
 	/**
+	 * Refreshes the root-site search nonce for an authenticated network creator.
+	 *
+	 * This endpoint does not change state, so it can recover an open form after
+	 * its original nonce expires without accepting that expired nonce.
+	 *
+	 * @since NEXT
+	 * @return void
+	 */
+	public function ajax_refresh_root_site_nonce() {
+		if ( ! current_user_can( 'create_networks' ) ) {
+			wp_send_json_error( array(), 403 );
+		}
+
+		wp_send_json_success( array( 'nonce' => wp_create_nonce( 'wpmn_search_root_sites' ) ) );
+	}
+
+	/**
 	 * Retrieves the name of one eligible site after it has been selected.
 	 *
 	 * Keeping this separate from search avoids loading options for every match.
@@ -629,12 +647,14 @@ class WP_MS_Networks_Admin {
 			// Create network.
 			case 'create':
 				$this->check_nonce();
+				$this->check_capability( 'create_networks' );
 				$this->handle_add_network();
 				break;
 
 			// Update network.
 			case 'update':
 				$this->check_nonce();
+				$this->check_capability( 'edit_network', isset( $_GET['id'] ) ? absint( $_GET['id'] ) : 0 );
 				$this->handle_reassign_sites();
 				$this->handle_update_network();
 				break;
@@ -642,18 +662,27 @@ class WP_MS_Networks_Admin {
 			// Delete network.
 			case 'delete':
 				$this->check_nonce();
+				$this->check_capability( 'delete_network', isset( $_GET['id'] ) ? absint( $_GET['id'] ) : 0 );
 				$this->handle_delete_network();
 				break;
 
 			// Delete multiple networks.
 			case 'delete_multiple':
 				$this->check_nonce();
+				$this->check_capability( 'delete_networks' );
+				$network_ids = isset( $_POST['deleted_networks'] ) && is_array( $_POST['deleted_networks'] )
+					? wp_parse_id_list( $_POST['deleted_networks'] )
+					: array();
+				foreach ( $network_ids as $network_id ) {
+					$this->check_capability( 'delete_network', $network_id );
+				}
 				$this->handle_delete_networks();
 				break;
 
 			// Move site to different network.
 			case 'move':
 				$this->check_nonce();
+				$this->check_capability( 'manage_networks' );
 				$this->handle_move_site();
 				break;
 		}
@@ -683,6 +712,12 @@ class WP_MS_Networks_Admin {
 		$network = ! empty( $network_id )
 			? get_network( $network_id )
 			: null;
+
+		if ( empty( $network ) ) {
+			$this->check_capability( 'create_networks' );
+		} else {
+			$this->check_capability( 'edit_network', $network->id );
+		}
 
 		// Differentiate between a new network and an existing network.
 		if ( empty( $network ) ) {
@@ -940,6 +975,8 @@ class WP_MS_Networks_Admin {
 			wp_die( esc_html__( 'Invalid network id.', 'wp-multi-network' ) );
 		}
 
+		$this->check_capability( 'delete_network', $network->id );
+
 		$sites = get_sites( array( 'network_id' => $network->id ) );
 
 		$add_network_url = $this->admin_url( array( 'page' => 'add-new-network' ) );
@@ -1047,7 +1084,10 @@ class WP_MS_Networks_Admin {
 			wp_die( esc_html__( 'You have selected an invalid network or networks for deletion', 'wp-multi-network' ) );
 		}
 
+		$this->check_capability( 'delete_networks' );
+
 		foreach ( $networks as $network ) {
+			$this->check_capability( 'delete_network', $network->id );
 			if ( ! get_network( $network ) ) {
 				wp_die( esc_html__( 'You have selected an invalid network for deletion.', 'wp-multi-network' ) );
 			}
@@ -1209,8 +1249,8 @@ class WP_MS_Networks_Admin {
 							<p>
 								<?php
 								$network_actions = array(
-									"<a href='" . network_home_url() . "'>" . esc_html__( 'Visit', 'wp-multi-network' ) . '</a>',
-									"<a href='" . network_admin_url() . "'>" . esc_html__( 'Dashboard', 'wp-multi-network' ) . '</a>',
+									"<a href='" . esc_url( network_home_url() ) . "'>" . esc_html__( 'Visit', 'wp-multi-network' ) . '</a>',
+									"<a href='" . esc_url( network_admin_url() ) . "'>" . esc_html__( 'Dashboard', 'wp-multi-network' ) . '</a>',
 								);
 								$network_actions = implode( ' | ', $network_actions );
 
@@ -1717,5 +1757,19 @@ class WP_MS_Networks_Admin {
 	 */
 	private function check_nonce() {
 		check_admin_referer( 'edit_network', 'network_edit' );
+	}
+
+	/**
+	 * Checks the capability required for a network management action.
+	 *
+	 * @since NEXT
+	 * @param string $capability Required capability.
+	 * @param int    $object_id  Optional network ID for meta capabilities.
+	 * @return void
+	 */
+	private function check_capability( $capability, $object_id = 0 ) {
+		if ( ! current_user_can( $capability, $object_id ) ) {
+			wp_die( esc_html__( 'You do not have permission to perform this action.', 'wp-multi-network' ) );
+		}
 	}
 }
