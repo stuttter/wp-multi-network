@@ -33,6 +33,14 @@ class WP_MS_Networks_Admin {
 	private $list_table = null;
 
 	/**
+	 * Result of a network move made while saving the Site Info screen.
+	 *
+	 * @since NEXT
+	 * @var array{site_id: int, moved: string}|null
+	 */
+	private $site_info_move_result = null;
+
+	/**
 	 * Constructor.
 	 *
 	 * Hooks in the necessary methods.
@@ -45,11 +53,19 @@ class WP_MS_Networks_Admin {
 		add_action( 'network_admin_menu', array( $this, 'network_admin_menu_separator' ) );
 
 		add_action( 'admin_init', array( $this, 'route_save_handlers' ) );
+		add_action( 'admin_init', array( $this, 'normalize_bottom_bulk_move_action' ), 0 );
 
 		add_action( 'admin_init', array( $this, 'set_feedback_strings' ) );
 		add_action( 'network_admin_notices', array( $this, 'network_admin_notices' ) );
 
 		add_filter( 'manage_sites_action_links', array( $this, 'add_move_blog_link' ), 10, 2 );
+		add_action( 'network_site_info_form', array( $this, 'site_info_network_field' ) );
+		add_action( 'wp_update_site', array( $this, 'move_site_after_info_update' ), 10, 2 );
+		add_filter( 'wp_redirect', array( $this, 'redirect_after_site_info_move' ), 10, 2 );
+		add_filter( 'bulk_actions-sites-network', array( $this, 'add_bulk_move_action' ) );
+		add_filter( 'handle_network_bulk_actions-sites-network', array( $this, 'prepare_bulk_move_sites' ), 10, 3 );
+		add_action( 'network_admin_notices', array( $this, 'bulk_move_sites_notice' ) );
+		add_action( 'network_admin_notices', array( $this, 'site_info_move_notice' ) );
 
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 		add_filter( 'set_screen_option_networks_per_page', array( $this, 'save_networks_per_page' ), 10, 3 );
@@ -86,6 +102,308 @@ class WP_MS_Networks_Admin {
 		}
 
 		return $actions;
+	}
+
+	/**
+	 * Adds a network field to WordPress's Site Info form.
+	 *
+	 * @since NEXT
+	 * @param int $site_id Site being edited.
+	 * @return void
+	 */
+	public function site_info_network_field( $site_id ) {
+		if ( ! current_user_can( 'manage_networks' ) || ! current_user_can( 'manage_sites' ) ) {
+			return;
+		}
+
+		$site = get_site( $site_id );
+		if ( ! $site ) {
+			return;
+		}
+
+		$network  = get_network( $site->network_id );
+		$networks = get_networks( array( 'number' => 0 ) );
+		$networks = is_array( $networks ) ? $networks : array();
+		?>
+		<table class="form-table" role="presentation">
+			<tr class="form-field">
+				<th scope="row">
+					<?php if ( is_main_site( $site->id, $site->network_id ) ) : ?>
+						<?php esc_html_e( 'Network', 'wp-multi-network' ); ?>
+					<?php else : ?>
+						<label for="wpmn-site-network"><?php esc_html_e( 'Network', 'wp-multi-network' ); ?></label>
+					<?php endif; ?>
+				</th>
+				<td>
+					<?php if ( is_main_site( $site->id, $site->network_id ) ) : ?>
+						<?php echo esc_html( $network ? get_network_option( $network->id, 'site_name', $network->domain ) : '' ); ?>
+						<p class="description"><?php esc_html_e( 'The primary site of a network cannot be moved.', 'wp-multi-network' ); ?></p>
+					<?php else : ?>
+						<select name="wpmn_network_id" id="wpmn-site-network">
+							<?php foreach ( $networks as $option_network ) : ?>
+								<option value="<?php echo esc_attr( (string) $option_network->id ); ?>" <?php selected( (int) $site->network_id, (int) $option_network->id ); ?>><?php echo esc_html( get_network_option( $option_network->id, 'site_name', $option_network->domain ) . ' — ' . $option_network->domain . $option_network->path ); ?></option>
+							<?php endforeach; ?>
+						</select>
+					<?php endif; ?>
+				</td>
+			</tr>
+		</table>
+		<?php
+	}
+
+	/**
+	 * Moves a site after WordPress saves the Site Info form.
+	 *
+	 * WordPress checks the edit-site nonce before updating the site. We repeat
+	 * that check so another use of wp_update_site() cannot trigger a move.
+	 *
+	 * @since NEXT
+	 * @param WP_Site $new_site Updated site.
+	 * @param WP_Site $old_site Site before the update.
+	 * @return void
+	 */
+	public function move_site_after_info_update( $new_site, $old_site ) {
+		global $pagenow;
+
+		if (
+			! is_network_admin() ||
+			'site-info.php' !== $pagenow ||
+			! isset( $_REQUEST['action'], $_REQUEST['_wpnonce'], $_POST['id'], $_POST['wpmn_network_id'] ) ||
+			'update-site' !== $_REQUEST['action'] ||
+			! is_scalar( $_REQUEST['_wpnonce'] ) ||
+			! wp_verify_nonce( sanitize_text_field( wp_unslash( (string) $_REQUEST['_wpnonce'] ) ), 'edit-site' ) ||
+			! is_scalar( $_POST['id'] ) ||
+			absint( $_POST['id'] ) !== (int) $new_site->id ||
+			null !== $this->site_info_move_result
+		) {
+			return;
+		}
+
+		$destination_raw = is_string( $_POST['wpmn_network_id'] ) ? sanitize_text_field( wp_unslash( $_POST['wpmn_network_id'] ) ) : '';
+		$destination_id  = ctype_digit( $destination_raw ) ? (int) $destination_raw : 0;
+		if ( (int) $old_site->network_id === $destination_id ) {
+			return;
+		}
+
+		$moved = false;
+		if (
+			current_user_can( 'manage_networks' ) &&
+			current_user_can( 'manage_sites' ) &&
+			$destination_id > 0 &&
+			get_network( $destination_id ) &&
+			! is_main_site( $old_site->id, $old_site->network_id )
+		) {
+			$result = move_site( $old_site->id, $destination_id );
+			$moved  = is_int( $result ) && $destination_id === $result;
+		}
+
+		$this->site_info_move_result = array(
+			'site_id' => (int) $old_site->id,
+			'moved'   => $moved ? '1' : '0',
+		);
+	}
+
+	/**
+	 * Returns to the Sites list after a Site Info network change.
+	 *
+	 * A moved site can no longer be edited from its former network, so Core's
+	 * relative redirect back to site-info.php would show an access error.
+	 *
+	 * @since NEXT
+	 * @param string $location Core's redirect URL.
+	 * @param int    $status   HTTP redirect status.
+	 * @return string Redirect URL.
+	 */
+	public function redirect_after_site_info_move( $location, $status ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
+		if ( null === $this->site_info_move_result ) {
+			return $location;
+		}
+
+		$path = wp_parse_url( $location, PHP_URL_PATH );
+		if ( 'site-info.php' !== basename( (string) $path ) ) {
+			return $location;
+		}
+
+		$query = array();
+		parse_str( (string) wp_parse_url( $location, PHP_URL_QUERY ), $query );
+		if ( 'updated' !== ( $query['update'] ?? '' ) || absint( $query['id'] ?? 0 ) !== $this->site_info_move_result['site_id'] ) {
+			return $location;
+		}
+
+		$redirect_url                = '1' === $this->site_info_move_result['moved']
+			? add_query_arg( 'site_moved', '1', network_admin_url( 'sites.php' ) )
+			: add_query_arg( 'wpmn_site_move_failed', '1', $location );
+		$this->site_info_move_result = null;
+
+		return $redirect_url;
+	}
+
+	/**
+	 * Explains a failed Site Info move without hiding Core's save confirmation.
+	 *
+	 * @since NEXT
+	 * @return void
+	 */
+	public function site_info_move_notice() {
+		$screen = get_current_screen();
+		if ( ! $screen || 'site-info-network' !== $screen->id || ! isset( $_GET['wpmn_site_move_failed'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			return;
+		}
+		?>
+		<div class="notice notice-error"><p><?php esc_html_e( 'Site information was saved, but the site could not be moved.', 'wp-multi-network' ); ?></p></div>
+		<?php
+	}
+
+	/**
+	 * Makes the bottom Sites bulk menu work with Core's action-only handler.
+	 *
+	 * Core renders the lower menu as action2 but only reads action on sites.php.
+	 * This changes only our action, leaving WordPress's other bulk actions alone.
+	 *
+	 * @since NEXT
+	 * @return void
+	 */
+	public function normalize_bottom_bulk_move_action() {
+		global $pagenow;
+
+		// Core verifies the bulk-sites nonce before handling this normalized action.
+		// phpcs:disable WordPress.Security.NonceVerification.Missing
+		if (
+			! is_network_admin() ||
+			'sites.php' !== $pagenow ||
+			! isset( $_POST['action'], $_POST['action2'] ) ||
+			'-1' !== $_POST['action'] ||
+			'wpmn_bulk_move' !== $_POST['action2']
+		) {
+			return;
+		}
+
+		$_POST['action'] = 'wpmn_bulk_move';
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
+	}
+
+	/**
+	 * Adds a move action to the network Sites list.
+	 *
+	 * @since NEXT
+	 * @param array<string, string> $actions Bulk actions.
+	 * @return array<string, string> Bulk actions.
+	 */
+	public function add_bulk_move_action( $actions ) {
+		if ( current_user_can( 'manage_networks' ) && current_user_can( 'manage_sites' ) ) {
+			$actions['wpmn_bulk_move'] = esc_html__( 'Move', 'wp-multi-network' );
+		}
+
+		return $actions;
+	}
+
+	/**
+	 * Sends a verified Sites bulk selection to a confirmation screen.
+	 *
+	 * WordPress verifies the bulk-sites nonce before applying this filter.
+	 *
+	 * @since NEXT
+	 * @param string $redirect_url Default redirect URL.
+	 * @param string $action       Selected bulk action.
+	 * @param int[]  $site_ids     Selected site IDs.
+	 * @return string Confirmation URL or the default URL.
+	 */
+	public function prepare_bulk_move_sites( $redirect_url, $action, $site_ids ) {
+		if ( 'wpmn_bulk_move' !== $action ) {
+			return $redirect_url;
+		}
+
+		$this->check_capability( 'manage_networks' );
+		$this->check_capability( 'manage_sites' );
+
+		$site_ids = wp_parse_id_list( $site_ids );
+		if ( empty( $site_ids ) ) {
+			return $redirect_url;
+		}
+
+		return add_query_arg(
+			array(
+				'page'     => 'networks',
+				'action'   => 'bulk_move',
+				'site_ids' => implode( ',', $site_ids ),
+				'_wpnonce' => wp_create_nonce( 'wpmn_bulk_move_preview' ),
+			),
+			network_admin_url( 'admin.php' )
+		);
+	}
+
+	/**
+	 * Validates the complete selection before moving any site.
+	 *
+	 * @since NEXT
+	 * @param int[] $site_ids Selected site IDs.
+	 * @return WP_Site[]|WP_Error Selected sites or an error.
+	 */
+	public function validate_bulk_move_sites( $site_ids ) {
+		$site_ids = wp_parse_id_list( $site_ids );
+
+		if ( empty( $site_ids ) ) {
+			return new WP_Error( 'bulk_move_empty', esc_html__( 'Select at least one site to move.', 'wp-multi-network' ) );
+		}
+
+		$sites = array();
+		foreach ( $site_ids as $site_id ) {
+			$site = get_site( $site_id );
+
+			if ( ! $site ) {
+				return new WP_Error( 'bulk_move_missing', esc_html__( 'A selected site no longer exists.', 'wp-multi-network' ) );
+			}
+
+			if ( is_main_site( $site->id, $site->network_id ) ) {
+				return new WP_Error( 'bulk_move_primary', esc_html__( 'Primary sites cannot be moved.', 'wp-multi-network' ) );
+			}
+
+			$sites[] = $site;
+		}
+
+		return $sites;
+	}
+
+	/**
+	 * Moves validated sites to an existing network.
+	 *
+	 * @since NEXT
+	 * @param int[] $site_ids       Selected site IDs.
+	 * @param int   $destination_id Destination network ID.
+	 * @return array<string, int>|WP_Error Move counts or an error.
+	 */
+	public function bulk_move_sites_to_network( $site_ids, $destination_id ) {
+		$destination_id = absint( $destination_id );
+		if ( ! $destination_id || ! get_network( $destination_id ) ) {
+			return new WP_Error( 'bulk_move_destination', esc_html__( 'Choose an existing destination network.', 'wp-multi-network' ) );
+		}
+
+		$sites = $this->validate_bulk_move_sites( $site_ids );
+		if ( is_wp_error( $sites ) ) {
+			return $sites;
+		}
+
+		$result = array(
+			'moved'   => 0,
+			'skipped' => 0,
+			'failed'  => 0,
+		);
+
+		foreach ( $sites as $site ) {
+			if ( (int) $site->network_id === $destination_id ) {
+				++$result['skipped'];
+				continue;
+			}
+
+			$moved = move_site( $site->id, $destination_id );
+			if ( ! is_int( $moved ) || $moved !== $destination_id ) {
+				++$result['failed'];
+			} else {
+				++$result['moved'];
+			}
+		}
+
+		return $result;
 	}
 
 	/**
@@ -277,7 +595,7 @@ class WP_MS_Networks_Admin {
 				: '';
 			// phpcs:enable
 
-			if ( 'move' === $action ) {
+			if ( in_array( $action, array( 'move', 'bulk_move' ), true ) ) {
 				$submenu_file = 'sites.php';
 			}
 		}
@@ -541,6 +859,49 @@ class WP_MS_Networks_Admin {
 	}
 
 	/**
+	 * Reports the result of a Sites-list bulk move.
+	 *
+	 * @since NEXT
+	 * @return void
+	 */
+	public function bulk_move_sites_notice() {
+		$screen = get_current_screen();
+		if ( ! $screen || 'sites-network' !== $screen->id || ! isset( $_GET['wpmn_sites_moved'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			return;
+		}
+
+		$moved   = absint( $_GET['wpmn_sites_moved'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$failed  = isset( $_GET['wpmn_sites_failed'] ) ? absint( $_GET['wpmn_sites_failed'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$skipped = isset( $_GET['wpmn_sites_skipped'] ) ? absint( $_GET['wpmn_sites_skipped'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$parts   = array();
+
+		$parts[] = sprintf(
+			/* translators: %d: number of sites moved. */
+			_n( '%d site moved.', '%d sites moved.', $moved, 'wp-multi-network' ),
+			$moved
+		);
+
+		if ( $skipped ) {
+			$parts[] = sprintf(
+				/* translators: %d: number of sites already in the destination network. */
+				_n( '%d site was already there.', '%d sites were already there.', $skipped, 'wp-multi-network' ),
+				$skipped
+			);
+		}
+
+		if ( $failed ) {
+			$parts[] = sprintf(
+				/* translators: %d: number of sites that could not be moved. */
+				_n( '%d site could not be moved.', '%d sites could not be moved.', $failed, 'wp-multi-network' ),
+				$failed
+			);
+		}
+		?>
+		<div class="notice <?php echo $failed ? 'notice-error' : 'notice-success'; ?> is-dismissible"><p><?php echo esc_html( implode( ' ', $parts ) ); ?></p></div>
+		<?php
+	}
+
+	/**
 	 * Routes the current request to the correct page.
 	 *
 	 * @phpcs:disable WordPress.Security.NonceVerification.Missing
@@ -565,6 +926,11 @@ class WP_MS_Networks_Admin {
 			// Move a site.
 			case 'move':
 				$this->page_move_site();
+				break;
+
+			// Confirm a Sites-list bulk move.
+			case 'bulk_move':
+				$this->page_bulk_move_sites();
 				break;
 
 			// Delete a network.
@@ -620,6 +986,16 @@ class WP_MS_Networks_Admin {
 	 * @return void
 	 */
 	public function route_save_handlers() {
+		$posted_action = isset( $_POST['action'] ) && is_string( $_POST['action'] )
+			? sanitize_key( $_POST['action'] )
+			: '';
+
+		if ( 'wpmn_bulk_move_confirm' === $posted_action && is_network_admin() ) {
+			check_admin_referer( 'wpmn_bulk_move_sites', 'wpmn_bulk_move_nonce' );
+			$this->check_capability( 'manage_networks' );
+			$this->check_capability( 'manage_sites' );
+			$this->handle_bulk_move_sites();
+		}
 
 		// Bail -- our fields aren't being edited
 		// Otherwise we'll do an unnecessary nonce check.
@@ -948,6 +1324,78 @@ class WP_MS_Networks_Admin {
 			</form>
 		</div>
 
+		<?php
+	}
+
+	/**
+	 * Displays the selected sites and destination before a bulk move.
+	 *
+	 * @since NEXT
+	 * @return void
+	 */
+	private function page_bulk_move_sites() {
+		$this->check_capability( 'manage_networks' );
+		$this->check_capability( 'manage_sites' );
+		check_admin_referer( 'wpmn_bulk_move_preview' );
+
+		$raw_ids = isset( $_GET['site_ids'] ) && is_string( $_GET['site_ids'] )
+			? wp_parse_id_list( explode( ',', sanitize_text_field( wp_unslash( $_GET['site_ids'] ) ) ) )
+			: array();
+		$sites   = $this->validate_bulk_move_sites( $raw_ids );
+		if ( is_wp_error( $sites ) ) {
+			wp_die( esc_html( $sites->get_error_message() ) );
+		}
+
+		$source_network_id = (int) $sites[0]->network_id;
+		foreach ( $sites as $site ) {
+			if ( (int) $site->network_id !== $source_network_id ) {
+				$source_network_id = 0;
+				break;
+			}
+		}
+
+		$networks = get_networks( array( 'number' => 0 ) );
+		$networks = is_array( $networks ) ? $networks : array();
+		?>
+		<div class="wrap">
+			<h1><?php esc_html_e( 'Move Sites to Network', 'wp-multi-network' ); ?></h1>
+			<hr class="wp-header-end">
+			<p>
+				<?php
+				echo esc_html(
+					sprintf(
+						/* translators: %d: number of sites selected for a bulk move. */
+						_n( '%d site selected.', '%d sites selected.', count( $sites ), 'wp-multi-network' ),
+						count( $sites )
+					)
+				);
+				?>
+			</p>
+			<ul class="ul-disc">
+				<?php foreach ( $sites as $site ) : ?>
+					<li><?php echo esc_html( $site->domain . $site->path ); ?></li>
+				<?php endforeach; ?>
+			</ul>
+			<p><?php esc_html_e( 'Moving sites does not change their addresses. Make sure each address works on the destination network.', 'wp-multi-network' ); ?></p>
+			<form method="post" action="<?php echo esc_url( network_admin_url( 'admin.php?page=networks' ) ); ?>">
+				<input type="hidden" name="action" value="wpmn_bulk_move_confirm">
+				<?php foreach ( $sites as $site ) : ?>
+					<input type="hidden" name="site_ids[]" value="<?php echo esc_attr( (string) $site->id ); ?>">
+				<?php endforeach; ?>
+				<?php wp_nonce_field( 'wpmn_bulk_move_sites', 'wpmn_bulk_move_nonce' ); ?>
+				<p><label for="wpmn-destination-network"><strong><?php esc_html_e( 'Destination Network', 'wp-multi-network' ); ?></strong></label></p>
+				<p><select name="destination_network" id="wpmn-destination-network" required>
+					<option value=""><?php esc_html_e( 'Choose a network', 'wp-multi-network' ); ?></option>
+					<?php foreach ( $networks as $network ) : ?>
+						<?php if ( (int) $network->id === $source_network_id ) : ?>
+							<?php continue; ?>
+						<?php endif; ?>
+						<option value="<?php echo esc_attr( (string) $network->id ); ?>"><?php echo esc_html( get_network_option( $network->id, 'site_name', $network->domain ) . ' — ' . $network->domain . $network->path ); ?></option>
+					<?php endforeach; ?>
+				</select></p>
+				<p><?php submit_button( esc_html__( 'Move Sites', 'wp-multi-network' ), 'primary', 'submit', false ); ?> <a class="button" href="<?php echo esc_url( network_admin_url( 'sites.php' ) ); ?>"><?php esc_html_e( 'Cancel', 'wp-multi-network' ); ?></a></p>
+			</form>
+		</div>
 		<?php
 	}
 
@@ -1544,6 +1992,40 @@ class WP_MS_Networks_Admin {
 			add_query_arg(
 				array(
 					'site_moved' => $success,
+				),
+				network_admin_url( 'sites.php' )
+			)
+		);
+		exit;
+	}
+
+	/**
+	 * Performs a confirmed bulk move and returns to the Sites list.
+	 *
+	 * The nonce and capabilities are checked by route_save_handlers().
+	 *
+	 * @since NEXT
+	 * @return never
+	 */
+	private function handle_bulk_move_sites() {
+		$site_ids       = isset( $_POST['site_ids'] ) && is_array( $_POST['site_ids'] )
+			? wp_parse_id_list( wp_unslash( $_POST['site_ids'] ) )
+			: array();
+		$destination_id = isset( $_POST['destination_network'] )
+			? absint( $_POST['destination_network'] )
+			: 0;
+
+		$result = $this->bulk_move_sites_to_network( $site_ids, $destination_id );
+		if ( is_wp_error( $result ) ) {
+			wp_die( esc_html( $result->get_error_message() ) );
+		}
+
+		wp_safe_redirect(
+			add_query_arg(
+				array(
+					'wpmn_sites_moved'   => $result['moved'],
+					'wpmn_sites_skipped' => $result['skipped'],
+					'wpmn_sites_failed'  => $result['failed'],
 				),
 				network_admin_url( 'sites.php' )
 			)
