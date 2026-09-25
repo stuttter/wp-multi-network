@@ -91,12 +91,11 @@ function wpmn_edit_network_new_site_metabox() {
 			</th>
 			<td>
 				<span class="wpmn-site-search-field">
-					<input type="search" id="existing_site_search" class="regular-text" autocomplete="off" aria-describedby="existing_site_search_help existing_site_search_status">
+					<input type="search" id="existing_site_search" class="regular-text" autocomplete="off" aria-describedby="existing_site_search_help">
 					<span id="existing_site_search_spinner" class="spinner" aria-hidden="true"></span>
 				</span>
 				<input type="hidden" name="existing_site_id" id="existing_site_id" value="">
 				<p id="existing_site_search_help" class="description"><?php esc_html_e( 'Search subsites by domain or path.', 'wp-multi-network' ); ?></p>
-				<p id="existing_site_search_status" class="description" role="status" aria-live="polite"></p>
 			</td>
 		</tr>
 		<tr class="form-field root-site-existing">

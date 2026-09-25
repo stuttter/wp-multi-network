@@ -489,15 +489,26 @@ class WPMN_Tests_Upload_Paths extends WPMN_UnitTestCase {
 			);
 			restore_current_network();
 
-			if ( ! is_wp_error( $site_id ) ) {
-				$site_ids[] = $site_id;
-			}
+			$this->assertNotWPError( $site_id, "Site {$i} should be created" );
+			$site_ids[] = $site_id;
 		}
+
+		$this->assertCount( 3, $site_ids, 'All sites should be created before their upload paths are checked' );
 
 		// Verify each site has proper upload path without duplication.
 		foreach ( $site_ids as $site_id ) {
 			$upload_path = get_blog_option( $site_id, 'upload_path' );
 			$this->assertUploadPathNoDuplicates( $site_id, $upload_path, "Site {$site_id} upload path should not have duplicate site-specific directories" );
+
+			switch_to_network( self::$network_id );
+			switch_to_blog( $site_id );
+			$uploads = wp_upload_dir( null, false, true );
+			restore_current_blog();
+			restore_current_network();
+
+			$site_suffix = '/sites/' . $site_id;
+			$this->assertSame( 1, substr_count( $uploads['basedir'], $site_suffix ), "Site {$site_id} should have one upload directory suffix" );
+			$this->assertSame( 1, substr_count( $uploads['baseurl'], $site_suffix ), "Site {$site_id} should have one upload URL suffix" );
 		}
 	}
 

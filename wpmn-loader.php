@@ -155,7 +155,7 @@ class WPMN_Loader {
 
 		// admin-ajax.php has no network-admin screen, so load these site-selection handlers explicitly.
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Only routes the request; the handler verifies its nonce.
-		$is_root_site_ajax = wp_doing_ajax() && isset( $_REQUEST['action'] ) && in_array( sanitize_key( wp_unslash( $_REQUEST['action'] ) ), array( 'wpmn_search_root_sites', 'wpmn_get_root_site_name' ), true );
+		$is_root_site_ajax = wp_doing_ajax() && isset( $_REQUEST['action'] ) && in_array( sanitize_key( wp_unslash( $_REQUEST['action'] ) ), array( 'wpmn_search_root_sites', 'wpmn_get_root_site_name', 'wpmn_refresh_root_site_nonce' ), true );
 
 		if ( is_blog_admin() || is_network_admin() || $is_root_site_ajax ) {
 			if ( ! $is_root_site_ajax ) {
