@@ -34,10 +34,16 @@ class WPMN_Tests_SiteAssignment extends WPMN_UnitTestCase {
 	 * @since NEXT
 	 */
 	public function test_available_site_search_excludes_network_roots() {
-		$other_id = $this->factory->network->create();
+		$other_id = $this->factory->network->create(
+			array(
+				'domain' => 'searchable-root.example.com',
+				'path'   => '/',
+			)
+		);
 		$root_id  = $this->factory->blog->create(
 			array(
 				'domain'  => 'searchable-root.example.com',
+				'path'    => '/',
 				'site_id' => $other_id,
 			)
 		);
@@ -89,8 +95,19 @@ class WPMN_Tests_SiteAssignment extends WPMN_UnitTestCase {
 	 */
 	public function test_incoming_move_rejects_other_network_root() {
 		$source_id = get_main_network_id();
-		$other_id  = $this->factory->network->create();
-		$root_id   = $this->factory->blog->create( array( 'site_id' => $other_id ) );
+		$other_id  = $this->factory->network->create(
+			array(
+				'domain' => 'fixed-root.example.com',
+				'path'   => '/',
+			)
+		);
+		$root_id   = $this->factory->blog->create(
+			array(
+				'domain'  => 'fixed-root.example.com',
+				'path'    => '/',
+				'site_id' => $other_id,
+			)
+		);
 		$site_id   = $this->factory->blog->create( array( 'site_id' => $other_id ) );
 		update_network_option( $other_id, 'main_site', $root_id );
 
