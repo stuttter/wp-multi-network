@@ -6,10 +6,10 @@ License URI:       https://www.gnu.org/licenses/gpl-2.0.html
 License:           GPLv2 or later
 Contributors:      johnjamesjacoby, flixos90, rmccue, spacedmonkey
 Tags:              network, sites, domains, global, admin
-Requires PHP:      5.2
+Requires PHP:      7.2
 Requires at least: 5.5
 Tested up to:      7.0
-Stable tag:        3.0.0
+Stable tag:        3.1.0
 
 A WordPress plugin that provides a network management interface for global multisite administrators.
 
@@ -123,6 +123,15 @@ please follow the steps in https://paulund.co.uk/wordpress-multisite-nested-path
 Not much to talk about really. Check the code for details!
 
 == Changelog ==
+
+= 3.1.0 =
+* Add the option to use an existing site as the root of a new network.
+* Add bulk and Site Info controls for moving sites between networks.
+* Improve Network Admin screen controls and the Edit Network site-assignment lists.
+* Harden network management actions and improve root-site search.
+* Correct upload paths for newly created network sites.
+* Fix WP-CLI option parsing when cloning a network.
+* Improve RTL styles, static analysis, and CI maintenance.
 
 = 3.0.0 =
 * Add RTL and minified assets

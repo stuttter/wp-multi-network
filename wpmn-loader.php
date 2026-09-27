@@ -18,7 +18,7 @@
  * Requires at least: 5.5
  * Requires PHP:      7.2
  * Tested up to:      7.0
- * Version:           3.0.0
+ * Version:           3.1.0
  */
 
 // Exit if accessed directly.
@@ -69,7 +69,7 @@ class WPMN_Loader {
 	 * @since 1.3.0
 	 * @var string
 	 */
-	public $asset_version = '202512090001';
+	public $asset_version = '202609270001';
 
 	/**
 	 * Network admin class instance.
