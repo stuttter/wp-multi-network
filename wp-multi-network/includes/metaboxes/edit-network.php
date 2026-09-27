@@ -173,8 +173,9 @@ function wpmn_edit_network_assign_sites_metabox( $network = null ) {
 
 						<?php if ( ( (int) $site->network_id !== (int) $network_id ) && ! is_main_site_for_network( $site->id ) ) : ?>
 
-							<option value="<?php echo esc_attr( strval( $site->id ) ); ?>">
-								<?php echo esc_html( sprintf( '%1$s (%2$s%3$s)', $site->blogname, $site->domain, $site->path ) ); ?>
+							<?php $site_label = sprintf( '%1$s (%2$s%3$s)', $site->blogname, $site->domain, $site->path ); ?>
+							<option value="<?php echo esc_attr( strval( $site->id ) ); ?>" title="<?php echo esc_attr( $site_label ); ?>">
+								<?php echo esc_html( $site_label ); ?>
 							</option>
 
 						<?php endif; ?>
@@ -194,8 +195,9 @@ function wpmn_edit_network_assign_sites_metabox( $network = null ) {
 
 						<?php if ( (int) $site->network_id === (int) $network_id ) : ?>
 
-							<option value="<?php echo esc_attr( strval( $site->id ) ); ?>" <?php disabled( is_main_site_for_network( $site->id ) ); ?>>
-								<?php echo esc_html( sprintf( '%1$s (%2$s%3$s)', $site->blogname, $site->domain, $site->path ) ); ?>
+							<?php $site_label = sprintf( '%1$s (%2$s%3$s)', $site->blogname, $site->domain, $site->path ); ?>
+							<option value="<?php echo esc_attr( strval( $site->id ) ); ?>" title="<?php echo esc_attr( $site_label ); ?>" <?php disabled( is_main_site_for_network( $site->id ) ); ?>>
+								<?php echo esc_html( $site_label ); ?>
 							</option>
 
 						<?php endif; ?>
