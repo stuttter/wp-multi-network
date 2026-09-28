@@ -4,6 +4,51 @@
  */
 
 class WPMN_Tests_NetworkOperations extends WPMN_UnitTestCase {
+	public function test_admin_bar_avoids_building_a_large_network_menu() {
+		global $wpdb;
+
+		$user_id = $this->factory->user->create( array( 'role' => 'administrator' ) );
+		wp_set_current_user( $user_id );
+		grant_super_admin( $user_id );
+		$user = get_userdata( $user_id );
+
+		for ( $i = 0; $i < 30; $i++ ) {
+			$network_id = $this->factory->network->create();
+			update_network_option( $network_id, 'site_admins', array( $user->user_login ) );
+		}
+
+		$bar = new class() {
+			public $menus = array();
+			public function add_menu( $args ) {
+				$this->menus[] = $args;
+			}
+			public function add_group( $args ) {
+				$this->menus[] = $args;
+			}
+		};
+
+		$before = $wpdb->num_queries;
+		( new WP_MS_Networks_Admin_Bar() )->admin_bar( $bar );
+		$query_count = $wpdb->num_queries - $before;
+		$this->assertCount( 2, $bar->menus );
+		$this->assertSame( 'my-networks', $bar->menus[0]['id'] );
+		$this->assertSame( 'browse-networks', $bar->menus[1]['id'] );
+		$this->assertStringContainsString( 'page=networks', $bar->menus[1]['href'] );
+		$this->assertLessThanOrEqual( 2, $query_count, 'Large network menus should not query every network on every page.' );
+
+		$bar->menus = array();
+		$show_all = function() {
+			return 40;
+		};
+		add_filter( 'wpms_admin_bar_network_limit', $show_all );
+		try {
+			( new WP_MS_Networks_Admin_Bar() )->admin_bar( $bar );
+		} finally {
+			remove_filter( 'wpms_admin_bar_network_limit', $show_all );
+		}
+		$this->assertGreaterThan( 2, count( $bar->menus ), 'The shortcut limit should be configurable.' );
+	}
+
 	public function test_main_network_cannot_be_deleted() {
 		$network_id = get_main_network_id();
 		$site_id    = get_main_site_id( $network_id );
