@@ -45,7 +45,10 @@ class WPMN_Tests_NetworkOperations extends WPMN_UnitTestCase {
 	public function test_delete_network_stops_when_a_site_cannot_be_rescued() {
 		$network_id = $this->factory->network->create();
 		$site_id    = $this->factory->blog->create( array( 'network_id' => $network_id ) );
-		update_network_option( $network_id, 'main_site', $site_id );
+		$main_site_filter = function( $main_site_id, $network ) use ( $network_id, $site_id ) {
+			return (int) $network->id === (int) $network_id ? $site_id : $main_site_id;
+		};
+		add_filter( 'pre_get_main_site_id', $main_site_filter, 10, 2 );
 		clean_network_cache( $network_id );
 		add_filter( 'wp_should_rescue_orphaned_sites', '__return_true' );
 
@@ -53,6 +56,7 @@ class WPMN_Tests_NetworkOperations extends WPMN_UnitTestCase {
 			$result = delete_network( $network_id, true );
 		} finally {
 			remove_filter( 'wp_should_rescue_orphaned_sites', '__return_true' );
+			remove_filter( 'pre_get_main_site_id', $main_site_filter, 10 );
 		}
 
 		$this->assertWPError( $result );
