@@ -1425,7 +1425,12 @@ class WP_MS_Networks_Admin {
 
 		$this->check_capability( 'delete_network', $network->id );
 
-		$sites = get_sites( array( 'network_id' => $network->id ) );
+		$sites      = get_sites( array(
+			'network_id' => $network->id,
+			'number'     => 101,
+		) );
+		$more_sites = count( $sites ) > 100;
+		$sites      = array_slice( $sites, 0, 100 );
 
 		$add_network_url = $this->admin_url( array( 'page' => 'add-new-network' ) );
 		?>
@@ -1464,6 +1469,9 @@ class WP_MS_Networks_Admin {
 
 							?>
 						</ul>
+						<?php if ( $more_sites ) : ?>
+							<p><?php esc_html_e( 'Additional sites are not shown.', 'wp-multi-network' ); ?></p>
+						<?php endif; ?>
 						<p>
 							<input type="checkbox" name="override" id="override">
 							<label for="override">

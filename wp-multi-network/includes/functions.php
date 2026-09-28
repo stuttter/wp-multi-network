@@ -885,27 +885,52 @@ if ( ! function_exists( 'delete_network' ) ) :
 			return new WP_Error( 'network_is_main', __( 'Cannot delete the main network.', 'wp-multi-network' ) );
 		}
 
-		$sites = get_sites( array(
-			'network_id' => $network->id,
-		) );
-		if ( ! empty( $sites ) ) {
+		// Always start at the first page: processed sites leave this network.
+		do {
+			$sites = $wpdb->get_col( $wpdb->prepare( "SELECT blog_id FROM {$wpdb->blogs} WHERE site_id = %d ORDER BY blog_id ASC LIMIT 100", $network->id ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			if ( ! empty( $wpdb->last_error ) ) {
+				return new WP_Error( 'network_sites_not_loaded', __( 'Network sites could not be loaded.', 'wp-multi-network' ) );
+			}
 
-			// Bail if site deletion is off.
+			if ( empty( $sites ) ) {
+				break;
+			}
+
 			if ( empty( $delete_blogs ) ) {
 				return new WP_Error( 'network_not_empty', __( 'Cannot delete network with sites.', 'wp-multi-network' ) );
 			}
 
-			foreach ( $sites as $site ) {
+			foreach ( $sites as $site_id ) {
 				if ( wp_should_rescue_orphaned_sites() ) {
-					move_site( $site->id, 0 );
-					continue;
+					$result = move_site( $site_id, 0 );
+					if ( is_wp_error( $result ) ) {
+						return $result;
+					}
+				} else {
+					wpmu_delete_blog( $site_id, true );
 				}
 
-				wpmu_delete_blog( $site->id, true );
+				// WordPress may retain a protected site instead of deleting it.
+				$remaining = get_site( $site_id );
+				if ( $remaining && (int) $remaining->network_id === (int) $network->id ) {
+					return new WP_Error( 'network_site_not_removed', __( 'A site could not be removed from the network.', 'wp-multi-network' ) );
+				}
 			}
+		} while ( true );
+
+		// Guard the network row even if a site query or cache was incomplete.
+		$remaining_site = $wpdb->get_var( $wpdb->prepare( "SELECT blog_id FROM {$wpdb->blogs} WHERE site_id = %d LIMIT 1", $network->id ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		if ( ! empty( $wpdb->last_error ) ) {
+			return new WP_Error( 'network_sites_not_loaded', __( 'Network sites could not be loaded.', 'wp-multi-network' ) );
+		}
+		if ( null !== $remaining_site ) {
+			return new WP_Error( 'network_not_empty', __( 'Cannot delete network with sites.', 'wp-multi-network' ) );
 		}
 
-		$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->site} WHERE id = %d", $network->id ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$deleted = $wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->site} WHERE id = %d", $network->id ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		if ( 1 !== $deleted ) {
+			return new WP_Error( 'network_not_deleted', __( 'Network could not be deleted.', 'wp-multi-network' ) );
+		}
 
 		$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->sitemeta} WHERE site_id = %d", $network->id ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 

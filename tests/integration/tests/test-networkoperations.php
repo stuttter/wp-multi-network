@@ -16,6 +16,51 @@ class WPMN_Tests_NetworkOperations extends WPMN_UnitTestCase {
 		$this->assertNotNull( get_site( $site_id ) );
 	}
 
+	public function test_delete_network_processes_more_than_one_page_of_sites() {
+		$network_id = $this->factory->network->create();
+		$site_ids   = $this->factory->blog->create_many( 101, array( 'network_id' => $network_id ) );
+
+		$this->assertCount( 101, $site_ids );
+		$this->assertNotWPError( $site_ids[100] );
+		$this->assertTrue( delete_network( $network_id, true ) );
+		$this->assertNull( get_network( $network_id ) );
+
+		foreach ( $site_ids as $site_id ) {
+			$this->assertNull( get_site( $site_id ), 'Every site must be deleted before its network.' );
+		}
+	}
+
+	public function test_delete_network_keeps_occupied_network_without_override() {
+		$network_id = $this->factory->network->create();
+		$site_id    = $this->factory->blog->create( array( 'network_id' => $network_id ) );
+
+		$result = delete_network( $network_id );
+
+		$this->assertWPError( $result );
+		$this->assertSame( 'network_not_empty', $result->get_error_code() );
+		$this->assertNotNull( get_network( $network_id ) );
+		$this->assertNotNull( get_site( $site_id ) );
+	}
+
+	public function test_delete_network_stops_when_a_site_cannot_be_rescued() {
+		$network_id = $this->factory->network->create();
+		$site_id    = $this->factory->blog->create( array( 'network_id' => $network_id ) );
+		update_network_option( $network_id, 'main_site', $site_id );
+		clean_network_cache( $network_id );
+		add_filter( 'wp_should_rescue_orphaned_sites', '__return_true' );
+
+		try {
+			$result = delete_network( $network_id, true );
+		} finally {
+			remove_filter( 'wp_should_rescue_orphaned_sites', '__return_true' );
+		}
+
+		$this->assertWPError( $result );
+		$this->assertSame( 'network_site_not_removed', $result->get_error_code() );
+		$this->assertNotNull( get_network( $network_id ) );
+		$this->assertSame( (int) $network_id, (int) get_site( $site_id )->network_id );
+	}
+
 	public function test_network_admin_lookup_escapes_username_wildcards() {
 		$user_id    = $this->factory->user->create( array( 'user_login' => 'audit_user' ) );
 		$network_id = $this->factory->network->create();
