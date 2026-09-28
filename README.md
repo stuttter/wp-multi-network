@@ -87,6 +87,10 @@ You need to have WordPress Multisite enabled before using this plugin.
 
 See: https://codex.wordpress.org/Create_A_Network
 
+### Does switching blogs also switch networks?
+
+No. By default, `switch_to_blog()` and `restore_current_blog()` retain WordPress's existing behavior and leave the current network context alone. Installations that explicitly want the network to follow temporary blog switches can define `WPMN_SYNC_NETWORK_ON_BLOG_SWITCH` as `true` in `wp-config.php` before this plugin loads. This opt-in pairs network restoration with each blog restoration, including nested switches. If you also switch networks manually inside a blog-switch scope, restore those manual network switches before restoring the blog.
+
 ### Where can I get support?
 
 Community: https://wordpress.org/support/plugin/wp-multi-network
