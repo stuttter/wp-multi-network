@@ -783,7 +783,7 @@ if ( ! function_exists( 'update_network' ) ) :
 				'id' => $network->id,
 			)
 		);
-		if ( is_wp_error( $update_result ) ) {
+		if ( false === $update_result ) {
 			return new WP_Error( 'network_not_updated', __( 'Network could not be updated.', 'wp-multi-network' ) );
 		}
 
@@ -791,12 +791,21 @@ if ( ! function_exists( 'update_network' ) ) :
 		$full_path = untrailingslashit( $domain . $path );
 		$old_path  = untrailingslashit( $network->domain . $network->path );
 
-		$sites = get_sites( array(
-			'network_id' => $network->id,
-		) );
+		// Keep the result bounded and use stable ID ordering while site URLs change.
+		$site_offset = 0;
+		do {
+			$sites        = get_sites( array(
+				'network_id'             => $network->id,
+				'number'                 => 100,
+				'offset'                 => $site_offset,
+				'orderby'                => 'id',
+				'order'                  => 'ASC',
+				'update_site_meta_cache' => false,
+			) );
+			$site_count   = count( $sites );
+			$site_offset += $site_count;
 
-		// Update network site domains and paths as necessary.
-		if ( ! empty( $sites ) ) {
+			// Update network site domains and paths as necessary.
 			foreach ( $sites as $site ) {
 				$update = array();
 
@@ -813,9 +822,13 @@ if ( ! function_exists( 'update_network' ) ) :
 					continue;
 				}
 
-				$wpdb->update( $wpdb->blogs, $update, array( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+				$site_update_result = $wpdb->update( $wpdb->blogs, $update, array( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 					'blog_id' => (int) $site->id,
 				) );
+				if ( false === $site_update_result ) {
+					clean_network_cache( $network->id );
+					return new WP_Error( 'network_site_not_updated', __( 'A site could not be updated.', 'wp-multi-network' ) );
+				}
 
 				$option_table = $wpdb->get_blog_prefix( $site->id ) . 'options';
 
@@ -832,7 +845,7 @@ if ( ! function_exists( 'update_network' ) ) :
 				// Clean the blog cache.
 				clean_blog_cache( $site->id );
 			}
-		}
+		} while ( 100 === $site_count );
 
 		// Update network counts.
 		wp_update_network_counts( $network->id );
