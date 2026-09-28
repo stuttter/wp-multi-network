@@ -87,6 +87,27 @@ class WP_MS_Networks_Admin_Bar {
 			),
 		) );
 
+		/**
+		 * Filters the maximum number of network shortcuts shown in the admin bar.
+		 *
+		 * Large menus are expensive to build on every page. The parent link always
+		 * remains available and leads to the searchable Networks screen.
+		 *
+		 * @since 3.1.1
+		 *
+		 * @param int $limit Maximum number of network shortcuts. Zero hides all shortcuts.
+		 */
+		$limit = max( 0, (int) apply_filters( 'wpms_admin_bar_network_limit', 20 ) );
+		if ( count( $networks ) > $limit ) {
+			$wp_admin_bar->add_menu( array(
+				'parent' => 'my-networks',
+				'id'     => 'browse-networks',
+				'title'  => __( 'Browse All Networks', 'wp-multi-network' ),
+				'href'   => network_admin_url( 'admin.php?page=networks' ),
+			) );
+			return;
+		}
+
 		foreach ( $networks as $network_id ) {
 			$network = get_network( $network_id );
 			if ( ! $network ) {
