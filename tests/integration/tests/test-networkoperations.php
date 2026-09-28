@@ -138,6 +138,41 @@ class WPMN_Tests_NetworkOperations extends WPMN_UnitTestCase {
 		$this->assertEquals( '/newpath/', $updated_network->path, 'Network should have updated path without manual cache flush' );
 	}
 
+	public function test_update_network_processes_more_than_one_page_of_sites() {
+		$network_id = $this->factory->network->create(
+			array(
+				'domain' => 'old.example.test',
+				'path'   => '/old/',
+			)
+		);
+		$site_ids = $this->factory->blog->create_many(
+			100,
+			array(
+				'network_id' => $network_id,
+				'domain'     => 'old.example.test',
+			),
+			array( 'path' => new WP_UnitTest_Generator_Sequence( '/old/testpath%s' ) )
+		);
+		$last_site_id = $this->factory->blog->create( array(
+			'network_id' => $network_id,
+			'domain'     => 'old.example.test',
+			'path'       => '/old/last/',
+		) );
+		$site_ids[] = $last_site_id;
+
+		$this->assertCount( 101, $site_ids );
+		$this->assertNotWPError( $site_ids[100] );
+		$this->assertTrue( update_network( $network_id, 'new.example.test', '/new/' ) );
+
+		foreach ( $site_ids as $site_id ) {
+			$this->assertSame( 'new.example.test', get_site( $site_id )->domain );
+			$this->assertStringContainsString( 'new.example.test', get_blog_option( $site_id, 'home' ) );
+			$this->assertStringContainsString( 'new.example.test', get_blog_option( $site_id, 'siteurl' ) );
+		}
+		$this->assertSame( '/new/last/', get_site( $last_site_id )->path );
+		$this->assertStringContainsString( '/new/last', get_blog_option( $last_site_id, 'home' ) );
+	}
+
 	public function test_plugin_auto_activates_on_new_network() {
 		// Create a test user and grant super admin privileges.
 		$user_id = $this->factory->user->create(
