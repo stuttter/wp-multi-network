@@ -141,19 +141,38 @@ function wpmn_edit_network_new_site_metabox() {
  */
 function wpmn_edit_network_assign_sites_metabox( $network = null ) {
 	$network_id = $network->id ?? null;
+	$site_limit = 25;
+	$from       = array();
 
+	// Fetch one extra site so an incomplete list is never presented as complete.
 	$to = get_sites(
 		array(
-			'site__not_in' => array( get_main_site_id( (int) $network_id ) ),
-			'network_id'   => (int) $network_id,
+			'site__not_in'           => array( get_main_site_id( (int) $network_id ) ),
+			'network_id'             => (int) $network_id,
+			'number'                 => $site_limit + 1,
+			'update_site_meta_cache' => false,
 		)
 	);
 
-	$from = get_sites(
-		array(
-			'network__not_in' => array( (int) $network_id ),
-		)
-	);
+	if ( count( $to ) <= $site_limit ) {
+		$from = get_sites(
+			array(
+				'network__not_in'        => array( (int) $network_id ),
+				'number'                 => $site_limit + 1,
+				'update_site_meta_cache' => false,
+			)
+		);
+	}
+
+	if ( count( $to ) > $site_limit || count( $from ) > $site_limit ) {
+		?>
+		<p class="description">
+			<?php esc_html_e( 'There are too many sites to manage with these lists.', 'wp-multi-network' ); ?>
+			<a href="<?php echo esc_url( network_admin_url( 'sites.php' ) ); ?>"><?php esc_html_e( 'Use the Sites screen and its Move bulk action instead.', 'wp-multi-network' ); ?></a>
+		</p>
+		<?php
+		return;
+	}
 
 	?>
 
@@ -173,7 +192,7 @@ function wpmn_edit_network_assign_sites_metabox( $network = null ) {
 
 						<?php if ( ( (int) $site->network_id !== (int) $network_id ) && ! is_main_site_for_network( $site->id ) ) : ?>
 
-							<?php $site_label = sprintf( '%1$s (%2$s%3$s)', $site->blogname, $site->domain, $site->path ); ?>
+							<?php $site_label = $site->domain . $site->path; ?>
 							<option value="<?php echo esc_attr( strval( $site->id ) ); ?>" title="<?php echo esc_attr( $site_label ); ?>">
 								<?php echo esc_html( $site_label ); ?>
 							</option>
@@ -195,7 +214,7 @@ function wpmn_edit_network_assign_sites_metabox( $network = null ) {
 
 						<?php if ( (int) $site->network_id === (int) $network_id ) : ?>
 
-							<?php $site_label = sprintf( '%1$s (%2$s%3$s)', $site->blogname, $site->domain, $site->path ); ?>
+							<?php $site_label = $site->domain . $site->path; ?>
 							<option value="<?php echo esc_attr( strval( $site->id ) ); ?>" title="<?php echo esc_attr( $site_label ); ?>" <?php disabled( is_main_site_for_network( $site->id ) ); ?>>
 								<?php echo esc_html( $site_label ); ?>
 							</option>
