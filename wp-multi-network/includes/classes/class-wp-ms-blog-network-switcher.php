@@ -29,7 +29,8 @@ class WP_MS_Blog_Network_Switcher {
 	 * @return void
 	 */
 	public function add_hooks() {
-		add_action( 'switch_blog', array( $this, 'switch_blog' ), 10, 3 );
+		// Run before Core's role-switch callback and other ordinary switch_blog listeners.
+		add_action( 'switch_blog', array( $this, 'switch_blog' ), 0, 3 );
 	}
 
 	/**
@@ -38,7 +39,7 @@ class WP_MS_Blog_Network_Switcher {
 	 * @return void
 	 */
 	public function remove_hooks() {
-		remove_action( 'switch_blog', array( $this, 'switch_blog' ), 10 );
+		remove_action( 'switch_blog', array( $this, 'switch_blog' ), 0 );
 	}
 
 	/**
@@ -67,7 +68,8 @@ class WP_MS_Blog_Network_Switcher {
 			$top   = end( $stack );
 			if (
 				count( $stack ) !== $frame['stack_depth'] + 1 ||
-				! $top instanceof WP_Network ||
+				! is_object( $top ) ||
+				! isset( $top->id, $top->domain ) ||
 				(int) $top->id !== $frame['previous_network_id'] ||
 				get_current_network_id() !== $frame['target_network_id']
 			) {
