@@ -18,6 +18,8 @@ Turn your WordPress Multisite installation into many multisite networks, surroun
 
 ## Installation
 
+Requires WordPress 6.4 or newer and PHP 7.4 or newer.
+
 * Download and install using the built in WordPress plugin installer.
 * Activate in the "Plugins" network admin panel using the "Network Activate" link.
 * Comment out the `DOMAIN_CURRENT_SITE` line in your `wp-config.php` file. If you don't have this line, you probably need to enable multisite.

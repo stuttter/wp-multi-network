@@ -6,9 +6,9 @@ This document explains the testing matrix configuration for the WP Multi-Network
 
 The testing matrix is designed to validate the plugin against various combinations of:
 
-- **WordPress versions**: 5.5 (minimum) through latest
-- **PHP versions**: 7.2 (minimum) through 8.3
-- **PHPUnit versions**: 7, 8, and 9
+- **WordPress versions**: 6.4 (minimum) through trunk
+- **PHP versions**: 7.4 (minimum) through 8.3 in the current CI matrix
+- **PHPUnit version**: 9 in the current CI matrix
 
 ## Version Compatibility Matrix
 
@@ -16,19 +16,14 @@ The testing matrix is designed to validate the plugin against various combinatio
 
 | PHPUnit Version | PHP Requirement | WordPress Compatibility | Configuration File |
 |-----------------|-----------------|-------------------------|--------------------|
-| PHPUnit 9.x     | PHP 7.3+        | All versions            | phpunit.xml.dist   |
-| PHPUnit 8.x     | PHP 7.2+        | All versions            | phpunit.xml.legacy |
-| PHPUnit 7.x     | PHP 7.1+        | WP 4.9 - 6.x            | phpunit.xml.legacy |
+| PHPUnit 9.x     | PHP 7.3+        | Supported versions      | phpunit.xml.dist   |
 
 ### WordPress Version Requirements
 
 | WordPress Version | Minimum PHP | Recommended PHP |
 |-------------------|-------------|-----------------|
-| trunk             | 7.2.24      | 8.0+            |
-| 6.4 - 6.9         | 7.2.24      | 8.0+            |
-| 6.0 - 6.3         | 7.2.24      | 7.4+            |
-| 5.9               | 7.2.24      | 7.4+            |
-| 5.5 - 5.8         | 7.2.0       | 7.4+            |
+| trunk             | 7.4         | 8.3 in CI       |
+| 6.4 - 6.9         | 7.4         | 8.1+ in CI      |
 
 ## Test Matrix Configuration
 
@@ -49,7 +44,7 @@ The GitHub Actions workflow (`.github/workflows/phpunit-ci.yml`) runs tests acro
 - PHP 8.2 + PHPUnit 9
 - PHP 8.1 + PHPUnit 9
 
-### Latest WordPress (6.7)
+### Latest WordPress
 
 - PHP 8.3 + PHPUnit 9
 - PHP 8.2 + PHPUnit 9
@@ -61,23 +56,7 @@ The GitHub Actions workflow (`.github/workflows/phpunit-ci.yml`) runs tests acro
 - PHP 8.3 + PHPUnit 9 (WP 6.6)
 - PHP 8.2 + PHPUnit 9 (WP 6.5)
 - PHP 8.1 + PHPUnit 9 (WP 6.4)
-
-### WordPress 6.0-6.3
-
-- PHP 8.0 + PHPUnit 9 (WP 6.3)
-- PHP 7.4 + PHPUnit 9 (WP 6.2)
-- PHP 7.4 + PHPUnit 9 (WP 6.1)
-- PHP 7.4 + PHPUnit 9 (WP 6.0)
-
-### WordPress 5.9
-
-- PHP 7.4 + PHPUnit 9
-- PHP 7.3 + PHPUnit 9
-- PHP 7.2 + PHPUnit 8
-
-### Minimum Supported (WordPress 5.5)
-
-- PHP 7.2 + PHPUnit 8
+- PHP 7.4 + PHPUnit 9 (WP 6.4, minimum supported combination)
 
 ## Running Tests Locally
 
