@@ -40,6 +40,7 @@ class WP_CLI {
 }
 
 require_once TESTS_PLUGIN_DIR . '/wp-multi-network/includes/classes/class-wp-ms-network-command.php';
+require_once TESTS_PLUGIN_DIR . '/wp-multi-network/includes/classes/class-wp-ms-upload-repair.php';
 
 /**
  * Keep request-scoped upload constants from other tests out of these cases.
@@ -162,6 +163,59 @@ class WPMN_Tests_Upload_Repair_CLI extends WPMN_UnitTestCase {
 			$this->assertSame( '', get_blog_option( $site_id, 'upload_url_path' ) );
 		} finally {
 			unlink( $file );
+		}
+	}
+
+	/**
+	 * A fresh command dry run must recognize a verified interrupted copy.
+	 */
+	public function test_command_dry_run_recognizes_journaled_copy() {
+		update_site_option( 'ms_files_rewriting', 0 );
+		$site_id = $this->factory->blog->create();
+		update_blog_option( $site_id, 'upload_path', 'wp-content/uploads/sites/' . $site_id );
+		update_blog_option( $site_id, 'upload_url_path', WP_CONTENT_URL . '/uploads/sites/' . $site_id );
+		$source_dir = WP_CONTENT_DIR . '/uploads/sites/' . $site_id . '/sites/' . $site_id;
+		$target_dir = WP_CONTENT_DIR . '/uploads/sites/' . $site_id;
+		$name       = 'repair-cli-resume-' . wp_generate_password( 12, false ) . '.txt';
+		$this->assertTrue( wp_mkdir_p( $source_dir ) );
+		$this->assertNotFalse( file_put_contents( $source_dir . '/' . $name, 'journaled media' ) );
+		try {
+			$repair = new WP_MS_Upload_Repair();
+			$plan   = $repair->inspect( $site_id );
+			$site   = get_site( $site_id );
+			$this->assertSame( 'repairable', $plan['status'], $plan['reason'] );
+			$this->assertNotFalse( file_put_contents( $target_dir . '/' . $name, 'journaled media' ) );
+			$backup_key = 'wpmn_upload_repair_' . $plan['fingerprint'];
+			$backup     = array(
+				'fingerprint'          => $plan['fingerprint'],
+				'old_upload_path'      => $plan['stored_upload_path'],
+				'old_upload_url_path'  => $plan['stored_upload_url_path'],
+				'old_basedir'         => $plan['effective_basedir'],
+				'target_basedir'      => $plan['target_basedir'],
+				'site_domain'         => $site->domain,
+				'site_path'           => $site->path,
+				'site_registered'     => $site->registered,
+				'file_manifest_digest' => hash( 'sha256', wp_json_encode( $plan['files'] ) ),
+				'status'              => 'copying',
+			);
+			switch_to_blog( $site_id );
+			$this->assertTrue( add_option( $backup_key, $backup, '', 'no' ) );
+			restore_current_blog();
+
+			WP_CLI::$lines = array();
+			$command       = new WP_MS_Network_Command();
+			$command->repair_uploads( array(), array( 'site-id' => $site_id, 'format' => 'json' ) );
+			$document = json_decode( implode( "\n", WP_CLI::$lines ), true );
+			$this->assertIsArray( $document );
+			$this->assertSame( 'repairable', $document['sites'][0]['status'], $document['sites'][0]['reason'] );
+			$this->assertSame( $plan['fingerprint'], $document['sites'][0]['fingerprint'] );
+		} finally {
+			if ( file_exists( $source_dir . '/' . $name ) ) {
+				unlink( $source_dir . '/' . $name );
+			}
+			if ( file_exists( $target_dir . '/' . $name ) ) {
+				unlink( $target_dir . '/' . $name );
+			}
 		}
 	}
 

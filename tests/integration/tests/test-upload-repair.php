@@ -181,6 +181,17 @@ class WPMN_Tests_Upload_Repair extends WPMN_UnitTestCase {
 	}
 
 	/**
+	 * A numeric-prefix site ID in a custom base is not this site's suffix.
+	 */
+	public function test_custom_path_with_numeric_prefix_is_unchanged() {
+		$site_id = $this->create_doubled_site();
+		update_blog_option( $site_id, 'upload_path', 'wp-content/custom/sites/' . $site_id . '0' );
+		update_blog_option( $site_id, 'upload_url_path', 'https://media.example.test/sites/' . $site_id . '0' );
+		$repair = new WP_MS_Upload_Repair();
+		$this->assertSame( 'unchanged', $repair->inspect( $site_id )['status'] );
+	}
+
+	/**
 	 * A custom upload URL is not the known default-layout bug.
 	 */
 	public function test_custom_upload_url_requires_manual_review() {
@@ -482,6 +493,52 @@ class WPMN_Tests_Upload_Repair extends WPMN_UnitTestCase {
 	}
 
 	/**
+	 * Advisory URL-reference writes after journaling must not stale the copy.
+	 */
+	public function test_reference_count_drift_during_copy_does_not_stale_plan() {
+		$site_id    = $this->create_doubled_site();
+		$source_dir = WP_CONTENT_DIR . '/uploads/sites/' . $site_id . '/sites/' . $site_id;
+		$target_dir = WP_CONTENT_DIR . '/uploads/sites/' . $site_id;
+		$name       = 'repair-reference-' . wp_generate_password( 12, false ) . '.txt';
+		$this->assertTrue( wp_mkdir_p( $source_dir ) );
+		$this->assertNotFalse( file_put_contents( $source_dir . '/' . $name, 'reference media' ) );
+
+		$repair     = new WP_MS_Upload_Repair();
+		$plan       = $repair->public_plan( $repair->inspect( $site_id ) );
+		$backup_key = 'wpmn_upload_repair_' . $plan['fingerprint'];
+		$added_post = false;
+		$on_journal = function ( $option ) use ( $site_id, $backup_key, $plan, &$added_post ) {
+			if ( $option !== $backup_key ) {
+				return;
+			}
+			$added_post = true;
+			switch_to_blog( $site_id );
+			try {
+				$this->factory->post->create( array( 'post_content' => $plan['effective_baseurl'] . '/image.png' ) );
+			} finally {
+				restore_current_blog();
+			}
+		};
+		add_action( 'added_option', $on_journal );
+		try {
+			$this->assertSame( 'repairable', $plan['status'], $plan['reason'] );
+			$result = $repair->execute( $plan );
+			$this->assertTrue( $added_post );
+			$this->assertIsArray( $result );
+			$this->assertSame( 'repaired', $result['status'] );
+			$this->assertSame( 'reference media', file_get_contents( $target_dir . '/' . $name ) );
+		} finally {
+			remove_action( 'added_option', $on_journal );
+			if ( file_exists( $source_dir . '/' . $name ) ) {
+				unlink( $source_dir . '/' . $name );
+			}
+			if ( file_exists( $target_dir . '/' . $name ) ) {
+				unlink( $target_dir . '/' . $name );
+			}
+		}
+	}
+
+	/**
 	 * A completed record must not hide later damage to a copied file.
 	 */
 	public function test_completed_repair_detects_changed_target_file() {
@@ -674,6 +731,9 @@ class WPMN_Tests_Upload_Repair extends WPMN_UnitTestCase {
 			), '', 'no' ) );
 			restore_current_blog();
 
+			$fresh = $repair->inspect( $site_id );
+			$this->assertSame( 'repairable', $fresh['status'], $fresh['reason'] );
+			$this->assertSame( $plan['fingerprint'], $fresh['fingerprint'] );
 			$result = $repair->execute( $plan );
 			$this->assertIsArray( $result );
 			$this->assertSame( 'repaired', $result['status'] );

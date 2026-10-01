@@ -301,7 +301,8 @@ class WP_MS_Upload_Repair {
 		$known_urls    = array( '', $expected_url, $site_url );
 
 		if ( ! in_array( $stored_path, $known_paths, true ) ) {
-			if ( false !== strpos( $stored_path, $suffix ) || false !== strpos( $stored_url, $suffix ) ) {
+			$site_suffix_pattern = '~' . preg_quote( $suffix, '~' ) . '(?:/|$)~';
+			if ( preg_match( $site_suffix_pattern, $stored_path ) || preg_match( $site_suffix_pattern, $stored_url ) ) {
 				return $this->with_status( $plan, 'manual', 'A custom upload base contains the site suffix.' );
 			}
 			return $plan;
@@ -350,6 +351,12 @@ class WP_MS_Upload_Repair {
 		}
 		$plan['references'] = $references;
 		if ( $plan['collisions'] ) {
+			if ( ! $allow_copied ) {
+				$resumable = $this->inspect_current_site( $site_id, $network_id, true, $site );
+				if ( 'repairable' === $resumable['status'] && $this->has_matching_copying_record( $resumable, $site ) ) {
+					return $resumable;
+				}
+			}
 			return $this->with_status( $plan, 'manual', 'Files already exist at one or more target paths.' );
 		}
 
@@ -369,13 +376,36 @@ class WP_MS_Upload_Repair {
 			$expected_url,
 			$plan['target_writable'],
 			$inventory['files'],
-			$plan['references'],
 		) );
 		if ( false === $fingerprint_data ) {
 			return $this->with_status( $plan, 'manual', 'Could not encode the repair plan.' );
 		}
 		$plan['fingerprint'] = hash( 'sha256', $fingerprint_data );
 		return $plan;
+	}
+
+	/**
+	 * Trust verified target copies only when a matching repair journal exists.
+	 *
+	 * @param array<string, mixed> $plan Candidate plan with verified copies.
+	 * @param WP_Site              $site Site being inspected.
+	 * @return bool Whether the copying record matches the current plan.
+	 */
+	private function has_matching_copying_record( $plan, $site ) {
+		$backup = get_option( 'wpmn_upload_repair_' . $plan['fingerprint'], false );
+		if ( ! is_array( $backup ) || ! isset( $backup['fingerprint'], $backup['status'], $backup['old_upload_path'], $backup['old_upload_url_path'], $backup['old_basedir'], $backup['target_basedir'], $backup['file_manifest_digest'], $backup['site_domain'], $backup['site_path'], $backup['site_registered'] ) || 'copying' !== $backup['status'] || $plan['fingerprint'] !== $backup['fingerprint'] || ! is_string( $backup['file_manifest_digest'] ) ) {
+			return false;
+		}
+		$manifest = wp_json_encode( $plan['files'] );
+		return false !== $manifest
+			&& $backup['old_upload_path'] === $plan['stored_upload_path']
+			&& $backup['old_upload_url_path'] === $plan['stored_upload_url_path']
+			&& $backup['old_basedir'] === $plan['effective_basedir']
+			&& $backup['target_basedir'] === $plan['target_basedir']
+			&& $backup['site_domain'] === $site->domain
+			&& $backup['site_path'] === $site->path
+			&& $backup['site_registered'] === $site->registered
+			&& hash_equals( $backup['file_manifest_digest'], hash( 'sha256', $manifest ) );
 	}
 
 	/**
