@@ -71,7 +71,7 @@ The GitHub Actions workflow (`.github/workflows/phpunit-ci.yml`) runs tests acro
 2. **Set up the WordPress test environment:**
 
    ```bash
-   bash bin/install-wp-tests.sh wordpress_test wp wp localhost latest
+   bash tests/integration/bin/install-wp-tests.sh wordpress_test wp wp localhost latest
    ```
 
    Parameters:
@@ -101,7 +101,7 @@ composer require --dev phpunit/phpunit:^8.5
 
 ```bash
 export WP_VERSION=6.4
-bash bin/install-wp-tests.sh wordpress_test wp wp localhost $WP_VERSION
+bash tests/integration/bin/install-wp-tests.sh wordpress_test wp wp localhost $WP_VERSION
 ./vendor/bin/phpunit
 ```
 
@@ -230,7 +230,7 @@ Ensure `WP_TESTS_DIR` is set correctly:
 
 ```bash
 export WP_TESTS_DIR=/tmp/wordpress-tests-lib
-bash bin/install-wp-tests.sh wordpress_test wp wp localhost latest
+bash tests/integration/bin/install-wp-tests.sh wordpress_test wp wp localhost latest
 ```
 
 ### Database Connection Issues
