@@ -54,6 +54,10 @@ Users are global, and they can login to any of those domains with the same login
 
 You can activate it, but it won't do anything. You need to have the multisite functionality enabled and working first.
 
+= Does switching blogs also switch networks? =
+
+No. By default, `switch_to_blog()` and `restore_current_blog()` keep WordPress's existing behavior and leave the current network unchanged. To opt in, define `WPMN_SYNC_NETWORK_ON_BLOG_SWITCH` as `true` in `wp-config.php` before the plugin loads. Network changes made manually inside a blog-switch scope must be restored before calling `restore_current_blog()`.
+
 = Where can I get support? =
 
 Create a GitHub issue: https://github.com/stuttter/wp-multi-network/issues/new

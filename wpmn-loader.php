@@ -96,6 +96,13 @@ class WPMN_Loader {
 	private $admin_bar;
 
 	/**
+	 * Opt-in handler that keeps blog and network switches paired.
+	 *
+	 * @var WP_MS_Blog_Network_Switcher|null
+	 */
+	private $blog_network_switcher;
+
+	/**
 	 * Constructor.
 	 *
 	 * @since 1.3.0
@@ -150,6 +157,13 @@ class WPMN_Loader {
 
 		require $this->plugin_dir . 'includes/compat.php';
 		require $this->plugin_dir . 'includes/functions.php';
+		require $this->plugin_dir . 'includes/classes/class-wp-ms-blog-network-switcher.php';
+
+		// Preserve WordPress's default blog-switching behavior unless explicitly enabled.
+		if ( defined( 'WPMN_SYNC_NETWORK_ON_BLOG_SWITCH' ) && true === WPMN_SYNC_NETWORK_ON_BLOG_SWITCH ) {
+			$this->blog_network_switcher = new WP_MS_Blog_Network_Switcher();
+			$this->blog_network_switcher->add_hooks();
+		}
 
 		require $this->plugin_dir . 'includes/classes/class-wp-ms-networks-capabilities.php';
 
