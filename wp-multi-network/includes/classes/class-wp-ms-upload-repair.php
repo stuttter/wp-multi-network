@@ -82,13 +82,31 @@ class WP_MS_Upload_Repair {
 		switch_to_blog( $site_id );
 		try {
 			$backup = get_option( $backup_key, false );
-			if ( false !== $backup && ( ! is_array( $backup ) || ! isset( $backup['fingerprint'], $backup['status'], $backup['old_upload_path'], $backup['old_upload_url_path'], $backup['old_basedir'], $backup['target_basedir'], $backup['file_manifest_digest'], $backup['site_domain'], $backup['site_path'], $backup['site_registered'] ) || $backup['fingerprint'] !== $saved['fingerprint'] || ! in_array( $backup['status'], array( 'copying', 'complete' ), true ) || ! is_string( $backup['file_manifest_digest'] ) || ! preg_match( '/^[a-f0-9]{64}$/', $backup['file_manifest_digest'] ) || $backup['site_domain'] !== $site->domain || $backup['site_path'] !== $site->path || $backup['site_registered'] !== $site->registered ) ) {
+			if ( false !== $backup && ( ! is_array( $backup ) || ! isset( $backup['fingerprint'], $backup['status'], $backup['old_upload_path'], $backup['old_upload_url_path'], $backup['old_basedir'], $backup['target_basedir'], $backup['file_manifest_digest'], $backup['site_domain'], $backup['site_path'], $backup['site_registered'] ) || $backup['fingerprint'] !== $saved['fingerprint'] || ! in_array( $backup['status'], array( 'copying', 'complete' ), true ) || ! is_string( $backup['file_manifest_digest'] ) || ! preg_match( '/^[a-f0-9]{64}$/', $backup['file_manifest_digest'] ) || ( isset( $backup['temporary_file'] ) && ! is_string( $backup['temporary_file'] ) ) || $backup['site_domain'] !== $site->domain || $backup['site_path'] !== $site->path || $backup['site_registered'] !== $site->registered ) ) {
 				return new WP_Error( 'upload_backup_invalid', 'The existing repair record needs manual inspection.' );
 			}
-			if ( is_array( $backup ) && ( 'complete' === $backup['status'] || ( '' === get_option( 'upload_path' ) && '' === get_option( 'upload_url_path' ) ) ) ) {
-				$verified = $this->verify_completed_repair( $site_id, $backup );
+			if ( is_array( $backup ) && isset( $backup['temporary_file'] ) ) {
+				$cleaned = $this->discard_temporary_file( $backup, $backup_key, $site_id );
+				if ( is_wp_error( $cleaned ) ) {
+					return $cleaned;
+				}
+			}
+			$pending_url = is_array( $backup ) && 'copying' === $backup['status'] && '' !== $backup['old_upload_url_path'] && '' === get_option( 'upload_path' ) && get_option( 'upload_url_path' ) === $backup['old_upload_url_path'];
+			if ( is_array( $backup ) && ( 'complete' === $backup['status'] || $pending_url || ( '' === get_option( 'upload_path' ) && '' === get_option( 'upload_url_path' ) ) ) ) {
+				$verified = $this->verify_completed_repair( $site_id, $backup, $pending_url );
 				if ( is_wp_error( $verified ) ) {
 					return $verified;
+				}
+				if ( $pending_url ) {
+					if ( ! update_option( 'upload_url_path', '' ) ) {
+						$restored = $this->restore_options( $backup );
+						return new WP_Error( 'upload_option_failed', $restored ? 'Could not finish the corrected settings; original settings were restored.' : 'Could not finish or restore the upload settings; manual recovery is required.' );
+					}
+					$verified = $this->verify_completed_repair( $site_id, $backup );
+					if ( is_wp_error( $verified ) ) {
+						$restored = $this->restore_options( $backup );
+						return new WP_Error( 'upload_verify_failed', $restored ? 'The corrected path did not verify; original settings were restored.' : 'The corrected path did not verify, and the original settings could not be restored.' );
+					}
 				}
 				if ( 'copying' === $backup['status'] ) {
 					$backup['status']         = 'complete';
@@ -154,29 +172,15 @@ class WP_MS_Upload_Repair {
 					continue;
 				}
 				// Check before creation as well: wp_mkdir_p() would follow an existing
-				// symlink in a parent and create directories outside the uploads tree.
-				if ( $this->has_symlink_component( dirname( $destination ) ) || ! wp_mkdir_p( dirname( $destination ) ) || $this->has_symlink_component( dirname( $destination ) ) ) {
+				// symlink below the uploads root and create directories outside it.
+				$uploads_root = WP_CONTENT_DIR . '/uploads';
+				if ( $this->has_symlink_component( dirname( $destination ), $uploads_root ) || ! wp_mkdir_p( dirname( $destination ) ) || $this->has_symlink_component( dirname( $destination ), $uploads_root ) ) {
 					return new WP_Error( 'upload_target_unwritable', 'Could not create a safe target directory.' );
 				}
 
-				$input  = @fopen( $source, 'rb' ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged,WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- Verified local upload path; return an explicit error below.
-				$output = @fopen( $destination, 'xb' ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged,WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- Exclusive creation prevents overwrites.
-				if ( false === $input || false === $output ) {
-					if ( false !== $input ) {
-						fclose( $input );
-					}
-					if ( false !== $output ) {
-						fclose( $output );
-						unlink( $destination ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_unlink -- Only the file created above can reach this branch.
-					}
-					return new WP_Error( 'upload_copy_failed', 'Could not open an upload file for copying.' );
-				}
-				$bytes = stream_copy_to_stream( $input, $output );
-				fclose( $input );
-				fclose( $output );
-				if ( $bytes !== $details['size'] || hash_file( 'sha256', $destination ) !== $details['hash'] ) {
-					unlink( $destination ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_unlink -- This attempt created the destination exclusively.
-					return new WP_Error( 'upload_copy_mismatch', 'A copied file did not verify; the original was left untouched.' );
+				$copied = $this->copy_file_exclusively( $source, $destination, $details, $backup, $backup_key, $site_id );
+				if ( is_wp_error( $copied ) ) {
+					return $copied;
 				}
 			}
 
@@ -223,12 +227,15 @@ class WP_MS_Upload_Repair {
 	 *
 	 * @param int                  $site_id Site ID.
 	 * @param array<string, mixed> $backup Saved repair record.
+	 * @param bool                 $pending_url Accept the original URL option after the path option was corrected.
 	 * @return array<string, int>|WP_Error Verified file count or refusal.
 	 */
-	private function verify_completed_repair( $site_id, $backup ) {
-		$verified = wp_upload_dir( null, false, true );
-		$target   = WP_CONTENT_DIR . '/uploads/sites/' . $site_id;
-		if ( '' !== get_option( 'upload_path' ) || '' !== get_option( 'upload_url_path' ) || $target !== $verified['basedir'] || content_url( 'uploads' ) . '/sites/' . $site_id !== $verified['baseurl'] ) {
+	private function verify_completed_repair( $site_id, $backup, $pending_url = false ) {
+		$verified     = wp_upload_dir( null, false, true );
+		$target       = WP_CONTENT_DIR . '/uploads/sites/' . $site_id;
+		$upload_url   = get_option( 'upload_url_path' );
+		$expected_url = $pending_url ? $backup['old_upload_url_path'] . '/sites/' . $site_id : $this->default_upload_url() . '/sites/' . $site_id;
+		if ( '' !== get_option( 'upload_path' ) || ( $pending_url ? $backup['old_upload_url_path'] !== $upload_url : '' !== $upload_url ) || $target !== $verified['basedir'] || $expected_url !== $verified['baseurl'] ) {
 			return new WP_Error( 'upload_repair_changed', 'The corrected upload settings changed since repair.' );
 		}
 		if ( $backup['old_basedir'] !== $target . '/sites/' . $site_id || $backup['target_basedir'] !== $target ) {
@@ -242,6 +249,12 @@ class WP_MS_Upload_Repair {
 		if ( false === $manifest || ! hash_equals( $backup['file_manifest_digest'], hash( 'sha256', $manifest ) ) ) {
 			return new WP_Error( 'upload_repair_changed', 'A copied file or the retained original changed since repair.' );
 		}
+		foreach ( $copied['files'] as $relative => $details ) {
+			$destination = $target . '/' . $relative;
+			if ( ! is_file( $destination ) || is_link( $destination ) || filesize( $destination ) !== $details['size'] || hash_file( 'sha256', $destination ) !== $details['hash'] ) {
+				return new WP_Error( 'upload_repair_changed', 'A copied file or the retained original changed since repair.' );
+			}
+		}
 		return array( 'verified_files' => count( $copied['files'] ) );
 	}
 
@@ -252,8 +265,8 @@ class WP_MS_Upload_Repair {
 	 * @return bool Whether both values match their originals.
 	 */
 	private function restore_options( $backup ) {
-		update_option( 'upload_path', $backup['old_upload_path'] );
 		update_option( 'upload_url_path', $backup['old_upload_url_path'] );
+		update_option( 'upload_path', $backup['old_upload_path'] );
 		return get_option( 'upload_path' ) === $backup['old_upload_path'] && get_option( 'upload_url_path' ) === $backup['old_upload_url_path'];
 	}
 
@@ -293,7 +306,7 @@ class WP_MS_Upload_Repair {
 
 		$suffix        = '/sites/' . $site_id;
 		$default_path  = WP_CONTENT_DIR . '/uploads';
-		$default_url   = content_url( 'uploads' );
+		$default_url   = $this->default_upload_url();
 		$expected_path = $default_path . $suffix;
 		$expected_url  = $default_url . $suffix;
 		$site_url      = untrailingslashit( (string) get_option( 'siteurl' ) ) . '/wp-content/uploads' . $suffix;
@@ -320,7 +333,7 @@ class WP_MS_Upload_Repair {
 		// even when WP_CONTENT_URL remains bound to the CLI main site.
 		$old_url = '' !== $stored_url
 			? $stored_url . $suffix
-			: ( 'wp-content/uploads' . $suffix === $stored_path ? $site_url . $suffix : $expected_url . $suffix );
+			: ( 'wp-content/uploads' . $suffix === $stored_path ? $site_url . $suffix : $expected_url );
 		if ( $old_path !== $uploads['basedir'] || $old_url !== $uploads['baseurl'] ) {
 			return $this->with_status( $plan, 'manual', 'The effective path or URL differs from the known doubled layout.' );
 		}
@@ -330,7 +343,7 @@ class WP_MS_Upload_Repair {
 		$plan['target_basedir']           = $expected_path;
 		$plan['bootstrap_target_baseurl'] = $expected_url;
 
-		if ( $this->has_symlink_component( $old_path ) || $this->has_symlink_component( $expected_path ) ) {
+		if ( $this->has_symlink_component( $old_path, $default_path ) || $this->has_symlink_component( $expected_path, $default_path ) ) {
 			return $this->with_status( $plan, 'manual', 'A symlink occurs in the upload path.' );
 		}
 		$plan['target_writable'] = $this->target_is_writable( $expected_path );
@@ -345,7 +358,9 @@ class WP_MS_Upload_Repair {
 		$plan['files']      = $inventory['files'];
 		$plan['file_count'] = count( $inventory['files'] );
 		$plan['collisions'] = $inventory['collisions'];
-		$references         = $this->reference_counts( $old_url );
+		$references         = $old_url === $expected_url
+			? array_fill_keys( array( 'posts', 'postmeta', 'options', 'comments', 'commentmeta' ), 0 )
+			: $this->reference_counts( $old_url );
 		if ( is_wp_error( $references ) ) {
 			return $this->with_status( $plan, 'manual', $references->get_error_message() );
 		}
@@ -516,15 +531,16 @@ class WP_MS_Upload_Repair {
 	}
 
 	/**
-	 * Check each existing component, not just the final path.
+	 * Check each existing component below a trusted root.
 	 *
 	 * @param string $path Path to inspect.
+	 * @param string $root Trusted root. A deployment may symlink this root or one of its parents.
 	 * @return bool Whether a component is a symlink.
 	 * @phpstan-impure
 	 */
-	private function has_symlink_component( $path ) {
+	private function has_symlink_component( $path, $root ) {
 		$part = $path;
-		while ( '/' !== $part && '.' !== $part ) {
+		while ( $root !== $part && '/' !== $part && '.' !== $part ) {
 			if ( is_link( $part ) ) {
 				return true;
 			}
@@ -535,6 +551,103 @@ class WP_MS_Upload_Repair {
 			$part = $parent;
 		}
 		return false;
+	}
+
+	/**
+	 * Copy through a journaled temporary file, then publish without overwriting.
+	 *
+	 * @param string               $source Source file.
+	 * @param string               $destination Final target file.
+	 * @param array<string, mixed> $details Expected size and hash.
+	 * @param array<string, mixed> $backup Repair journal, passed by reference.
+	 * @param string               $backup_key Repair journal option name.
+	 * @param int                  $site_id Site ID.
+	 * @return true|WP_Error Whether the verified file was published.
+	 */
+	private function copy_file_exclusively( $source, $destination, $details, &$backup, $backup_key, $site_id ) {
+		$input = @fopen( $source, 'rb' ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged,WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- Verified local upload path; return an explicit error below.
+		if ( false === $input ) {
+			return new WP_Error( 'upload_copy_failed', 'Could not open an upload file for copying.' );
+		}
+		$temporary = dirname( $destination ) . '/.wpmn-upload-repair-' . wp_generate_password( 32, false, false );
+		if ( file_exists( $temporary ) || is_link( $temporary ) ) {
+			fclose( $input );
+			return new WP_Error( 'upload_copy_failed', 'Could not reserve a temporary upload file.' );
+		}
+		$backup['temporary_file'] = $temporary;
+		if ( ! update_option( $backup_key, $backup, false ) ) {
+			fclose( $input );
+			unset( $backup['temporary_file'] );
+			return new WP_Error( 'upload_journal_failed', 'Could not journal a temporary upload copy.' );
+		}
+		$output = @fopen( $temporary, 'xb' ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged,WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- Exclusive creation follows a journal write and prevents replacement.
+		if ( false === $output ) {
+			fclose( $input );
+			return $this->temporary_copy_error( $backup, $backup_key, $site_id, 'Could not open a temporary upload file.' );
+		}
+		$bytes = stream_copy_to_stream( $input, $output );
+		fclose( $input );
+		fclose( $output );
+		if ( $bytes !== $details['size'] || hash_file( 'sha256', $temporary ) !== $details['hash'] ) {
+			return $this->temporary_copy_error( $backup, $backup_key, $site_id, 'A copied file did not verify; the original was left untouched.', 'upload_copy_mismatch' );
+		}
+		$permissions = fileperms( $source );
+		if ( false === $permissions || ! chmod( $temporary, $permissions & 0777 ) ) { // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.chmod_chmod -- Preserve the verified source media permissions before atomic publication.
+			return $this->temporary_copy_error( $backup, $backup_key, $site_id, 'Could not preserve upload file permissions.' );
+		}
+		if ( ! @link( $temporary, $destination ) ) { // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged,WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_link -- A same-directory hard link publishes atomically without overwriting; an explicit error follows.
+			if ( ! is_file( $destination ) || is_link( $destination ) || hash_file( 'sha256', $destination ) !== $details['hash'] ) {
+				$message = file_exists( $destination ) || is_link( $destination ) ? 'A target file was occupied during repair.' : 'The target filesystem does not support atomic upload publication.';
+				return $this->temporary_copy_error( $backup, $backup_key, $site_id, $message, 'upload_file_changed' );
+			}
+		}
+		$cleaned = $this->discard_temporary_file( $backup, $backup_key, $site_id );
+		if ( is_wp_error( $cleaned ) ) {
+			return $cleaned;
+		}
+		return true;
+	}
+
+	/**
+	 * Remove a journaled temporary copy after a failed copy.
+	 *
+	 * @param array<string, mixed> $backup Repair journal, passed by reference.
+	 * @param string               $backup_key Repair journal option name.
+	 * @param int                  $site_id Site ID.
+	 * @param string               $message Error message.
+	 * @param string               $code Error code.
+	 * @return WP_Error Copy error, or a cleanup error when cleanup failed.
+	 */
+	private function temporary_copy_error( &$backup, $backup_key, $site_id, $message, $code = 'upload_copy_failed' ) {
+		$cleaned = $this->discard_temporary_file( $backup, $backup_key, $site_id );
+		return is_wp_error( $cleaned ) ? $cleaned : new WP_Error( $code, $message );
+	}
+
+	/**
+	 * Remove only the temporary file recorded by a validated repair journal.
+	 *
+	 * @param array<string, mixed> $backup Repair journal, passed by reference.
+	 * @param string               $backup_key Repair journal option name.
+	 * @param int                  $site_id Site ID.
+	 * @return true|WP_Error Whether the journal and filesystem were cleaned.
+	 */
+	private function discard_temporary_file( &$backup, $backup_key, $site_id ) {
+		$temporary     = $backup['temporary_file'];
+		$expected_root = WP_CONTENT_DIR . '/uploads/sites/' . $site_id;
+		$prefix        = trailingslashit( $expected_root );
+		$relative      = 0 === strpos( $temporary, $prefix ) ? substr( $temporary, strlen( $prefix ) ) : '';
+		$parts         = explode( '/', $relative );
+		if ( $backup['target_basedir'] !== $expected_root || '' === $relative || in_array( '.', $parts, true ) || in_array( '..', $parts, true ) || 0 !== strpos( basename( $temporary ), '.wpmn-upload-repair-' ) || $this->has_symlink_component( dirname( $temporary ), WP_CONTENT_DIR . '/uploads' ) || is_link( $temporary ) || ( file_exists( $temporary ) && ! is_file( $temporary ) ) ) {
+			return new WP_Error( 'upload_temporary_invalid', 'The repair journal has an unsafe temporary file.' );
+		}
+		if ( file_exists( $temporary ) && ! unlink( $temporary ) ) { // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_unlink -- The validated journal identifies this exact temporary file.
+			return new WP_Error( 'upload_temporary_failed', 'Could not remove an interrupted temporary upload copy.' );
+		}
+		unset( $backup['temporary_file'] );
+		if ( ! update_option( $backup_key, $backup, false ) ) {
+			return new WP_Error( 'upload_journal_failed', 'Could not clear the temporary upload journal.' );
+		}
+		return true;
 	}
 
 	/**
@@ -590,5 +703,18 @@ class WP_MS_Upload_Repair {
 		$plan['status'] = $status;
 		$plan['reason'] = $reason;
 		return $plan;
+	}
+
+	/**
+	 * Match Core's raw WP_CONTENT_URL behavior in _wp_upload_dir().
+	 *
+	 * The content_url() function changes the scheme for the current request, while Core's
+	 * upload calculation concatenates the constant without scheme changes.
+	 *
+	 * @return string Default upload URL before a multisite suffix.
+	 */
+	private function default_upload_url() {
+		$content_url = defined( 'WP_CONTENT_URL' ) ? constant( 'WP_CONTENT_URL' ) : content_url();
+		return is_string( $content_url ) ? $content_url . '/uploads' : content_url( 'uploads' );
 	}
 }

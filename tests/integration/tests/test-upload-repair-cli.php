@@ -300,6 +300,37 @@ class WPMN_Tests_Upload_Repair_CLI extends WPMN_UnitTestCase {
 	}
 
 	/**
+	 * A deleted site in a saved plan must not block other entries at execution.
+	 */
+	public function test_command_accepts_manual_entry_without_network() {
+		$user = $this->factory->user->create( array( 'role' => 'administrator' ) );
+		grant_super_admin( $user );
+		wp_set_current_user( $user );
+		$file = tempnam( sys_get_temp_dir(), 'wpmn-plan-' );
+		$this->assertNotFalse( $file );
+		$this->assertNotFalse( file_put_contents( $file, wp_json_encode( array(
+			'schema' => 1,
+			'sites'  => array(
+				array(
+					'site_id'     => 999999,
+					'network_id'  => 0,
+					'status'      => 'manual',
+					'fingerprint' => '',
+				),
+			),
+		) ) ) );
+
+		try {
+			WP_CLI::$lines = array();
+			$command       = new WP_MS_Network_Command();
+			$command->repair_uploads( array(), array( 'execute' => true, 'plan-file' => $file ) );
+			$this->assertContains( 'Site 999999: manual; unchanged.', WP_CLI::$lines );
+		} finally {
+			unlink( $file );
+		}
+	}
+
+	/**
 	 * Reject a saved cross-network repair before changing any site.
 	 */
 	public function test_command_refuses_cross_network_plan_before_execution() {

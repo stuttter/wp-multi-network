@@ -138,6 +138,47 @@ class WPMN_Tests_Upload_Repair extends WPMN_UnitTestCase {
 	}
 
 	/**
+	 * Upload planning must use Core's raw content URL rather than request scheme.
+	 */
+	public function test_upload_url_uses_raw_content_url_when_request_scheme_differs() {
+		$original_https  = isset( $_SERVER['HTTPS'] ) ? $_SERVER['HTTPS'] : null;
+		$_SERVER['HTTPS'] = 'on';
+		try {
+			$site_id = $this->create_doubled_site();
+			$this->assertNotSame( WP_CONTENT_URL . '/uploads', content_url( 'uploads' ) );
+			$repair = new WP_MS_Upload_Repair();
+			$plan   = $repair->public_plan( $repair->inspect( $site_id ) );
+			$this->assertSame( 'repairable', $plan['status'], $plan['reason'] );
+			$this->assertSame( WP_CONTENT_URL . '/uploads/sites/' . $site_id, $plan['bootstrap_target_baseurl'] );
+			$this->assertSame( 'repaired', $repair->execute( $plan )['status'] );
+		} finally {
+			if ( null === $original_https ) {
+				unset( $_SERVER['HTTPS'] );
+			} else {
+				$_SERVER['HTTPS'] = $original_https;
+			}
+		}
+	}
+
+	/**
+	 * An absolute known path can double the directory while leaving the URL correct.
+	 */
+	public function test_absolute_upload_path_with_empty_url_is_repairable() {
+		$site_id = $this->create_doubled_site();
+		update_blog_option( $site_id, 'upload_path', WP_CONTENT_DIR . '/uploads/sites/' . $site_id );
+		update_blog_option( $site_id, 'upload_url_path', '' );
+		$repair = new WP_MS_Upload_Repair();
+		$plan   = $repair->public_plan( $repair->inspect( $site_id ) );
+
+		$this->assertSame( 'repairable', $plan['status'], $plan['reason'] );
+		$this->assertSame( WP_CONTENT_URL . '/uploads/sites/' . $site_id, $plan['effective_baseurl'] );
+		$this->assertSame( 0, array_sum( $plan['references'] ) );
+		$this->assertSame( 'repaired', $repair->execute( $plan )['status'] );
+		$this->assertSame( '', get_blog_option( $site_id, 'upload_path' ) );
+		$this->assertSame( '', get_blog_option( $site_id, 'upload_url_path' ) );
+	}
+
+	/**
 	 * A plan must be refused if the site changes before execution.
 	 */
 	public function test_execute_refuses_stale_plan() {
@@ -470,6 +511,7 @@ class WPMN_Tests_Upload_Repair extends WPMN_UnitTestCase {
 		$name       = 'repair-test-' . wp_generate_password( 12, false ) . '.txt';
 		$this->assertTrue( wp_mkdir_p( $source_dir ) );
 		$this->assertNotFalse( file_put_contents( $source_dir . '/' . $name, 'source media' ) );
+		$this->assertTrue( chmod( $source_dir . '/' . $name, 0640 ) );
 
 		try {
 			$repair = new WP_MS_Upload_Repair();
@@ -482,6 +524,7 @@ class WPMN_Tests_Upload_Repair extends WPMN_UnitTestCase {
 			$this->assertSame( 'repaired', $result['status'] );
 			$this->assertSame( 'source media', file_get_contents( $source_dir . '/' . $name ) );
 			$this->assertSame( 'source media', file_get_contents( $target_dir . '/' . $name ) );
+			$this->assertSame( fileperms( $source_dir . '/' . $name ) & 0777, fileperms( $target_dir . '/' . $name ) & 0777 );
 		} finally {
 			if ( file_exists( $source_dir . '/' . $name ) ) {
 				unlink( $source_dir . '/' . $name );
@@ -560,6 +603,67 @@ class WPMN_Tests_Upload_Repair extends WPMN_UnitTestCase {
 			$this->assertSame( 'upload_repair_changed', $result->get_error_code() );
 		} finally {
 			unlink( $source_dir . '/' . $name );
+			if ( file_exists( $target_dir . '/' . $name ) ) {
+				unlink( $target_dir . '/' . $name );
+			}
+		}
+	}
+
+	/**
+	 * Recovery must not trust a journal when its copied target file is missing.
+	 */
+	public function test_recovery_detects_missing_target_file_in_every_option_state() {
+		$site_id    = $this->create_doubled_site();
+		$source_dir = WP_CONTENT_DIR . '/uploads/sites/' . $site_id . '/sites/' . $site_id;
+		$target_dir = WP_CONTENT_DIR . '/uploads/sites/' . $site_id;
+		$name       = 'repair-missing-' . wp_generate_password( 12, false ) . '.txt';
+		$this->assertTrue( wp_mkdir_p( $source_dir ) );
+		$this->assertNotFalse( file_put_contents( $source_dir . '/' . $name, 'missing target' ) );
+
+		try {
+			$repair     = new WP_MS_Upload_Repair();
+			$plan       = $repair->public_plan( $repair->inspect( $site_id ) );
+			$site       = get_site( $site_id );
+			$backup_key = 'wpmn_upload_repair_' . $plan['fingerprint'];
+			$backup     = array(
+				'fingerprint'          => $plan['fingerprint'],
+				'old_upload_path'      => $plan['stored_upload_path'],
+				'old_upload_url_path'  => $plan['stored_upload_url_path'],
+				'old_basedir'          => $plan['effective_basedir'],
+				'target_basedir'       => $plan['target_basedir'],
+				'site_domain'          => $site->domain,
+				'site_path'            => $site->path,
+				'site_registered'      => $site->registered,
+				'file_manifest_digest' => hash( 'sha256', wp_json_encode( $plan['files'] ) ),
+				'status'               => 'copying',
+			);
+			switch_to_blog( $site_id );
+			$this->assertTrue( add_option( $backup_key, $backup, '', 'no' ) );
+			restore_current_blog();
+
+			$states = array(
+				array( '', $plan['stored_upload_url_path'], 'copying' ),
+				array( '', '', 'copying' ),
+				array( '', '', 'complete' ),
+			);
+			foreach ( $states as $state ) {
+				list( $path, $url, $status ) = $state;
+				update_blog_option( $site_id, 'upload_path', $path );
+				update_blog_option( $site_id, 'upload_url_path', $url );
+				$backup['status'] = $status;
+				update_blog_option( $site_id, $backup_key, $backup );
+
+				$result = $repair->execute( $plan );
+				$this->assertWPError( $result );
+				$this->assertSame( 'upload_repair_changed', $result->get_error_code() );
+				$this->assertSame( $path, get_blog_option( $site_id, 'upload_path' ) );
+				$this->assertSame( $url, get_blog_option( $site_id, 'upload_url_path' ) );
+				$this->assertSame( $status, get_blog_option( $site_id, $backup_key )['status'] );
+			}
+		} finally {
+			if ( file_exists( $source_dir . '/' . $name ) ) {
+				unlink( $source_dir . '/' . $name );
+			}
 			if ( file_exists( $target_dir . '/' . $name ) ) {
 				unlink( $target_dir . '/' . $name );
 			}
@@ -749,6 +853,104 @@ class WPMN_Tests_Upload_Repair extends WPMN_UnitTestCase {
 	}
 
 	/**
+	 * A journaled temporary file from an interrupted copy is removed and retried.
+	 */
+	public function test_execute_resumes_after_interrupted_temporary_copy() {
+		$site_id    = $this->create_doubled_site();
+		$source_dir = WP_CONTENT_DIR . '/uploads/sites/' . $site_id . '/sites/' . $site_id;
+		$target_dir = WP_CONTENT_DIR . '/uploads/sites/' . $site_id;
+		$name       = 'repair-interrupted-copy-' . wp_generate_password( 12, false ) . '.txt';
+		$this->assertTrue( wp_mkdir_p( $source_dir ) );
+		$this->assertNotFalse( file_put_contents( $source_dir . '/' . $name, 'complete media' ) );
+
+		try {
+			$repair     = new WP_MS_Upload_Repair();
+			$plan       = $repair->public_plan( $repair->inspect( $site_id ) );
+			$site       = get_site( $site_id );
+			$backup_key = 'wpmn_upload_repair_' . $plan['fingerprint'];
+			$temporary  = tempnam( $target_dir, '.wpmn-upload-repair-' );
+			$this->assertSame( 'repairable', $plan['status'], $plan['reason'] );
+			$this->assertNotFalse( $temporary );
+			$this->assertNotFalse( file_put_contents( $temporary, 'partial' ) );
+			switch_to_blog( $site_id );
+			$this->assertTrue( add_option( $backup_key, array(
+				'fingerprint'          => $plan['fingerprint'],
+				'old_upload_path'      => $plan['stored_upload_path'],
+				'old_upload_url_path'  => $plan['stored_upload_url_path'],
+				'old_basedir'          => $plan['effective_basedir'],
+				'target_basedir'       => $plan['target_basedir'],
+				'site_domain'          => $site->domain,
+				'site_path'            => $site->path,
+				'site_registered'      => $site->registered,
+				'file_manifest_digest' => hash( 'sha256', wp_json_encode( $plan['files'] ) ),
+				'status'               => 'copying',
+				'temporary_file'       => $temporary,
+			), '', 'no' ) );
+			restore_current_blog();
+
+			$result = $repair->execute( $plan );
+			$this->assertIsArray( $result );
+			$this->assertSame( 'repaired', $result['status'] );
+			$this->assertFileDoesNotExist( $temporary );
+			$this->assertSame( 'complete media', file_get_contents( $target_dir . '/' . $name ) );
+			$this->assertSame( '', get_blog_option( $site_id, 'upload_path' ) );
+			$this->assertArrayNotHasKey( 'temporary_file', get_blog_option( $site_id, $backup_key ) );
+		} finally {
+			if ( file_exists( $temporary ) ) {
+				unlink( $temporary );
+			}
+			if ( file_exists( $source_dir . '/' . $name ) ) {
+				unlink( $source_dir . '/' . $name );
+			}
+			if ( file_exists( $target_dir . '/' . $name ) ) {
+				unlink( $target_dir . '/' . $name );
+			}
+		}
+	}
+
+	/**
+	 * A tampered journal cannot delete a temporary-looking file outside its target.
+	 */
+	public function test_execute_refuses_unsafe_journaled_temporary_path() {
+		$site_id    = $this->create_doubled_site();
+		$repair     = new WP_MS_Upload_Repair();
+		$plan       = $repair->public_plan( $repair->inspect( $site_id ) );
+		$site       = get_site( $site_id );
+		$backup_key = 'wpmn_upload_repair_' . $plan['fingerprint'];
+		$name       = '.wpmn-upload-repair-' . wp_generate_password( 12, false, false );
+		$outside    = WP_CONTENT_DIR . '/' . $name;
+		$temporary  = $plan['target_basedir'] . '/../../../' . $name;
+		$this->assertNotFalse( file_put_contents( $outside, 'do not delete' ) );
+
+		try {
+			switch_to_blog( $site_id );
+			$this->assertTrue( add_option( $backup_key, array(
+				'fingerprint'          => $plan['fingerprint'],
+				'old_upload_path'      => $plan['stored_upload_path'],
+				'old_upload_url_path'  => $plan['stored_upload_url_path'],
+				'old_basedir'          => $plan['effective_basedir'],
+				'target_basedir'       => $plan['target_basedir'],
+				'site_domain'          => $site->domain,
+				'site_path'            => $site->path,
+				'site_registered'      => $site->registered,
+				'file_manifest_digest' => hash( 'sha256', wp_json_encode( $plan['files'] ) ),
+				'status'               => 'copying',
+				'temporary_file'       => $temporary,
+			), '', 'no' ) );
+			restore_current_blog();
+
+			$result = $repair->execute( $plan );
+			$this->assertWPError( $result );
+			$this->assertSame( 'upload_temporary_invalid', $result->get_error_code() );
+			$this->assertSame( 'do not delete', file_get_contents( $outside ) );
+		} finally {
+			if ( file_exists( $outside ) ) {
+				unlink( $outside );
+			}
+		}
+	}
+
+	/**
 	 * A damaged copying record must not supply wrong rollback values.
 	 */
 	public function test_execute_refuses_corrupt_copying_record() {
@@ -841,6 +1043,56 @@ class WPMN_Tests_Upload_Repair extends WPMN_UnitTestCase {
 			$this->assertSame( 'complete', get_blog_option( $site_id, $backup_key )['status'] );
 		} finally {
 			unlink( $source_dir . '/' . $name );
+			if ( file_exists( $target_dir . '/' . $name ) ) {
+				unlink( $target_dir . '/' . $name );
+			}
+		}
+	}
+
+	/**
+	 * A crash between option writes completes the pending URL correction.
+	 */
+	public function test_execute_finishes_partial_option_update() {
+		$site_id    = $this->create_doubled_site();
+		$source_dir = WP_CONTENT_DIR . '/uploads/sites/' . $site_id . '/sites/' . $site_id;
+		$target_dir = WP_CONTENT_DIR . '/uploads/sites/' . $site_id;
+		$name       = 'repair-option-interrupted-' . wp_generate_password( 12, false ) . '.txt';
+		$this->assertTrue( wp_mkdir_p( $source_dir ) );
+		$this->assertNotFalse( file_put_contents( $source_dir . '/' . $name, 'original media' ) );
+
+		try {
+			$repair     = new WP_MS_Upload_Repair();
+			$plan       = $repair->public_plan( $repair->inspect( $site_id ) );
+			$site       = get_site( $site_id );
+			$backup_key = 'wpmn_upload_repair_' . $plan['fingerprint'];
+			$this->assertSame( 'repairable', $plan['status'], $plan['reason'] );
+			$this->assertNotFalse( file_put_contents( $target_dir . '/' . $name, 'original media' ) );
+			switch_to_blog( $site_id );
+			$this->assertTrue( add_option( $backup_key, array(
+				'fingerprint'          => $plan['fingerprint'],
+				'old_upload_path'      => $plan['stored_upload_path'],
+				'old_upload_url_path'  => $plan['stored_upload_url_path'],
+				'old_basedir'          => $plan['effective_basedir'],
+				'target_basedir'       => $plan['target_basedir'],
+				'site_domain'          => $site->domain,
+				'site_path'            => $site->path,
+				'site_registered'      => $site->registered,
+				'file_manifest_digest' => hash( 'sha256', wp_json_encode( $plan['files'] ) ),
+				'status'               => 'copying',
+			), '', 'no' ) );
+			restore_current_blog();
+			update_blog_option( $site_id, 'upload_path', '' );
+
+			$result = $repair->execute( $plan );
+			$this->assertIsArray( $result );
+			$this->assertSame( 'recovered', $result['status'] );
+			$this->assertSame( '', get_blog_option( $site_id, 'upload_path' ) );
+			$this->assertSame( '', get_blog_option( $site_id, 'upload_url_path' ) );
+			$this->assertSame( 'complete', get_blog_option( $site_id, $backup_key )['status'] );
+		} finally {
+			if ( file_exists( $source_dir . '/' . $name ) ) {
+				unlink( $source_dir . '/' . $name );
+			}
 			if ( file_exists( $target_dir . '/' . $name ) ) {
 				unlink( $target_dir . '/' . $name );
 			}

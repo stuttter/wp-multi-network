@@ -365,7 +365,7 @@ class WP_MS_Network_Command {
 		// Validate every entry before the first site can be changed.
 		$seen = array();
 		foreach ( $document['sites'] as $plan ) {
-			if ( ! is_array( $plan ) || ! isset( $plan['site_id'], $plan['network_id'], $plan['status'], $plan['fingerprint'] ) || ! is_int( $plan['site_id'] ) || $plan['site_id'] < 1 || ! is_int( $plan['network_id'] ) || $plan['network_id'] < 1 || ! is_string( $plan['status'] ) || ! in_array( $plan['status'], array( 'repairable', 'manual', 'unchanged' ), true ) || isset( $seen[ $plan['site_id'] ] ) ) {
+			if ( ! is_array( $plan ) || ! isset( $plan['site_id'], $plan['network_id'], $plan['status'], $plan['fingerprint'] ) || ! is_int( $plan['site_id'] ) || $plan['site_id'] < 1 || ! is_int( $plan['network_id'] ) || $plan['network_id'] < 0 || ! is_string( $plan['status'] ) || ! is_string( $plan['fingerprint'] ) || ! in_array( $plan['status'], array( 'repairable', 'manual', 'unchanged' ), true ) || ( 'repairable' === $plan['status'] && $plan['network_id'] < 1 ) || isset( $seen[ $plan['site_id'] ] ) ) {
 				WP_CLI::error( 'The saved plan has invalid or duplicate site entries.' );
 			}
 			if ( 'repairable' === $plan['status'] && ( ! is_string( $plan['fingerprint'] ) || ! preg_match( '/^[a-f0-9]{64}$/', $plan['fingerprint'] ) ) ) {
