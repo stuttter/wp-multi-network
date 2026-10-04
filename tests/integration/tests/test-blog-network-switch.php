@@ -5,11 +5,13 @@
 
 class WPMN_Tests_Blog_Network_Switch extends WPMN_UnitTestCase {
 
-	public function test_blog_switch_does_not_switch_network_by_default() {
+	public function test_false_constant_prevents_blog_switch_from_switching_network() {
 		$original_network_id = get_current_network_id();
 		$network_id          = $this->factory->network->create();
 		$blog_id             = $this->factory->blog->create( array( 'network_id' => $network_id ) );
 		$depth               = $this->network_stack_depth();
+
+		$this->assertFalse( WPMN_SYNC_NETWORK_ON_BLOG_SWITCH );
 
 		switch_to_blog( $blog_id );
 		try {

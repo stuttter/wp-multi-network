@@ -11,6 +11,9 @@ if ( function_exists( 'xdebug_disable' ) ) {
 // Set path to the plugin.
 define( 'TESTS_PLUGIN_DIR', dirname( dirname( dirname( dirname( __FILE__ ) ) ) ) );
 
+// Exercise the plugin's explicit opt-out path while loading it for integration tests.
+define( 'WPMN_SYNC_NETWORK_ON_BLOG_SWITCH', false );
+
 // Allow an isolated test container to provide PHPUnit Polyfills separately.
 if ( ! defined( 'WP_TESTS_PHPUNIT_POLYFILLS_PATH' ) && getenv( 'WP_TESTS_PHPUNIT_POLYFILLS_PATH' ) ) {
 	define( 'WP_TESTS_PHPUNIT_POLYFILLS_PATH', getenv( 'WP_TESTS_PHPUNIT_POLYFILLS_PATH' ) );
