@@ -10,7 +10,7 @@ Contributions are greatly appreciated. You can help in several ways:
 
 When contributing code specifically, please keep the following in mind:
 
-* Write code that is backward-compatible to PHP 5.2 and WordPress 4.9.
+* Write code that is backward-compatible to PHP 7.4 and WordPress 6.4.
 * Follow the [WordPress coding and documentation standards](https://make.wordpress.org/core/handbook/best-practices/coding-standards/).
 * If applicable, provide integration tests for your changes.
 
