@@ -1,0 +1,40 @@
+# Managed by stuttter/.github fleet standards. Do not edit locally.
+name: Release plugin
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Exact SemVer version without a leading v.
+        required: true
+        type: string
+      commit:
+        description: Full commit SHA at the protected release branch head.
+        required: true
+        type: string
+      notes:
+        description: Exact reviewed UTF-8 release notes.
+        required: true
+        type: string
+      notes_sha256:
+        description: SHA256 of the exact reviewed notes bytes.
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    uses: stuttter/.github/.github/workflows/wordpress-plugin-release.yml@9352d233b8fb92a520be02978cb3dd8c70751a24
+    permissions:
+      contents: write
+    secrets:
+      STUTTTER_WORDPRESS_ORG_USERNAME: ${{ secrets.WORDPRESS_ORG_USERNAME }}
+      STUTTTER_WORDPRESS_ORG_PASSWORD: ${{ secrets.WORDPRESS_ORG_PASSWORD }}
+    with:
+      version: ${{ inputs.version }}
+      commit: ${{ inputs.commit }}
+      release-notes: ${{ inputs.notes }}
+      release-notes-sha256: ${{ inputs.notes_sha256 }}
+      release-branch: "master"
