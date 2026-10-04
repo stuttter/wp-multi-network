@@ -97,9 +97,9 @@ class WPMN_Tests_Upload_Repair extends WPMN_UnitTestCase {
 		$site_id = $this->create_doubled_site();
 		$repair  = new WP_MS_Upload_Repair();
 		$plan    = $repair->public_plan( $repair->inspect( $site_id ) );
-		$target  = WP_CONTENT_DIR . '/uploads/sites/' . $site_id;
-		$this->assertTrue( wp_mkdir_p( $target ) );
-		$lock = fopen( $target . '/.wpmn-upload-repair.lock', 'c' );
+		$locks   = WP_CONTENT_DIR . '/.wpmn-upload-repair-locks';
+		$this->assertTrue( wp_mkdir_p( $locks ) );
+		$lock = fopen( $locks . '/site-' . $site_id . '.lock', 'c' );
 		$this->assertIsResource( $lock );
 		$this->assertTrue( flock( $lock, LOCK_EX | LOCK_NB ) );
 		try {
@@ -117,14 +117,189 @@ class WPMN_Tests_Upload_Repair extends WPMN_UnitTestCase {
 	}
 
 	/**
-	 * A lock path must not follow a link outside the upload directory.
+	 * Upload-side path replacement must not affect the external execution lock.
+	 */
+	public function test_upload_path_replacement_does_not_affect_execution_lock() {
+		$site_id = $this->create_doubled_site();
+		$repair  = new WP_MS_Upload_Repair();
+		$plan    = $repair->public_plan( $repair->inspect( $site_id ) );
+		$locks   = WP_CONTENT_DIR . '/.wpmn-upload-repair-locks';
+		$target  = WP_CONTENT_DIR . '/uploads/sites/' . $site_id;
+		$legacy  = $target . '/.wpmn-upload-repair.lock';
+		$this->assertTrue( wp_mkdir_p( $locks ) );
+		$this->assertTrue( wp_mkdir_p( $target ) );
+		$lock = fopen( $locks . '/site-' . $site_id . '.lock', 'c' );
+		$this->assertIsResource( $lock );
+		$this->assertTrue( flock( $lock, LOCK_EX | LOCK_NB ) );
+		try {
+			$this->assertNotFalse( file_put_contents( $legacy, 'first inode' ) );
+			$this->assertTrue( unlink( $legacy ) );
+			$this->assertNotFalse( file_put_contents( $legacy, 'replacement inode' ) );
+			$result = $repair->execute( $plan );
+			$this->assertWPError( $result );
+			$this->assertSame( 'upload_repair_locked', $result->get_error_code() );
+			$this->assertSame( $plan['stored_upload_path'], get_blog_option( $site_id, 'upload_path' ) );
+			$this->assertFalse( get_blog_option( $site_id, 'wpmn_upload_repair_' . $plan['fingerprint'], false ) );
+		} finally {
+			flock( $lock, LOCK_UN );
+			fclose( $lock );
+			if ( file_exists( $legacy ) ) {
+				unlink( $legacy );
+			}
+		}
+	}
+
+	/**
+	 * A configured lock directory must remain outside the writable upload tree.
+	 */
+	public function test_execute_refuses_configured_lock_directory_inside_uploads() {
+		$site_id = $this->create_doubled_site();
+		$repair  = new WP_MS_Upload_Repair();
+		$plan    = $repair->public_plan( $repair->inspect( $site_id ) );
+		$name    = '.wpmn-locks-' . wp_generate_password( 20, false );
+		$bridge  = WP_CONTENT_DIR . '/.wpmn-path-' . wp_generate_password( 20, false );
+		$target  = WP_CONTENT_DIR . '/uploads/' . $name;
+		$locks   = $bridge . '/../uploads/' . $name;
+		$this->assertTrue( wp_mkdir_p( $bridge ) );
+		$this->assertTrue( wp_mkdir_p( $target ) );
+		define( 'WPMN_UPLOAD_REPAIR_LOCK_DIR', $locks );
+		try {
+			$result = $repair->execute( $plan );
+			$this->assertWPError( $result );
+			$this->assertSame( 'upload_lock_failed', $result->get_error_code() );
+			$this->assertSame( $plan['stored_upload_path'], get_blog_option( $site_id, 'upload_path' ) );
+			$this->assertFalse( get_blog_option( $site_id, 'wpmn_upload_repair_' . $plan['fingerprint'], false ) );
+			$this->assertDirectoryExists( $target );
+		} finally {
+			rmdir( $target );
+			rmdir( $bridge );
+		}
+	}
+
+	/**
+	 * Resolving a configured parent link must still keep locks outside uploads.
+	 */
+	public function test_execute_refuses_configured_lock_directory_reached_through_symlink() {
+		$site_id = $this->create_doubled_site();
+		$repair  = new WP_MS_Upload_Repair();
+		$plan    = $repair->public_plan( $repair->inspect( $site_id ) );
+		$name    = '.wpmn-locks-' . wp_generate_password( 20, false );
+		$target  = WP_CONTENT_DIR . '/uploads/' . $name;
+		$link    = sys_get_temp_dir() . '/wpmn-uploads-' . wp_generate_password( 20, false );
+		$this->assertTrue( wp_mkdir_p( $target ) );
+		try {
+			if ( ! symlink( WP_CONTENT_DIR . '/uploads', $link ) ) {
+				$this->markTestSkipped( 'The test environment cannot create symlinks.' );
+			}
+			define( 'WPMN_UPLOAD_REPAIR_LOCK_DIR', $link . '/' . $name );
+			$result = $repair->execute( $plan );
+			$this->assertWPError( $result );
+			$this->assertSame( 'upload_lock_failed', $result->get_error_code() );
+			$this->assertSame( $plan['stored_upload_path'], get_blog_option( $site_id, 'upload_path' ) );
+			$this->assertFalse( get_blog_option( $site_id, 'wpmn_upload_repair_' . $plan['fingerprint'], false ) );
+		} finally {
+			if ( is_link( $link ) ) {
+				unlink( $link );
+			}
+			if ( is_dir( $target ) ) {
+				rmdir( $target );
+			}
+		}
+	}
+
+	/**
+	 * A deployment may place repair locks in its own protected shared directory.
+	 */
+	public function test_execute_uses_configured_lock_directory() {
+		$site_id = $this->create_doubled_site();
+		$repair  = new WP_MS_Upload_Repair();
+		$plan    = $repair->public_plan( $repair->inspect( $site_id ) );
+		$target  = sys_get_temp_dir() . '/wpmn-locks-' . wp_generate_password( 20, false );
+		$locks   = sys_get_temp_dir() . '/wpmn-lock-link-' . wp_generate_password( 20, false );
+		$this->assertTrue( wp_mkdir_p( $target ) );
+		if ( ! symlink( $target, $locks ) ) {
+			rmdir( $target );
+			$this->markTestSkipped( 'The test environment cannot create symlinks.' );
+		}
+		define( 'WPMN_UPLOAD_REPAIR_LOCK_DIR', $locks );
+		try {
+			$result = $repair->execute( $plan );
+			$this->assertIsArray( $result );
+			$this->assertSame( 'repaired', $result['status'] );
+			$this->assertFileExists( $target . '/site-' . $site_id . '.lock' );
+		} finally {
+			if ( file_exists( $target . '/site-' . $site_id . '.lock' ) ) {
+				unlink( $target . '/site-' . $site_id . '.lock' );
+			}
+			if ( is_link( $locks ) ) {
+				unlink( $locks );
+			}
+			if ( is_dir( $target ) ) {
+				rmdir( $target );
+			}
+		}
+	}
+
+	/**
+	 * A configured lock directory must already exist and is never created.
+	 */
+	public function test_execute_refuses_missing_configured_lock_directory() {
+		$site_id = $this->create_doubled_site();
+		$repair  = new WP_MS_Upload_Repair();
+		$plan    = $repair->public_plan( $repair->inspect( $site_id ) );
+		$locks   = sys_get_temp_dir() . '/wpmn-missing-locks-' . wp_generate_password( 20, false );
+		$this->assertDirectoryDoesNotExist( $locks );
+		define( 'WPMN_UPLOAD_REPAIR_LOCK_DIR', $locks );
+
+		$result = $repair->execute( $plan );
+		$this->assertWPError( $result );
+		$this->assertSame( 'upload_lock_failed', $result->get_error_code() );
+		$this->assertDirectoryDoesNotExist( $locks );
+		$this->assertSame( $plan['stored_upload_path'], get_blog_option( $site_id, 'upload_path' ) );
+		$this->assertFalse( get_blog_option( $site_id, 'wpmn_upload_repair_' . $plan['fingerprint'], false ) );
+	}
+
+	/**
+	 * A configured lock directory must use an absolute path.
+	 */
+	public function test_execute_refuses_relative_configured_lock_directory() {
+		$site_id = $this->create_doubled_site();
+		$repair  = new WP_MS_Upload_Repair();
+		$plan    = $repair->public_plan( $repair->inspect( $site_id ) );
+		define( 'WPMN_UPLOAD_REPAIR_LOCK_DIR', 'relative/wpmn-locks' );
+
+		$result = $repair->execute( $plan );
+		$this->assertWPError( $result );
+		$this->assertSame( 'upload_lock_failed', $result->get_error_code() );
+		$this->assertSame( $plan['stored_upload_path'], get_blog_option( $site_id, 'upload_path' ) );
+		$this->assertFalse( get_blog_option( $site_id, 'wpmn_upload_repair_' . $plan['fingerprint'], false ) );
+	}
+
+	/**
+	 * A configured lock directory must use the local filesystem.
+	 */
+	public function test_execute_refuses_stream_configured_lock_directory() {
+		$site_id = $this->create_doubled_site();
+		$repair  = new WP_MS_Upload_Repair();
+		$plan    = $repair->public_plan( $repair->inspect( $site_id ) );
+		define( 'WPMN_UPLOAD_REPAIR_LOCK_DIR', 'php://memory' );
+
+		$result = $repair->execute( $plan );
+		$this->assertWPError( $result );
+		$this->assertSame( 'upload_lock_failed', $result->get_error_code() );
+		$this->assertSame( $plan['stored_upload_path'], get_blog_option( $site_id, 'upload_path' ) );
+		$this->assertFalse( get_blog_option( $site_id, 'wpmn_upload_repair_' . $plan['fingerprint'], false ) );
+	}
+
+	/**
+	 * A lock path must not follow a link outside the lock directory.
 	 */
 	public function test_execute_refuses_symlinked_lock_path() {
 		$site_id = $this->create_doubled_site();
 		$repair  = new WP_MS_Upload_Repair();
 		$plan    = $repair->public_plan( $repair->inspect( $site_id ) );
-		$target  = WP_CONTENT_DIR . '/uploads/sites/' . $site_id;
-		$path    = $target . '/.wpmn-upload-repair.lock';
+		$target  = WP_CONTENT_DIR . '/.wpmn-upload-repair-locks';
+		$path    = $target . '/site-' . $site_id . '.lock';
 		$outside = tempnam( sys_get_temp_dir(), 'wpmn-lock-' );
 		$this->assertTrue( wp_mkdir_p( $target ) );
 		$this->assertNotFalse( $outside );
@@ -153,14 +328,14 @@ class WPMN_Tests_Upload_Repair extends WPMN_UnitTestCase {
 	}
 
 	/**
-	 * A dangling lock link must not create its target outside uploads.
+	 * A dangling lock link must not create its external target.
 	 */
 	public function test_execute_refuses_dangling_symlinked_lock_path() {
 		$site_id = $this->create_doubled_site();
 		$repair  = new WP_MS_Upload_Repair();
 		$plan    = $repair->public_plan( $repair->inspect( $site_id ) );
-		$target  = WP_CONTENT_DIR . '/uploads/sites/' . $site_id;
-		$path    = $target . '/.wpmn-upload-repair.lock';
+		$target  = WP_CONTENT_DIR . '/.wpmn-upload-repair-locks';
+		$path    = $target . '/site-' . $site_id . '.lock';
 		$outside = sys_get_temp_dir() . '/wpmn-lock-' . wp_generate_password( 20, false ) . '.txt';
 		$this->assertTrue( wp_mkdir_p( $target ) );
 		$this->assertFileDoesNotExist( $outside );

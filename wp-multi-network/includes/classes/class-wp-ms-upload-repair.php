@@ -234,21 +234,49 @@ class WP_MS_Upload_Repair {
 	/**
 	 * Acquire a process-scoped lock shared by repairs for one site's target.
 	 *
-	 * The lock file remains in the upload directory so every process opens the
-	 * same inode. The operating system releases the advisory lock if execution
-	 * exits unexpectedly, leaving the repair journal available for recovery.
+	 * The lock file remains in a dedicated directory outside uploads so media
+	 * writers cannot replace its pathname while a repair holds the inode. The
+	 * operating system releases the advisory lock if execution exits
+	 * unexpectedly, leaving the repair journal available for recovery.
 	 *
 	 * @param int $site_id Site ID.
 	 * @return resource|WP_Error Open locked file handle or refusal.
 	 */
 	private function acquire_execution_lock( $site_id ) {
-		$uploads_root = WP_CONTENT_DIR . '/uploads';
-		$target       = $uploads_root . '/sites/' . $site_id;
-		if ( $this->has_symlink_component( $target, $uploads_root ) || ! wp_mkdir_p( $target ) || $this->has_symlink_component( $target, $uploads_root ) || ! is_dir( $target ) ) {
+		$configured   = defined( 'WPMN_UPLOAD_REPAIR_LOCK_DIR' );
+		$content_root = realpath( WP_CONTENT_DIR );
+		$content_root = false === $content_root ? WP_CONTENT_DIR : $content_root;
+		$content_root = untrailingslashit( wp_normalize_path( $content_root ) );
+		$uploads_root = $content_root . '/uploads';
+		$lock_root    = $configured ? (string) constant( 'WPMN_UPLOAD_REPAIR_LOCK_DIR' ) : $content_root . '/.wpmn-upload-repair-locks';
+		$lock_root    = untrailingslashit( wp_normalize_path( $lock_root ) );
+		if ( '' === $lock_root || wp_is_stream( $lock_root ) || ! path_is_absolute( $lock_root ) ) {
+			return new WP_Error( 'upload_lock_failed', 'The upload repair lock directory must be an absolute local path.' );
+		}
+		if ( $configured && ! is_dir( $lock_root ) ) {
+			return new WP_Error( 'upload_lock_failed', 'The configured upload repair lock directory must already exist.' );
+		}
+		if ( ! $configured && ! wp_mkdir_p( $lock_root ) ) {
+			clearstatcache( true, $lock_root );
+			if ( ! is_dir( $lock_root ) ) {
+				return new WP_Error( 'upload_lock_failed', 'Could not create a safe upload repair lock.' );
+			}
+		}
+		clearstatcache( true, $lock_root );
+		if ( ! is_dir( $lock_root ) ) {
 			return new WP_Error( 'upload_lock_failed', 'Could not create a safe upload repair lock.' );
 		}
+		$resolved_root = realpath( $lock_root );
+		if ( false === $resolved_root ) {
+			return new WP_Error( 'upload_lock_failed', 'Could not resolve the upload repair lock directory.' );
+		}
+		$resolved_root         = untrailingslashit( wp_normalize_path( $resolved_root ) );
+		$resolved_uploads_root = realpath( $uploads_root );
+		if ( false !== $resolved_uploads_root && $this->directory_is_within( $resolved_root, $resolved_uploads_root ) ) {
+			return new WP_Error( 'upload_lock_failed', 'The upload repair lock directory must be outside uploads.' );
+		}
 
-		$path = $target . '/.wpmn-upload-repair.lock';
+		$path = $resolved_root . '/site-' . $site_id . '.lock';
 		if ( is_link( $path ) || ( file_exists( $path ) && ! is_file( $path ) ) ) {
 			return new WP_Error( 'upload_lock_failed', 'The upload repair lock path is unsafe.' );
 		}
@@ -299,6 +327,40 @@ class WP_MS_Upload_Repair {
 	 */
 	private function execution_lock_path_is_safe( $path ) {
 		return ! is_link( $path ) && is_file( $path );
+	}
+
+	/**
+	 * Check directory ancestry by filesystem identity rather than path spelling.
+	 *
+	 * @param string $directory Existing directory to inspect.
+	 * @param string $ancestor  Existing ancestor candidate.
+	 * @return bool Whether the directory is the ancestor or one of its descendants.
+	 */
+	private function directory_is_within( $directory, $ancestor ) {
+		$ancestor_stat = @stat( $ancestor ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged -- An unavailable comparison root is handled as no match.
+		if ( false === $ancestor_stat ) {
+			return false;
+		}
+		$has_identity = ! empty( $ancestor_stat['ino'] );
+		$part         = $directory;
+		while ( true ) {
+			$part_stat = @stat( $part ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged -- A disappearing directory is handled as no match and later file creation fails closed.
+			if ( $has_identity && false !== $part_stat && ! empty( $part_stat['ino'] ) && $part_stat['dev'] === $ancestor_stat['dev'] && $part_stat['ino'] === $ancestor_stat['ino'] ) {
+				return true;
+			}
+			$parent = dirname( $part );
+			if ( $parent === $part ) {
+				break;
+			}
+			$part = $parent;
+		}
+		$directory = untrailingslashit( wp_normalize_path( $directory ) );
+		$ancestor  = untrailingslashit( wp_normalize_path( $ancestor ) );
+		if ( '\\' === DIRECTORY_SEPARATOR ) {
+			$directory = strtolower( $directory );
+			$ancestor  = strtolower( $ancestor );
+		}
+		return $ancestor === $directory || 0 === strpos( $directory . '/', trailingslashit( $ancestor ) );
 	}
 
 	/**
