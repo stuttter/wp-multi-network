@@ -254,6 +254,12 @@ class WP_MS_Upload_Repair {
 		}
 		$mode   = file_exists( $path ) ? 'r+' : 'x';
 		$handle = @fopen( $path, $mode ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged,WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- Exclusive creation will not follow a new link, and an existing lock is opened without truncation; an explicit error follows.
+		if ( false === $handle && 'x' === $mode ) {
+			clearstatcache( true, $path );
+			if ( $this->execution_lock_path_is_safe( $path ) ) {
+				$handle = @fopen( $path, 'r+' ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged,WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- Another process may have won exclusive creation; open its verified regular file without truncation so flock can report contention.
+			}
+		}
 		if ( false === $handle ) {
 			return new WP_Error( 'upload_lock_failed', 'Could not open the upload repair lock.' );
 		}
