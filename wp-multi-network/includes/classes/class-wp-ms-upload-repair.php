@@ -244,8 +244,11 @@ class WP_MS_Upload_Repair {
 	 */
 	private function acquire_execution_lock( $site_id ) {
 		$configured   = defined( 'WPMN_UPLOAD_REPAIR_LOCK_DIR' );
-		$uploads_root = untrailingslashit( wp_normalize_path( WP_CONTENT_DIR . '/uploads' ) );
-		$lock_root    = $configured ? (string) constant( 'WPMN_UPLOAD_REPAIR_LOCK_DIR' ) : WP_CONTENT_DIR . '/.wpmn-upload-repair-locks';
+		$content_root = realpath( WP_CONTENT_DIR );
+		$content_root = false === $content_root ? WP_CONTENT_DIR : $content_root;
+		$content_root = untrailingslashit( wp_normalize_path( $content_root ) );
+		$uploads_root = $content_root . '/uploads';
+		$lock_root    = $configured ? (string) constant( 'WPMN_UPLOAD_REPAIR_LOCK_DIR' ) : $content_root . '/.wpmn-upload-repair-locks';
 		$lock_root    = untrailingslashit( wp_normalize_path( $lock_root ) );
 		if ( '' === $lock_root || wp_is_stream( $lock_root ) || ! path_is_absolute( $lock_root ) ) {
 			return new WP_Error( 'upload_lock_failed', 'The upload repair lock directory must be an absolute local path.' );
@@ -254,7 +257,10 @@ class WP_MS_Upload_Repair {
 			return new WP_Error( 'upload_lock_failed', 'The configured upload repair lock directory must already exist.' );
 		}
 		if ( ! $configured && ! wp_mkdir_p( $lock_root ) ) {
-			return new WP_Error( 'upload_lock_failed', 'Could not create a safe upload repair lock.' );
+			clearstatcache( true, $lock_root );
+			if ( ! is_dir( $lock_root ) ) {
+				return new WP_Error( 'upload_lock_failed', 'Could not create a safe upload repair lock.' );
+			}
 		}
 		clearstatcache( true, $lock_root );
 		if ( ! is_dir( $lock_root ) ) {
