@@ -13,11 +13,12 @@ class WP_MS_Upload_Repair {
 	/**
 	 * Inspect one site in its own blog and network context.
 	 *
-	 * @param int  $site_id Site ID.
-	 * @param bool $allow_copied Accept verified target copies from an existing repair record.
+	 * @param int  $site_id           Site ID.
+	 * @param bool $allow_copied       Accept verified target copies from an existing repair record.
+	 * @param bool $include_references Count stored URL references for advisory dry-run output.
 	 * @return array<string, mixed> The plan and its current file inventory.
 	 */
-	public function inspect( $site_id, $allow_copied = false ) {
+	public function inspect( $site_id, $allow_copied = false, $include_references = true ) {
 		$site = get_site( $site_id );
 		if ( ! $site || ! get_network( (int) $site->site_id ) ) {
 			return $this->result( $site_id, 0, 'manual', 'Site or network does not exist.' );
@@ -36,7 +37,7 @@ class WP_MS_Upload_Repair {
 
 		switch_to_blog( (int) $site_id );
 		try {
-			return $this->inspect_current_site( (int) $site_id, $network_id, $allow_copied, $site );
+			return $this->inspect_current_site( (int) $site_id, $network_id, $allow_copied, $site, $include_references );
 		} finally {
 			restore_current_blog();
 			restore_current_network();
@@ -80,7 +81,12 @@ class WP_MS_Upload_Repair {
 			return new WP_Error( 'upload_network_unavailable', 'Could not switch to the site network.' );
 		}
 		switch_to_blog( $site_id );
+		$lock = null;
 		try {
+			$lock = $this->acquire_execution_lock( $site_id );
+			if ( is_wp_error( $lock ) ) {
+				return $lock;
+			}
 			$backup = get_option( $backup_key, false );
 			if ( false !== $backup && ( ! is_array( $backup ) || ! isset( $backup['fingerprint'], $backup['status'], $backup['old_upload_path'], $backup['old_upload_url_path'], $backup['old_basedir'], $backup['target_basedir'], $backup['file_manifest_digest'], $backup['site_domain'], $backup['site_path'], $backup['site_registered'] ) || $backup['fingerprint'] !== $saved['fingerprint'] || ! in_array( $backup['status'], array( 'copying', 'complete' ), true ) || ! is_string( $backup['file_manifest_digest'] ) || ! preg_match( '/^[a-f0-9]{64}$/', $backup['file_manifest_digest'] ) || ( isset( $backup['temporary_file'] ) && ! is_string( $backup['temporary_file'] ) ) || $backup['site_domain'] !== $site->domain || $backup['site_path'] !== $site->path || $backup['site_registered'] !== $site->registered ) ) {
 				return new WP_Error( 'upload_backup_invalid', 'The existing repair record needs manual inspection.' );
@@ -128,7 +134,7 @@ class WP_MS_Upload_Repair {
 				);
 			}
 
-			$live = $this->inspect( $site_id, is_array( $backup ) );
+			$live = $this->inspect( $site_id, is_array( $backup ), false );
 			if ( 'repairable' !== $live['status'] || ! hash_equals( $saved['fingerprint'], $live['fingerprint'] ) ) {
 				return new WP_Error( 'upload_plan_stale', 'Upload settings or files changed since the dry run.' );
 			}
@@ -184,7 +190,7 @@ class WP_MS_Upload_Repair {
 				}
 			}
 
-			$rechecked = $this->inspect( $site_id, true );
+			$rechecked = $this->inspect( $site_id, true, false );
 			if ( 'repairable' !== $rechecked['status'] || ! hash_equals( $saved['fingerprint'], $rechecked['fingerprint'] ) ) {
 				return new WP_Error( 'upload_plan_stale', 'Upload settings or files changed during repair.' );
 			}
@@ -217,9 +223,82 @@ class WP_MS_Upload_Repair {
 				'old_directory_kept' => $live['effective_basedir'],
 			);
 		} finally {
+			if ( is_resource( $lock ) ) {
+				$this->release_execution_lock( $lock );
+			}
 			restore_current_blog();
 			restore_current_network();
 		}
+	}
+
+	/**
+	 * Acquire a process-scoped lock shared by repairs for one site's target.
+	 *
+	 * The lock file remains in the upload directory so every process opens the
+	 * same inode. The operating system releases the advisory lock if execution
+	 * exits unexpectedly, leaving the repair journal available for recovery.
+	 *
+	 * @param int $site_id Site ID.
+	 * @return resource|WP_Error Open locked file handle or refusal.
+	 */
+	private function acquire_execution_lock( $site_id ) {
+		$uploads_root = WP_CONTENT_DIR . '/uploads';
+		$target       = $uploads_root . '/sites/' . $site_id;
+		if ( $this->has_symlink_component( $target, $uploads_root ) || ! wp_mkdir_p( $target ) || $this->has_symlink_component( $target, $uploads_root ) || ! is_dir( $target ) ) {
+			return new WP_Error( 'upload_lock_failed', 'Could not create a safe upload repair lock.' );
+		}
+
+		$path = $target . '/.wpmn-upload-repair.lock';
+		if ( is_link( $path ) || ( file_exists( $path ) && ! is_file( $path ) ) ) {
+			return new WP_Error( 'upload_lock_failed', 'The upload repair lock path is unsafe.' );
+		}
+		$mode   = file_exists( $path ) ? 'r+' : 'x';
+		$handle = @fopen( $path, $mode ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged,WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- Exclusive creation will not follow a new link, and an existing lock is opened without truncation; an explicit error follows.
+		if ( false === $handle && 'x' === $mode ) {
+			clearstatcache( true, $path );
+			if ( $this->execution_lock_path_is_safe( $path ) ) {
+				$handle = @fopen( $path, 'r+' ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged,WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- Another process may have won exclusive creation; open its verified regular file without truncation so flock can report contention.
+			}
+		}
+		if ( false === $handle ) {
+			return new WP_Error( 'upload_lock_failed', 'Could not open the upload repair lock.' );
+		}
+		$would_block = false;
+		if ( ! flock( $handle, LOCK_EX | LOCK_NB, $would_block ) ) { // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_flock -- A nonblocking advisory lock prevents concurrent repair execution.
+			fclose( $handle );
+			return $would_block
+				? new WP_Error( 'upload_repair_locked', 'Another upload repair is already running for this site.' )
+				: new WP_Error( 'upload_lock_failed', 'Could not acquire the upload repair lock.' );
+		}
+		clearstatcache( true, $path );
+		$handle_stat = fstat( $handle );
+		$path_stat   = @stat( $path ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged -- A replacement can remove the path between locking and verification; an explicit refusal follows.
+		if ( ! $this->execution_lock_path_is_safe( $path ) || false === $handle_stat || false === $path_stat || $handle_stat['dev'] !== $path_stat['dev'] || $handle_stat['ino'] !== $path_stat['ino'] ) {
+			$this->release_execution_lock( $handle );
+			return new WP_Error( 'upload_lock_failed', 'The upload repair lock path changed unexpectedly.' );
+		}
+		return $handle;
+	}
+
+	/**
+	 * Release an execution lock without deleting its stable lock file.
+	 *
+	 * @param resource $handle Locked file handle.
+	 * @return void
+	 */
+	private function release_execution_lock( $handle ) {
+		flock( $handle, LOCK_UN ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_flock -- Release the corresponding repair lock.
+		fclose( $handle );
+	}
+
+	/**
+	 * Confirm a persistent lock path is a regular file rather than a link.
+	 *
+	 * @param string $path Lock file path.
+	 * @return bool Whether the lock path is safe to reuse.
+	 */
+	private function execution_lock_path_is_safe( $path ) {
+		return ! is_link( $path ) && is_file( $path );
 	}
 
 	/**
@@ -273,13 +352,14 @@ class WP_MS_Upload_Repair {
 	/**
 	 * Inspect a site after both contexts have been switched.
 	 *
-	 * @param int     $site_id Site ID.
-	 * @param int     $network_id Network ID.
-	 * @param bool    $allow_copied Accept verified target copies from an existing repair record.
-	 * @param WP_Site $site Current site record.
+	 * @param int     $site_id           Site ID.
+	 * @param int     $network_id        Network ID.
+	 * @param bool    $allow_copied       Accept verified target copies from an existing repair record.
+	 * @param WP_Site $site               Current site record.
+	 * @param bool    $include_references Count stored URL references for advisory dry-run output.
 	 * @return array<string, mixed> Plan.
 	 */
-	private function inspect_current_site( $site_id, $network_id, $allow_copied, $site ) {
+	private function inspect_current_site( $site_id, $network_id, $allow_copied, $site, $include_references ) {
 		$stored_path                    = (string) get_option( 'upload_path', '' );
 		$stored_url                     = (string) get_option( 'upload_url_path', '' );
 		$plan                           = $this->result( $site_id, $network_id, 'unchanged', 'No known doubled upload path.' );
@@ -358,17 +438,20 @@ class WP_MS_Upload_Repair {
 		$plan['files']      = $inventory['files'];
 		$plan['file_count'] = count( $inventory['files'] );
 		$plan['collisions'] = $inventory['collisions'];
-		$references         = $old_url === $expected_url
+		$references         = ! $include_references
+			? array()
+			: ( $old_url === $expected_url
 			? array_fill_keys( array( 'posts', 'postmeta', 'options', 'comments', 'commentmeta' ), 0 )
-			: $this->reference_counts( $old_url );
+			: $this->reference_counts( $old_url ) );
 		if ( is_wp_error( $references ) ) {
 			return $this->with_status( $plan, 'manual', $references->get_error_message() );
 		}
 		$plan['references'] = $references;
 		if ( $plan['collisions'] ) {
 			if ( ! $allow_copied ) {
-				$resumable = $this->inspect_current_site( $site_id, $network_id, true, $site );
+				$resumable = $this->inspect_current_site( $site_id, $network_id, true, $site, false );
 				if ( 'repairable' === $resumable['status'] && $this->has_matching_copying_record( $resumable, $site ) ) {
+					$resumable['references'] = $plan['references'];
 					return $resumable;
 				}
 			}

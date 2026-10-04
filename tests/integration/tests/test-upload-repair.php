@@ -91,6 +91,103 @@ class WPMN_Tests_Upload_Repair extends WPMN_UnitTestCase {
 	}
 
 	/**
+	 * Concurrent execution for one site must stop before journal or option changes.
+	 */
+	public function test_execute_refuses_concurrent_site_repair() {
+		$site_id = $this->create_doubled_site();
+		$repair  = new WP_MS_Upload_Repair();
+		$plan    = $repair->public_plan( $repair->inspect( $site_id ) );
+		$target  = WP_CONTENT_DIR . '/uploads/sites/' . $site_id;
+		$this->assertTrue( wp_mkdir_p( $target ) );
+		$lock = fopen( $target . '/.wpmn-upload-repair.lock', 'c' );
+		$this->assertIsResource( $lock );
+		$this->assertTrue( flock( $lock, LOCK_EX | LOCK_NB ) );
+		try {
+			$result = $repair->execute( $plan );
+			$this->assertWPError( $result );
+			$this->assertSame( 'upload_repair_locked', $result->get_error_code() );
+			$this->assertSame( $plan['stored_upload_path'], get_blog_option( $site_id, 'upload_path' ) );
+			$this->assertFalse( get_blog_option( $site_id, 'wpmn_upload_repair_' . $plan['fingerprint'], false ) );
+		} finally {
+			flock( $lock, LOCK_UN );
+			fclose( $lock );
+		}
+
+		$this->assertSame( 'repaired', $repair->execute( $plan )['status'] );
+	}
+
+	/**
+	 * A lock path must not follow a link outside the upload directory.
+	 */
+	public function test_execute_refuses_symlinked_lock_path() {
+		$site_id = $this->create_doubled_site();
+		$repair  = new WP_MS_Upload_Repair();
+		$plan    = $repair->public_plan( $repair->inspect( $site_id ) );
+		$target  = WP_CONTENT_DIR . '/uploads/sites/' . $site_id;
+		$path    = $target . '/.wpmn-upload-repair.lock';
+		$outside = tempnam( sys_get_temp_dir(), 'wpmn-lock-' );
+		$this->assertTrue( wp_mkdir_p( $target ) );
+		$this->assertNotFalse( $outside );
+		$this->assertNotFalse( file_put_contents( $outside, 'outside lock target' ) );
+		try {
+			if ( file_exists( $path ) || is_link( $path ) ) {
+				$this->assertTrue( unlink( $path ) );
+			}
+			if ( ! symlink( $outside, $path ) ) {
+				$this->markTestSkipped( 'The test environment cannot create symlinks.' );
+			}
+			$result = $repair->execute( $plan );
+			$this->assertWPError( $result );
+			$this->assertSame( 'upload_lock_failed', $result->get_error_code() );
+			$this->assertSame( $plan['stored_upload_path'], get_blog_option( $site_id, 'upload_path' ) );
+			$this->assertFalse( get_blog_option( $site_id, 'wpmn_upload_repair_' . $plan['fingerprint'], false ) );
+			$this->assertSame( 'outside lock target', file_get_contents( $outside ) );
+		} finally {
+			if ( is_link( $path ) ) {
+				unlink( $path );
+			}
+			if ( file_exists( $outside ) ) {
+				unlink( $outside );
+			}
+		}
+	}
+
+	/**
+	 * A dangling lock link must not create its target outside uploads.
+	 */
+	public function test_execute_refuses_dangling_symlinked_lock_path() {
+		$site_id = $this->create_doubled_site();
+		$repair  = new WP_MS_Upload_Repair();
+		$plan    = $repair->public_plan( $repair->inspect( $site_id ) );
+		$target  = WP_CONTENT_DIR . '/uploads/sites/' . $site_id;
+		$path    = $target . '/.wpmn-upload-repair.lock';
+		$outside = sys_get_temp_dir() . '/wpmn-lock-' . wp_generate_password( 20, false ) . '.txt';
+		$this->assertTrue( wp_mkdir_p( $target ) );
+		$this->assertFileDoesNotExist( $outside );
+		try {
+			if ( file_exists( $path ) || is_link( $path ) ) {
+				$this->assertTrue( unlink( $path ) );
+			}
+			if ( ! symlink( $outside, $path ) ) {
+				$this->markTestSkipped( 'The test environment cannot create symlinks.' );
+			}
+			$result = $repair->execute( $plan );
+			$this->assertWPError( $result );
+			$this->assertSame( 'upload_lock_failed', $result->get_error_code() );
+			$this->assertSame( $plan['stored_upload_path'], get_blog_option( $site_id, 'upload_path' ) );
+			$this->assertFalse( get_blog_option( $site_id, 'wpmn_upload_repair_' . $plan['fingerprint'], false ) );
+			$this->assertFileDoesNotExist( $outside );
+		} finally {
+			if ( is_link( $path ) ) {
+				unlink( $path );
+			}
+			if ( file_exists( $outside ) ) {
+				unlink( $outside );
+			}
+		}
+	}
+
+	/**
 	 * A failed second option write must restore both old values and remain resumable.
 	 */
 	public function test_failed_upload_url_option_write_restores_and_resumes() {
@@ -142,7 +239,21 @@ class WPMN_Tests_Upload_Repair extends WPMN_UnitTestCase {
 		$this->assertSame( $old_url, $plan['effective_baseurl'] );
 		$this->assertSame( 1, $plan['references']['posts'] );
 		$this->assertSame( 'wp-content/uploads/sites/' . $site_id, get_blog_option( $site_id, 'upload_path' ) );
-		$this->assertSame( 'repaired', $repair->execute( $plan )['status'] );
+
+		$reference_queries = 0;
+		$count_references  = static function( $query ) use ( &$reference_queries ) {
+			if ( preg_match( '/SELECT COUNT\(\*\).*\b(?:post_content|guid|meta_value|option_value|comment_content)\b.*\bLIKE\b/i', $query ) ) {
+				++$reference_queries;
+			}
+			return $query;
+		};
+		add_filter( 'query', $count_references );
+		try {
+			$this->assertSame( 'repaired', $repair->execute( $plan )['status'] );
+		} finally {
+			remove_filter( 'query', $count_references );
+		}
+		$this->assertSame( 0, $reference_queries );
 		$this->assertSame( '', get_blog_option( $site_id, 'upload_path' ) );
 		$this->assertSame( '', get_blog_option( $site_id, 'upload_url_path' ) );
 	}
@@ -854,9 +965,23 @@ class WPMN_Tests_Upload_Repair extends WPMN_UnitTestCase {
 			), '', 'no' ) );
 			restore_current_blog();
 
-			$fresh = $repair->inspect( $site_id );
+			$reference_queries = 0;
+			$count_references  = static function( $query ) use ( &$reference_queries ) {
+				if ( preg_match( '/SELECT COUNT\(\*\).*\b(?:post_content|guid|meta_value|option_value|comment_content)\b.*\bLIKE\b/i', $query ) ) {
+					++$reference_queries;
+				}
+				return $query;
+			};
+			add_filter( 'query', $count_references );
+			try {
+				$fresh = $repair->inspect( $site_id );
+			} finally {
+				remove_filter( 'query', $count_references );
+			}
 			$this->assertSame( 'repairable', $fresh['status'], $fresh['reason'] );
 			$this->assertSame( $plan['fingerprint'], $fresh['fingerprint'] );
+			$this->assertSame( $plan['references'], $fresh['references'] );
+			$this->assertSame( 5, $reference_queries );
 			$result = $repair->execute( $plan );
 			$this->assertIsArray( $result );
 			$this->assertSame( 'repaired', $result['status'] );
