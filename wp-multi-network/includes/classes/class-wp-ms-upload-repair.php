@@ -249,10 +249,11 @@ class WP_MS_Upload_Repair {
 		}
 
 		$path = $target . '/.wpmn-upload-repair.lock';
-		if ( file_exists( $path ) && ! $this->execution_lock_path_is_safe( $path ) ) {
+		if ( is_link( $path ) || ( file_exists( $path ) && ! is_file( $path ) ) ) {
 			return new WP_Error( 'upload_lock_failed', 'The upload repair lock path is unsafe.' );
 		}
-		$handle = @fopen( $path, 'c' ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged,WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- The persistent lock file must be opened without truncation; an explicit error follows.
+		$mode   = file_exists( $path ) ? 'r' : 'x';
+		$handle = @fopen( $path, $mode ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged,WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- Exclusive creation will not follow a new link, and an existing lock is opened without truncation; an explicit error follows.
 		if ( false === $handle ) {
 			return new WP_Error( 'upload_lock_failed', 'Could not open the upload repair lock.' );
 		}

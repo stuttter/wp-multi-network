@@ -153,6 +153,41 @@ class WPMN_Tests_Upload_Repair extends WPMN_UnitTestCase {
 	}
 
 	/**
+	 * A dangling lock link must not create its target outside uploads.
+	 */
+	public function test_execute_refuses_dangling_symlinked_lock_path() {
+		$site_id = $this->create_doubled_site();
+		$repair  = new WP_MS_Upload_Repair();
+		$plan    = $repair->public_plan( $repair->inspect( $site_id ) );
+		$target  = WP_CONTENT_DIR . '/uploads/sites/' . $site_id;
+		$path    = $target . '/.wpmn-upload-repair.lock';
+		$outside = sys_get_temp_dir() . '/wpmn-lock-' . wp_generate_password( 20, false ) . '.txt';
+		$this->assertTrue( wp_mkdir_p( $target ) );
+		$this->assertFileDoesNotExist( $outside );
+		try {
+			if ( file_exists( $path ) || is_link( $path ) ) {
+				$this->assertTrue( unlink( $path ) );
+			}
+			if ( ! symlink( $outside, $path ) ) {
+				$this->markTestSkipped( 'The test environment cannot create symlinks.' );
+			}
+			$result = $repair->execute( $plan );
+			$this->assertWPError( $result );
+			$this->assertSame( 'upload_lock_failed', $result->get_error_code() );
+			$this->assertSame( $plan['stored_upload_path'], get_blog_option( $site_id, 'upload_path' ) );
+			$this->assertFalse( get_blog_option( $site_id, 'wpmn_upload_repair_' . $plan['fingerprint'], false ) );
+			$this->assertFileDoesNotExist( $outside );
+		} finally {
+			if ( is_link( $path ) ) {
+				unlink( $path );
+			}
+			if ( file_exists( $outside ) ) {
+				unlink( $outside );
+			}
+		}
+	}
+
+	/**
 	 * A failed second option write must restore both old values and remain resumable.
 	 */
 	public function test_failed_upload_url_option_write_restores_and_resumes() {
