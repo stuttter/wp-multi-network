@@ -252,14 +252,17 @@ class WP_MS_Upload_Repair {
 		if ( is_link( $path ) || ( file_exists( $path ) && ! is_file( $path ) ) ) {
 			return new WP_Error( 'upload_lock_failed', 'The upload repair lock path is unsafe.' );
 		}
-		$mode   = file_exists( $path ) ? 'r' : 'x';
+		$mode   = file_exists( $path ) ? 'r+' : 'x';
 		$handle = @fopen( $path, $mode ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged,WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- Exclusive creation will not follow a new link, and an existing lock is opened without truncation; an explicit error follows.
 		if ( false === $handle ) {
 			return new WP_Error( 'upload_lock_failed', 'Could not open the upload repair lock.' );
 		}
-		if ( ! flock( $handle, LOCK_EX | LOCK_NB ) ) { // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_flock -- A nonblocking advisory lock prevents concurrent repair execution.
+		$would_block = false;
+		if ( ! flock( $handle, LOCK_EX | LOCK_NB, $would_block ) ) { // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_flock -- A nonblocking advisory lock prevents concurrent repair execution.
 			fclose( $handle );
-			return new WP_Error( 'upload_repair_locked', 'Another upload repair is already running for this site.' );
+			return $would_block
+				? new WP_Error( 'upload_repair_locked', 'Another upload repair is already running for this site.' )
+				: new WP_Error( 'upload_lock_failed', 'Could not acquire the upload repair lock.' );
 		}
 		clearstatcache( true, $path );
 		$handle_stat = fstat( $handle );
