@@ -261,7 +261,9 @@ class WP_MS_Upload_Repair {
 			return new WP_Error( 'upload_repair_locked', 'Another upload repair is already running for this site.' );
 		}
 		clearstatcache( true, $path );
-		if ( ! $this->execution_lock_path_is_safe( $path ) ) {
+		$handle_stat = fstat( $handle );
+		$path_stat   = @stat( $path ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged -- A replacement can remove the path between locking and verification; an explicit refusal follows.
+		if ( ! $this->execution_lock_path_is_safe( $path ) || false === $handle_stat || false === $path_stat || $handle_stat['dev'] !== $path_stat['dev'] || $handle_stat['ino'] !== $path_stat['ino'] ) {
 			$this->release_execution_lock( $handle );
 			return new WP_Error( 'upload_lock_failed', 'The upload repair lock path changed unexpectedly.' );
 		}
@@ -437,8 +439,9 @@ class WP_MS_Upload_Repair {
 		$plan['references'] = $references;
 		if ( $plan['collisions'] ) {
 			if ( ! $allow_copied ) {
-				$resumable = $this->inspect_current_site( $site_id, $network_id, true, $site, $include_references );
+				$resumable = $this->inspect_current_site( $site_id, $network_id, true, $site, false );
 				if ( 'repairable' === $resumable['status'] && $this->has_matching_copying_record( $resumable, $site ) ) {
+					$resumable['references'] = $plan['references'];
 					return $resumable;
 				}
 			}

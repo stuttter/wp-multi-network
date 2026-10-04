@@ -894,9 +894,23 @@ class WPMN_Tests_Upload_Repair extends WPMN_UnitTestCase {
 			), '', 'no' ) );
 			restore_current_blog();
 
-			$fresh = $repair->inspect( $site_id );
+			$reference_queries = 0;
+			$count_references  = static function( $query ) use ( &$reference_queries ) {
+				if ( preg_match( '/SELECT COUNT\(\*\).*\b(?:post_content|guid|meta_value|option_value|comment_content)\b.*\bLIKE\b/i', $query ) ) {
+					++$reference_queries;
+				}
+				return $query;
+			};
+			add_filter( 'query', $count_references );
+			try {
+				$fresh = $repair->inspect( $site_id );
+			} finally {
+				remove_filter( 'query', $count_references );
+			}
 			$this->assertSame( 'repairable', $fresh['status'], $fresh['reason'] );
 			$this->assertSame( $plan['fingerprint'], $fresh['fingerprint'] );
+			$this->assertSame( $plan['references'], $fresh['references'] );
+			$this->assertSame( 5, $reference_queries );
 			$result = $repair->execute( $plan );
 			$this->assertIsArray( $result );
 			$this->assertSame( 'repaired', $result['status'] );
