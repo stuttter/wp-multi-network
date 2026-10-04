@@ -393,26 +393,35 @@ class WPMN_Tests_Upload_Repair extends WPMN_UnitTestCase {
 	 * Cloning a modern network must not make its sites ineligible for repair.
 	 */
 	public function test_cloned_modern_network_site_can_be_repaired() {
+		global $wpdb;
+
 		$user_id = $this->factory->user->create( array( 'role' => 'administrator' ) );
 		grant_super_admin( $user_id );
-		$source_id = $this->factory->network->create( array(
-			'domain' => 'source-repair.example.test',
-			'path'   => '/',
-		) );
-		update_network_option( $source_id, 'ms_files_rewriting', 0 );
-		$clone_id = add_network( array(
-			'domain'           => 'clone-repair.example.test',
-			'path'             => '/',
-			'clone_network'    => $source_id,
-			'user_id'          => $user_id,
-			'network_admin_id' => $user_id,
-		) );
-		$this->assertNotWPError( $clone_id );
-		$site_id = $this->factory->blog->create( array(
-			'network_id' => $clone_id,
-			'domain'     => 'clone-repair.example.test',
-			'path'       => '/secondary/',
-		) );
+		$suppress_errors = $wpdb->suppress_errors( true );
+		try {
+			$source_id = $this->factory->network->create( array(
+				'domain' => 'source-repair.example.test',
+				'path'   => '/',
+			) );
+			update_network_option( $source_id, 'ms_files_rewriting', 0 );
+			$clone_id = add_network( array(
+				'domain'           => 'clone-repair.example.test',
+				'path'             => '/',
+				'clone_network'    => $source_id,
+				'user_id'          => $user_id,
+				'network_admin_id' => $user_id,
+			) );
+			$this->assertNotWPError( $clone_id );
+			$site_id = $this->factory->blog->create( array(
+				'network_id' => $clone_id,
+				'domain'     => 'clone-repair.example.test',
+				'path'       => '/secondary/',
+			) );
+		} finally {
+			// WordPress 6.9 transient cleanup emits a MySQL 8 self-join error
+			// while populating a new site; keep it out of this isolated fixture.
+			$wpdb->suppress_errors( $suppress_errors );
+		}
 		$this->assertTrue( switch_to_network( $clone_id, true ) );
 		try {
 			switch_to_blog( $site_id );
