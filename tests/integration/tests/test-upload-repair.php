@@ -22,6 +22,16 @@ require_once TESTS_PLUGIN_DIR . '/wp-multi-network/includes/classes/class-wp-ms-
 class WPMN_Tests_Upload_Repair extends WPMN_UnitTestCase {
 
 	/**
+	 * Restore request paths omitted from isolated PHPUnit processes.
+	 */
+	public function set_up() {
+		parent::set_up();
+		$_SERVER['SCRIPT_FILENAME'] = ABSPATH . 'index.php';
+		$_SERVER['REQUEST_URI']     = '/';
+		$_SERVER['PHP_SELF']        = '/index.php';
+	}
+
+	/**
 	 * Create a site with the known doubled modern upload options.
 	 *
 	 * @return int Site ID.
