@@ -11,6 +11,11 @@ if ( function_exists( 'xdebug_disable' ) ) {
 // Set path to the plugin.
 define( 'TESTS_PLUGIN_DIR', dirname( dirname( dirname( dirname( __FILE__ ) ) ) ) );
 
+// Allow an isolated test container to provide PHPUnit Polyfills separately.
+if ( ! defined( 'WP_TESTS_PHPUNIT_POLYFILLS_PATH' ) && getenv( 'WP_TESTS_PHPUNIT_POLYFILLS_PATH' ) ) {
+	define( 'WP_TESTS_PHPUNIT_POLYFILLS_PATH', getenv( 'WP_TESTS_PHPUNIT_POLYFILLS_PATH' ) );
+}
+
 // Detect where the WordPress core test suite is located.
 if ( false !== getenv( 'WP_TESTS_DIR' ) ) {
 	$_tests_dir = getenv( 'WP_TESTS_DIR' );

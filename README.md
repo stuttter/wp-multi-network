@@ -18,6 +18,8 @@ Turn your WordPress Multisite installation into many multisite networks, surroun
 
 ## Installation
 
+Requires WordPress 6.4 or newer and PHP 7.4 or newer.
+
 * Download and install using the built in WordPress plugin installer.
 * Activate in the "Plugins" network admin panel using the "Network Activate" link.
 * Comment out the `DOMAIN_CURRENT_SITE` line in your `wp-config.php` file. If you don't have this line, you probably need to enable multisite.
@@ -74,6 +76,21 @@ define( 'WP_SITEURL', 'https://' . $_SERVER['HTTP_HOST'] );
 ## Single Sign-on
 
 Single Sign-on is a way to keep registered users signed into your installation regardless of what domain, subdomain, and path they are viewing. This functionality is outside the scope of what WP Multi Network hopes to provide, but a dedicated SSO plugin made specifically for WP Multi Network is in development.
+
+## Repairing existing doubled upload paths
+
+The `wp wp-multi-network repair-uploads` WP-CLI command inspects every site by default. Run it with `--url` set to a network main site, not a subsite: WordPress fixes the content URL during bootstrap, so subsite context can produce a different upload plan. Sites belonging to other networks are reported as requiring manual review; rerun with that network's main-site `--url` to plan or execute their repair. It reports the stored upload options, effective and proposed paths, file collisions, and stored references for the known modern `/sites/{id}/sites/{id}` problem. Reference counts are advisory: they search that site's posts (content and GUID), postmeta, options, comments, and commentmeta, but not usermeta, termmeta, network metadata, or custom tables. A zero count is not proof that no stored references exist. Inspection makes no changes. The dry run walks site IDs in batches and excludes sites created after it starts; rerun it to include newly created sites. Use `--site-id=<id>` or `--network-id=<id>` to narrow it. In JSON output, `bootstrap_target_baseurl` is the URL observed from the main-site CLI context, not a promise about the subsite's own URL. Check the site's attachment URLs in its own context after repair; never use that field for bulk URL replacement.
+
+To execute a repair, first save the JSON dry run outside the web root and review it:
+
+```sh
+wp wp-multi-network repair-uploads --format=json > /secure/path/upload-repair-plan.json
+wp --user=superadmin wp-multi-network repair-uploads --execute --plan-file=/secure/path/upload-repair-plan.json --all
+```
+
+Omit `--all` when the saved plan contains only one site. The JSON plan includes each proposed file copy's relative path, size, and SHA-256 hash; do not edit it before execution. Execution creates and keeps a per-site lock file in `wp-content/.wpmn-upload-repair-locks`, outside the writable upload tree, takes its filesystem lock, then rechecks each site's settings and files against the saved plan before changing it. A concurrent execution for the same site stops without changing its journal or options. If `wp-content` is read-only or is not shared by every host that can run repairs, pre-create an absolute, writable, shared directory outside uploads and define its path as `WPMN_UPLOAD_REPAIR_LOCK_DIR` in `wp-config.php` or another file loaded by WP-CLI. The command refuses a missing configured directory or one that resolves inside uploads. Run execution from only one host when the lock directory or its advisory locks are host-local. Advisory reference counts may change without invalidating the plan and are not rescanned during execution. It copies affected files without overwriting targets, verifies the copies, then corrects the options. It leaves old files in place and saves the original options, file-manifest digest, and plan fingerprint in a per-site `wpmn_upload_repair_*` option. A rerun verifies the retained originals and copied files before reporting an already-completed repair. A fresh dry run recognizes verified copies only when a matching copying journal exists. Other collisions, legacy rewriting, custom layouts, upload constants, or filters require manual review and are not changed. Stored absolute URLs are reported but never rewritten, including serialized content.
+
+For rollback, first verify that the retained old directory still has the original files. Read the backup option named in the command result for the affected site, then restore its `old_upload_path` and `old_upload_url_path` values with WP-CLI under that site's URL. Verify the effective upload directory and existing media before making the site writable again. Rollback does not remove copied files; do not delete either directory until the media and stored URL references have been reviewed. Run execution as the same operating-system user as the WordPress web server so copied files and newly created directories retain usable ownership. Perform execution and rollback during a maintenance window with uploads paused, since another process can write a file between a filesystem check and a copy.
 
 ## FAQ
 

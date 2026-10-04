@@ -216,6 +216,186 @@ class WP_MS_Network_Command {
 	}
 
 	/**
+	 * Plan or execute repairs for known doubled modern upload paths.
+	 *
+	 * With no flags, this command inspects every site without writing anything.
+	 * Save `--format=json` output to a file before using `--execute`.
+	 * Execution requires a super administrator and never deletes old files.
+	 *
+	 * [--site-id=<id>]
+	 * : Inspect only one site.
+	 *
+	 * [--network-id=<id>]
+	 * : Inspect only sites in one network.
+	 *
+	 * [--batch-size=<number>]
+	 * : Number of sites to query at once. Default 100, maximum 500.
+	 *
+	 * [--format=<table|json>]
+	 * : Dry-run output format. Default table. JSON is required for execution.
+	 *
+	 * [--execute]
+	 * : Apply a previously saved JSON plan after rechecking every site.
+	 *
+	 * [--plan-file=<path>]
+	 * : Saved JSON dry-run output required with --execute.
+	 *
+	 * [--all]
+	 * : Confirm execution of a plan containing more than one site.
+	 *
+	 * @subcommand repair-uploads
+	 *
+	 * @param string[]             $args Positional CLI arguments.
+	 * @param array<string, mixed> $assoc_args Associative CLI arguments.
+	 * @return void
+	 */
+	public function repair_uploads( $args, $assoc_args ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
+		global $wpdb;
+		// Core defines WP_CONTENT_URL during bootstrap. With --url set to a
+		// subsite, that constant can include the subsite path even after blog
+		// switching, making otherwise identical repair plans disagree.
+		if ( (int) get_current_blog_id() !== (int) get_main_site_id( get_current_network_id() ) ) {
+			WP_CLI::error( 'Run repair-uploads from a network main site using --url=<main-site-url>.' );
+		}
+		require_once __DIR__ . '/class-wp-ms-upload-repair.php';
+		$repair = new WP_MS_Upload_Repair();
+		if ( isset( $assoc_args['execute'] ) ) {
+			$this->execute_upload_repairs( $repair, $assoc_args );
+			return;
+		}
+
+		$format     = isset( $assoc_args['format'] ) ? $assoc_args['format'] : 'table';
+		$network_id = isset( $assoc_args['network-id'] ) ? absint( $assoc_args['network-id'] ) : 0;
+		$site_id    = isset( $assoc_args['site-id'] ) ? absint( $assoc_args['site-id'] ) : 0;
+		$batch_size = isset( $assoc_args['batch-size'] ) ? absint( $assoc_args['batch-size'] ) : 100;
+		if ( ! in_array( $format, array( 'table', 'json' ), true ) || ! $batch_size || $batch_size > 500 ) {
+			WP_CLI::error( 'Use --format=table|json and a batch size from 1 to 500.' );
+		}
+		if ( isset( $assoc_args['network-id'] ) && ( ! $network_id || ! get_network( $network_id ) ) ) {
+			WP_CLI::error( 'The requested network does not exist.' );
+		}
+		if ( isset( $assoc_args['site-id'] ) && ( ! $site_id || ! get_site( $site_id ) ) ) {
+			WP_CLI::error( 'The requested site does not exist.' );
+		}
+
+		if ( 'json' === $format ) {
+			WP_CLI::line( '{"schema":1,"sites":[' );
+		} else {
+			WP_CLI::line( "site_id\tnetwork_id\tstatus\tfiles\treferences\treason" );
+		}
+		$first   = true;
+		$cursor  = 0;
+		$last_id = $wpdb->get_var( "SELECT MAX(blog_id) FROM {$wpdb->blogs}" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Snapshot the highest site ID before a potentially long dry run.
+		if ( $wpdb->last_error ) {
+			WP_CLI::error( 'Could not establish the upload repair dry-run site boundary.' );
+		}
+		$last_id = (int) $last_id;
+		do {
+			$sql    = "SELECT blog_id FROM {$wpdb->blogs} WHERE blog_id > %d AND blog_id <= %d";
+			$params = array( $cursor, $last_id );
+			if ( $network_id ) {
+				$sql     .= ' AND site_id = %d';
+				$params[] = $network_id;
+			}
+			if ( $site_id ) {
+				$sql     .= ' AND blog_id = %d';
+				$params[] = $site_id;
+			}
+			$sql     .= ' ORDER BY blog_id ASC LIMIT %d';
+			$params[] = $batch_size;
+			$site_ids = $wpdb->get_col( $wpdb->prepare( $sql, $params ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.NotPrepared -- Keyset pagination keeps a long dry run from skipping sites after deletion; every variable is prepared.
+			if ( $wpdb->last_error ) {
+				WP_CLI::error( 'Could not list sites for the upload repair dry run.' );
+			}
+			foreach ( $site_ids as $listed_id ) {
+				$cursor = (int) $listed_id;
+				$plan   = $repair->public_plan( $repair->inspect( $cursor ) );
+				if ( 'json' === $format ) {
+					$encoded = wp_json_encode( $plan );
+					if ( false === $encoded ) {
+						WP_CLI::error( 'Could not encode a site repair plan.' );
+					}
+					WP_CLI::line( ( $first ? '' : ',' ) . $encoded );
+				} else {
+					$references = array_sum( $plan['references'] );
+					WP_CLI::line( implode( "\t", array( $plan['site_id'], $plan['network_id'], $plan['status'], $plan['file_count'], $references, $plan['reason'] ) ) );
+				}
+				$first = false;
+			}
+			$site_count = count( $site_ids );
+		} while ( $site_count === $batch_size && ! $site_id );
+		if ( 'json' === $format ) {
+			WP_CLI::line( ']}' );
+		}
+	}
+
+	/**
+	 * Apply a saved dry-run file, leaving refused sites unchanged.
+	 *
+	 * @param WP_MS_Upload_Repair  $repair Repair planner.
+	 * @param array<string, mixed> $assoc_args Command flags.
+	 * @return void
+	 */
+	private function execute_upload_repairs( $repair, $assoc_args ) {
+		if ( ! is_super_admin() ) {
+			WP_CLI::error( 'Run this command as a super administrator with --user.' );
+		}
+		if ( isset( $assoc_args['site-id'] ) || isset( $assoc_args['network-id'] ) ) {
+			WP_CLI::error( 'Execution scope comes from the saved plan. Filter sites when creating the dry run.' );
+		}
+		if ( empty( $assoc_args['plan-file'] ) || ! is_file( $assoc_args['plan-file'] ) || is_link( $assoc_args['plan-file'] ) || ! is_readable( $assoc_args['plan-file'] ) ) {
+			WP_CLI::error( 'Execution requires a readable --plan-file from --format=json.' );
+		}
+		$plan_size = filesize( $assoc_args['plan-file'] );
+		if ( false === $plan_size || $plan_size > 100 * MB_IN_BYTES ) {
+			WP_CLI::error( 'The saved plan is too large to load safely.' );
+		}
+		$plan_json = file_get_contents( $assoc_args['plan-file'] ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents,WordPressVIPMinimum.Performance.FetchingRemoteData.FileGetContentsUnknown -- Local operator-supplied plan.
+		if ( false === $plan_json ) {
+			WP_CLI::error( 'Could not read the saved plan.' );
+			return;
+		}
+		$document = json_decode( $plan_json, true );
+		if ( ! is_array( $document ) || ! isset( $document['schema'], $document['sites'] ) || 1 !== $document['schema'] || ! is_array( $document['sites'] ) ) {
+			WP_CLI::error( 'The saved plan has an invalid schema.' );
+		}
+		if ( count( $document['sites'] ) > 1 && ! isset( $assoc_args['all'] ) ) {
+			WP_CLI::error( 'A multi-site plan requires --all for execution.' );
+		}
+		// Validate every entry before the first site can be changed.
+		$seen = array();
+		foreach ( $document['sites'] as $plan ) {
+			if ( ! is_array( $plan ) || ! isset( $plan['site_id'], $plan['network_id'], $plan['status'], $plan['fingerprint'] ) || ! is_int( $plan['site_id'] ) || $plan['site_id'] < 1 || ! is_int( $plan['network_id'] ) || $plan['network_id'] < 0 || ! is_string( $plan['status'] ) || ! is_string( $plan['fingerprint'] ) || ! in_array( $plan['status'], array( 'repairable', 'manual', 'unchanged' ), true ) || ( 'repairable' === $plan['status'] && $plan['network_id'] < 1 ) || isset( $seen[ $plan['site_id'] ] ) ) {
+				WP_CLI::error( 'The saved plan has invalid or duplicate site entries.' );
+			}
+			if ( 'repairable' === $plan['status'] && ( ! is_string( $plan['fingerprint'] ) || ! preg_match( '/^[a-f0-9]{64}$/', $plan['fingerprint'] ) ) ) {
+				WP_CLI::error( 'The saved plan has an invalid fingerprint.' );
+			}
+			if ( 'repairable' === $plan['status'] && (int) get_current_network_id() !== $plan['network_id'] ) {
+				WP_CLI::error( 'The saved plan includes a repairable site from another network. Run from that network main site.' );
+			}
+			$seen[ $plan['site_id'] ] = true;
+		}
+		$failures = 0;
+		foreach ( $document['sites'] as $plan ) {
+			if ( 'repairable' !== $plan['status'] ) {
+				WP_CLI::line( sprintf( 'Site %d: %s; unchanged.', $plan['site_id'], $plan['status'] ) );
+				continue;
+			}
+			$result = $repair->execute( $plan );
+			if ( is_wp_error( $result ) ) {
+				++$failures;
+				WP_CLI::warning( sprintf( 'Site %d: %s', $plan['site_id'], $result->get_error_message() ) );
+				continue;
+			}
+			WP_CLI::line( sprintf( 'Site %d: %s; backup option %s; old files retained.', $result['site_id'], $result['status'], $result['backup_option'] ) );
+		}
+		if ( $failures ) {
+			WP_CLI::halt( 1 );
+		}
+	}
+
+	/**
 	 * List all networks.
 	 *
 	 * [--fields=<fields>]

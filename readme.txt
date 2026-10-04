@@ -6,8 +6,8 @@ License URI:       https://www.gnu.org/licenses/gpl-2.0.html
 License:           GPLv2 or later
 Contributors:      johnjamesjacoby, flixos90, rmccue, spacedmonkey
 Tags:              network, sites, domains, global, admin
-Requires PHP:      7.2
-Requires at least: 5.5
+Requires PHP:      7.4
+Requires at least: 6.4
 Tested up to:      7.0
 Stable tag:        3.1.0
 
