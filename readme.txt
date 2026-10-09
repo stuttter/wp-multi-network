@@ -129,8 +129,8 @@ Not much to talk about really. Check the code for details!
 == Changelog ==
 
 = 3.2.0 =
-* Add a guarded WP-CLI workflow for detecting and repairing doubled multisite upload paths.
-* Make network-context synchronization during blog switching explicitly opt-in.
+* Add the guarded `wp wp-multi-network repair-uploads` command for detecting and repairing doubled multisite upload paths.
+* Add opt-in network-context synchronization during blog switching with `WPMN_SYNC_NETWORK_ON_BLOG_SWITCH`.
 * Process every site when updating or deleting a network.
 * Bound Network Admin site lists and admin-bar network shortcuts on large installations.
 * Raise the minimum versions to WordPress 6.4 and PHP 7.4.
