@@ -93,7 +93,7 @@ class WP_MS_Networks_Admin_Bar {
 		 * Large menus are expensive to build on every page. The parent link always
 		 * remains available and leads to the searchable Networks screen.
 		 *
-		 * @since 3.1.1
+		 * @since 3.2.0
 		 *
 		 * @param int $limit Maximum number of network shortcuts. Zero hides all shortcuts.
 		 */
