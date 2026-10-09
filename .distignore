@@ -15,6 +15,7 @@ deploy.sh
 LICENSE.md
 license.txt
 phpcs.xml.dist
+phpcs-baseline.json
 phpunit.xml.dist
 phpunit.xml.legacy
 phpstan.neon.dist
