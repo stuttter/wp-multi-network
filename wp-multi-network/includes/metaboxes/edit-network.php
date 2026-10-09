@@ -65,7 +65,7 @@ function wpmn_edit_network_details_metabox( $network = null ) {
  * Renders the metabox for defining the main site for a new network.
  *
  * @since 1.7.0
- * @since NEXT Added support for selecting an existing site as root site.
+ * @since 3.1.0 Added support for selecting an existing site as root site.
  *
  * @return void
  */
