@@ -9,7 +9,7 @@ Tags:              network, sites, domains, global, admin
 Requires PHP:      7.4
 Requires at least: 6.4
 Tested up to:      7.0
-Stable tag:        3.1.0
+Stable tag:        3.2.0
 
 A WordPress plugin that provides a network management interface for global multisite administrators.
 
@@ -127,6 +127,14 @@ please follow the steps in https://paulund.co.uk/wordpress-multisite-nested-path
 Not much to talk about really. Check the code for details!
 
 == Changelog ==
+
+= 3.2.0 =
+* Add a guarded WP-CLI workflow for detecting and repairing doubled multisite upload paths.
+* Make network-context synchronization during blog switching explicitly opt-in.
+* Process every site when updating or deleting a network.
+* Bound Network Admin site lists and admin-bar network shortcuts on large installations.
+* Raise the minimum versions to WordPress 6.4 and PHP 7.4.
+* Adopt organization-managed testing, release, and WordPress.org deployment workflows.
 
 = 3.1.0 =
 * Add the option to use an existing site as the root of a new network.
