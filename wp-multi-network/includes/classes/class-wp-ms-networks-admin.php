@@ -27,7 +27,7 @@ class WP_MS_Networks_Admin {
 	/**
 	 * List table for the Networks screen.
 	 *
-	 * @since NEXT
+	 * @since 3.1.0
 	 * @var WP_MS_Networks_List_Table|null
 	 */
 	private $list_table = null;
@@ -35,7 +35,7 @@ class WP_MS_Networks_Admin {
 	/**
 	 * Result of a network move made while saving the Site Info screen.
 	 *
-	 * @since NEXT
+	 * @since 3.1.0
 	 * @var array{site_id: int, moved: string}|null
 	 */
 	private $site_info_move_result = null;
@@ -107,7 +107,7 @@ class WP_MS_Networks_Admin {
 	/**
 	 * Adds a network field to WordPress's Site Info form.
 	 *
-	 * @since NEXT
+	 * @since 3.1.0
 	 * @param int $site_id Site being edited.
 	 * @return void
 	 */
@@ -157,7 +157,7 @@ class WP_MS_Networks_Admin {
 	 * WordPress checks the edit-site nonce before updating the site. We repeat
 	 * that check so another use of wp_update_site() cannot trigger a move.
 	 *
-	 * @since NEXT
+	 * @since 3.1.0
 	 * @param WP_Site $new_site Updated site.
 	 * @param WP_Site $old_site Site before the update.
 	 * @return void
@@ -209,7 +209,7 @@ class WP_MS_Networks_Admin {
 	 * A moved site can no longer be edited from its former network, so Core's
 	 * relative redirect back to site-info.php would show an access error.
 	 *
-	 * @since NEXT
+	 * @since 3.1.0
 	 * @param string $location Core's redirect URL.
 	 * @param int    $status   HTTP redirect status.
 	 * @return string Redirect URL.
@@ -241,7 +241,7 @@ class WP_MS_Networks_Admin {
 	/**
 	 * Explains a failed Site Info move without hiding Core's save confirmation.
 	 *
-	 * @since NEXT
+	 * @since 3.1.0
 	 * @return void
 	 */
 	public function site_info_move_notice() {
@@ -260,7 +260,7 @@ class WP_MS_Networks_Admin {
 	 * Core renders the lower menu as action2 but only reads action on sites.php.
 	 * This changes only our action, leaving WordPress's other bulk actions alone.
 	 *
-	 * @since NEXT
+	 * @since 3.1.0
 	 * @return void
 	 */
 	public function normalize_bottom_bulk_move_action() {
@@ -285,7 +285,7 @@ class WP_MS_Networks_Admin {
 	/**
 	 * Adds a move action to the network Sites list.
 	 *
-	 * @since NEXT
+	 * @since 3.1.0
 	 * @param array<string, string> $actions Bulk actions.
 	 * @return array<string, string> Bulk actions.
 	 */
@@ -302,7 +302,7 @@ class WP_MS_Networks_Admin {
 	 *
 	 * WordPress verifies the bulk-sites nonce before applying this filter.
 	 *
-	 * @since NEXT
+	 * @since 3.1.0
 	 * @param string $redirect_url Default redirect URL.
 	 * @param string $action       Selected bulk action.
 	 * @param int[]  $site_ids     Selected site IDs.
@@ -335,7 +335,7 @@ class WP_MS_Networks_Admin {
 	/**
 	 * Validates the complete selection before moving any site.
 	 *
-	 * @since NEXT
+	 * @since 3.1.0
 	 * @param int[] $site_ids Selected site IDs.
 	 * @return WP_Site[]|WP_Error Selected sites or an error.
 	 */
@@ -367,7 +367,7 @@ class WP_MS_Networks_Admin {
 	/**
 	 * Moves validated sites to an existing network.
 	 *
-	 * @since NEXT
+	 * @since 3.1.0
 	 * @param int[] $site_ids       Selected site IDs.
 	 * @param int   $destination_id Destination network ID.
 	 * @return array<string, int>|WP_Error Move counts or an error.
@@ -450,7 +450,7 @@ class WP_MS_Networks_Admin {
 	/**
 	 * Sets up the Networks list screen before the admin header is rendered.
 	 *
-	 * @since NEXT
+	 * @since 3.1.0
 	 * @return void
 	 */
 	public function setup_networks_screen() {
@@ -500,7 +500,7 @@ class WP_MS_Networks_Admin {
 	/**
 	 * Registers network edit boxes and help before Screen Options render.
 	 *
-	 * @since NEXT
+	 * @since 3.1.0
 	 * @return void
 	 */
 	public function setup_edit_network_screen() {
@@ -551,7 +551,7 @@ class WP_MS_Networks_Admin {
 	/**
 	 * Saves the Networks list pagination setting for the current user.
 	 *
-	 * @since NEXT
+	 * @since 3.1.0
 	 *
 	 * @param mixed  $screen_option Existing screen option value.
 	 * @param string $option        Option name.
@@ -652,7 +652,7 @@ class WP_MS_Networks_Admin {
 	 * Searches only central site domain and path columns; site titles would
 	 * require loading each site's options. The query runs only after input.
 	 *
-	 * @since NEXT
+	 * @since 3.1.0
 	 *
 	 * @param string $term Domain or path fragment.
 	 * @return array<int, array{id: int, url: string, domain: string, path: string}> Matching sites.
@@ -699,7 +699,7 @@ class WP_MS_Networks_Admin {
 	/**
 	 * Returns eligible root-site matches for the new-network search field.
 	 *
-	 * @since NEXT
+	 * @since 3.1.0
 	 * @return void
 	 */
 	public function ajax_search_root_sites() {
@@ -724,7 +724,7 @@ class WP_MS_Networks_Admin {
 	 * This endpoint does not change state, so it can recover an open form after
 	 * its original nonce expires without accepting that expired nonce.
 	 *
-	 * @since NEXT
+	 * @since 3.1.0
 	 * @return void
 	 */
 	public function ajax_refresh_root_site_nonce() {
@@ -740,7 +740,7 @@ class WP_MS_Networks_Admin {
 	 *
 	 * Keeping this separate from search avoids loading options for every match.
 	 *
-	 * @since NEXT
+	 * @since 3.1.0
 	 *
 	 * @param int $site_id Selected site ID.
 	 * @return string|WP_Error Site name or an error if the site is ineligible.
@@ -758,7 +758,7 @@ class WP_MS_Networks_Admin {
 	/**
 	 * Returns the selected site's name for the read-only preview field.
 	 *
-	 * @since NEXT
+	 * @since 3.1.0
 	 * @return void
 	 */
 	public function ajax_get_root_site_name() {
@@ -861,7 +861,7 @@ class WP_MS_Networks_Admin {
 	/**
 	 * Reports the result of a Sites-list bulk move.
 	 *
-	 * @since NEXT
+	 * @since 3.1.0
 	 * @return void
 	 */
 	public function bulk_move_sites_notice() {
@@ -1330,7 +1330,7 @@ class WP_MS_Networks_Admin {
 	/**
 	 * Displays the selected sites and destination before a bulk move.
 	 *
-	 * @since NEXT
+	 * @since 3.1.0
 	 * @return void
 	 */
 	private function page_bulk_move_sites() {
@@ -2012,7 +2012,7 @@ class WP_MS_Networks_Admin {
 	 *
 	 * The nonce and capabilities are checked by route_save_handlers().
 	 *
-	 * @since NEXT
+	 * @since 3.1.0
 	 * @return never
 	 */
 	private function handle_bulk_move_sites() {
@@ -2252,7 +2252,7 @@ class WP_MS_Networks_Admin {
 	/**
 	 * Checks the capability required for a network management action.
 	 *
-	 * @since NEXT
+	 * @since 3.1.0
 	 * @param string $capability Required capability.
 	 * @param int    $object_id  Optional network ID for meta capabilities.
 	 * @return void

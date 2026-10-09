@@ -2,7 +2,7 @@
 /**
  * Tests network management form authorization.
  *
- * @since NEXT
+ * @since 3.1.0
  */
 
 require_once TESTS_PLUGIN_DIR . '/wp-multi-network/includes/classes/class-wp-ms-networks-admin.php';
@@ -12,7 +12,7 @@ class WPMN_Tests_AdminAuthorization extends WPMN_UnitTestCase {
 	/**
 	 * A manager without deletion rights cannot reuse an edit nonce to delete.
 	 *
-	 * @since NEXT
+	 * @since 3.1.0
 	 */
 	public function test_manager_cannot_delete_network_with_edit_nonce() {
 		$network_id = $this->factory->network->create(
@@ -63,7 +63,7 @@ class WPMN_Tests_AdminAuthorization extends WPMN_UnitTestCase {
 	/**
 	 * Replaces wp_die() with an exception so authorization failures are testable.
 	 *
-	 * @since NEXT
+	 * @since 3.1.0
 	 * @return callable Exception handler.
 	 */
 	public function get_exception_die_handler() {
@@ -73,7 +73,7 @@ class WPMN_Tests_AdminAuthorization extends WPMN_UnitTestCase {
 	/**
 	 * Throws the wp_die() message as an exception.
 	 *
-	 * @since NEXT
+	 * @since 3.1.0
 	 * @param string $message Error message.
 	 * @return void
 	 */

@@ -440,7 +440,7 @@ if ( ! function_exists( 'add_network' ) ) :
 	 *                                     Defaults to current user ID.
 	 *     @type integer $existing_blog_id Optional. ID of an existing site to use as the
 	 *                                     root site instead of creating a new one.
-	 *                                     Default 0. @since NEXT.
+	 *                                     Default 0. @since 3.1.0.
 	 *     @type integer $network_admin_id ID of the user to add as the network administrator.
 	 *                                     Defaults to current user ID.
 	 *     @type array   $meta             Array of metadata to save to this network.

@@ -2,7 +2,7 @@
 /**
  * Tests the Sites-list bulk Move action.
  *
- * @since NEXT
+ * @since 3.1.0
  */
 
 require_once TESTS_PLUGIN_DIR . '/wp-multi-network/includes/classes/class-wp-ms-networks-admin.php';

@@ -2,7 +2,7 @@
 /**
  * Tests for adding a network with an existing site as root site.
  *
- * @since NEXT
+ * @since 3.1.0
  */
 
 class WPMN_Tests_AddNetworkExistingSite extends WPMN_UnitTestCase {
@@ -10,7 +10,7 @@ class WPMN_Tests_AddNetworkExistingSite extends WPMN_UnitTestCase {
 	/**
 	 * Test adding a network with an existing site as root site.
 	 *
-	 * @since NEXT
+	 * @since 3.1.0
 	 */
 	public function test_add_network_with_existing_site() {
 
@@ -59,7 +59,7 @@ class WPMN_Tests_AddNetworkExistingSite extends WPMN_UnitTestCase {
 	/**
 	 * Test adding a network with a nonexistent site returns an error.
 	 *
-	 * @since NEXT
+	 * @since 3.1.0
 	 */
 	public function test_add_network_with_nonexistent_site() {
 
@@ -91,7 +91,7 @@ class WPMN_Tests_AddNetworkExistingSite extends WPMN_UnitTestCase {
 	/**
 	 * Test adding a network with a main site of another network returns an error.
 	 *
-	 * @since NEXT
+	 * @since 3.1.0
 	 */
 	public function test_add_network_with_main_site() {
 
@@ -138,7 +138,7 @@ class WPMN_Tests_AddNetworkExistingSite extends WPMN_UnitTestCase {
 	/**
 	 * Test adding a network without existing_blog_id creates a new site.
 	 *
-	 * @since NEXT
+	 * @since 3.1.0
 	 */
 	public function test_add_network_without_existing_site() {
 

@@ -2,7 +2,7 @@
 /**
  * Tests for finding sites eligible to become a network's root site.
  *
- * @since NEXT
+ * @since 3.1.0
  */
 
 require_once TESTS_PLUGIN_DIR . '/wp-multi-network/includes/classes/class-wp-ms-networks-admin.php';
@@ -12,7 +12,7 @@ class WPMN_Tests_RootSiteSearch extends WPMN_UnitTestCase {
 	/**
 	 * Search matches domain and path, but never offers a network's main site.
 	 *
-	 * @since NEXT
+	 * @since 3.1.0
 	 */
 	public function test_search_excludes_network_main_sites() {
 		$eligible_id = $this->factory->blog->create(
@@ -57,7 +57,7 @@ class WPMN_Tests_RootSiteSearch extends WPMN_UnitTestCase {
 	/**
 	 * Short terms are rejected before querying the sites table.
 	 *
-	 * @since NEXT
+	 * @since 3.1.0
 	 */
 	public function test_search_requires_three_characters() {
 		$admin = new WP_MS_Networks_Admin();
