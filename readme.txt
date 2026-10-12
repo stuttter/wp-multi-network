@@ -8,7 +8,7 @@ Contributors:      johnjamesjacoby, flixos90, rmccue, spacedmonkey
 Tags:              network, sites, domains, global, admin
 Requires PHP:      7.4
 Requires at least: 6.4
-Tested up to:      7.0
+Tested up to:      7.1
 Stable tag:        3.2.0
 
 A WordPress plugin that provides a network management interface for global multisite administrators.
@@ -271,14 +271,4 @@ Not much to talk about really. Check the code for details!
 * Code clean-up.
 * Remove inline JavaScript.
 
-= 1.2 =
-* Implemented 3.1 Network Admin Menu, backwards compatibility maintained.
-* Fix multiple minor issues.
-* Add Site Admin and Network Admin to Network lists.
-* Add various security and bullet proofing.
-
-= 1.1 =
-* Better WordPress 3.0 compatibility.
-
-= 1.0 =
-Getting started.
+Earlier release history is available in the Git repository.
